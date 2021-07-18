@@ -1,9 +1,16 @@
 import pymongo
-from pymongo import MongoClient
 import time
-from password import MongoPW, MongoUser
+from config import MongoPW, MongoUser
 from Parsers.ToLadderstatswide import HextoLadderstatswide
 from CalculateStatLine import calculateStatLine
+import os
+try:
+    if not MongoPW or not MongoUser:
+      MongoPW = os.environ("MongoPW")
+      MongoUser = os.environ("MongoUser")
+except:
+    print('failed to load credentials')
+    exit(1)
 
 class Database():
     def __init__(self,db,collection):
