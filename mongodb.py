@@ -6,8 +6,8 @@ from CalculateStatLine import calculateStatLine
 import os
 try:
     if not MongoPW or not MongoUser:
-      MongoPW = os.environ("MongoPW")
-      MongoUser = os.environ("MongoUser")
+        MongoPW = os.environ("MongoPW")
+        MongoUser = os.environ("MongoUser")
 except:
     print('failed to load credentials')
     exit(1)
