@@ -288,14 +288,19 @@ class Database():
             'losers':[]
         }
         total_kills = 0
+        
         for id in game.player_ids:
             updated_player_entry = player_stats.collection.find_one({'account_id':id})
             cache = game.cached_stats[id]
             stat_line = calculateStatLine(updated_player_entry, cache, game)
             total_kills+=stat_line['kills']
             #check to see if tie ################################
-            if stat_line['game_result'] == 'tie' and len(teams) == 2:
-                teams={'tie':[]}
+            if stat_line['game_result'] == 'tie' and 'tie' not in teams:
+                teams['tie'] = []
+            #####################################################
+             #check to see if disconnected ################################
+            if stat_line['game_result'] == 'disconnect' and 'disconnect' not in teams:
+                teams['disconnect'] = []
             #####################################################
 
 
@@ -303,6 +308,8 @@ class Database():
                 teams['winners'].append(stat_line)
             elif stat_line['game_result'] == 'loss':
                 teams['losers'].append(stat_line)
+            elif stat_line['game_result'] == 'disconnect':
+                teams['disconnect'].append(stat_line)
             else:
                 teams['tie'].append(stat_line)
         return teams if total_kills > 0 else None

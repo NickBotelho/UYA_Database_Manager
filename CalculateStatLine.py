@@ -7,6 +7,7 @@ def calculateStatLine(updated, cache, game):
 
     if updated['stats']['overall']['wins'] > cache['overall']['wins']: game_result = 'win'
     if updated['stats']['overall']['losses'] > cache['overall']['losses']: game_result = 'loss'
+    if updated['stats']['overall']['games_played'] == cache['overall']['games_played']: game_result = 'disconnect'
     game_result = 'tie' if not game_result else game_result
     
     kills = updated['stats']['overall']['kills'] - cache['overall']['kills']
