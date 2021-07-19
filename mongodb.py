@@ -12,7 +12,11 @@ except:
     print(MongoPW, MongoUser)
     print('failed to load credentials')
     exit(1)
-
+PLAYER_STATUS={
+    0:"Offline",
+    2:"Lobby",
+    3:"In Game"
+}
 class Database():
     def __init__(self,db,collection):
         self.client = pymongo.MongoClient("mongodb+srv://{}:{}@cluster0.jydx7.mongodb.net/myFirstDatabase?retryWrites=true&w=majority".format(MongoUser, MongoPW))
@@ -203,7 +207,8 @@ class Database():
                 self.collection.insert_one(
                     {
                         "username":players[id].username,
-                        'account_id':players[id].id
+                        'account_id':players[id].id,
+                        'status':PLAYER_STATUS[players[id].status]
                     }
                 )
     def addGames(self, games):
@@ -276,6 +281,7 @@ class Database():
                 player_stats.addGameToPlayerHistory(id, ended_games[id].player_ids)
 
     def calculateGameStats(self, game, player_stats):
+
         '''returns true if the game was legit and finished, false if fake game or didnt finish'''
         teams = {
             'winners':[],
