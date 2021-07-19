@@ -246,7 +246,8 @@ class Database():
                 'minutes': (game.end_time- game.start_time) // 60,
                 'weapons':game.weapons,
                 'player_ids':game.player_ids,
-                'game_results':game_results
+                'game_results':game_results,
+                'date':time.strftime('(%H:%M) %m/%d/%Y', game.start_time),
             }
         )
     def addGameToPlayerHistory(self, game_id, player_ids):
@@ -291,7 +292,10 @@ class Database():
         
         for id in game.player_ids:
             updated_player_entry = player_stats.collection.find_one({'account_id':id})
-            cache = game.cached_stats[id]
+            if len(game.cached_stats) == 0:
+                return None
+            else:
+                cache = game.cached_stats[id]
             stat_line = calculateStatLine(updated_player_entry, cache, game)
             total_kills+=stat_line['kills']
             #check to see if tie ################################

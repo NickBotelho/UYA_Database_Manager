@@ -2,7 +2,7 @@ import struct
 MODE={ #3,4
     '00':"Siege",
     '01':"CTF",
-    '10':"Deamthmatch"
+    '10':"Deathmatch"
 }
 SUBMODES = { 
     # '1':"no_teams", #13

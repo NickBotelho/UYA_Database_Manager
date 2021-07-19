@@ -1,4 +1,16 @@
-SMALL_MAPS={"Marcadia_Palace","Blackwater_Dox",'Aquatos_Sewers',"Command_Center"}        
+SMALL_MAPS={"Marcadia_Palace","Blackwater_Dox",'Aquatos_Sewers',"Command_Center"}
+WEAPONS_CONVERT = {
+    
+    "Lava Gun": "lava_gun",
+    "Morph O' Ray": 'morph',
+    "Mines":'mines',
+    "Gravity Bomb":'gravity_bomb',
+    "Rockets":'rockets',
+    "Blitz":'blitz',
+    "N60":'n60',
+    "Flux":'flux'
+
+}        
 def calculateStatLine(updated, cache, game):
     '''upddated is an entire mongo entry for the player'''
     '''cached is just a dict of the old stats'''
@@ -32,4 +44,14 @@ def calculateStatLine(updated, cache, game):
         res['base_dmg'] = updated['stats']['overall']['overall_base_dmg'] - cache['overall']['overall_base_dmg'] 
         res['nodes'] = updated['stats']['overall']['nodes'] - cache['overall']['nodes']
    
+    weapons = {}
+    gun = 'wrench'
+    weapons['{}_kills'.format(gun)] = updated['stats']['weapons']['{}_kills'.format(gun)] - cache['overall']['{}_kills'.format(gun)]
+    weapons['{}_deaths'.format(gun)] = updated['stats']['weapons']['{}_deaths'.format(gun)] - cache['overall']['{}_deaths'.format(gun)]
+
+    for gun in game.weapons:
+        gun = WEAPONS_CONVERT[gun]
+        weapons['{}_kills'.format(gun)] = updated['stats']['weapons']['{}_kills'.format(gun)] - cache['overall']['{}_kills'.format(gun)]
+        weapons['{}_deaths'.format(gun)] = updated['stats']['weapons']['{}_deaths'.format(gun)] - cache['overall']['{}_deaths'.format(gun)]
+    res['weapons'] = weapons
     return res

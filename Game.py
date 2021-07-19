@@ -20,7 +20,9 @@ class Game():
         self.cached_stats = {}
     def parse(self):
         self.status = self.packet['status']
-        self.id = self.packet['created_date']
+        self.id = str(self.packet['created_date'])
+        self.dme_id = str(self.packet["dme_world_id"])
+        self.id = self.id + self.dme_id
         self.player_ids = [player['account_id'] for player in self.packet['players']]
         ##########Status##########
         self.creation_time = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(self.packet['created_date']))
@@ -42,10 +44,12 @@ class Game():
         self.game_mode,self.game_submode, self.weapons, self.game_length, self.advanced_rules)
     def details(self):
         res = {
+            'host':self.player_ids[0],
             'status':self.status,
             'map':self.map,
             'gamemode':self.game_mode, #array [mode, submode]
-            'weapons':self.weapons #array of weapons
+            'weapons':self.weapons, #array of weapons,
+            'players':self.player_ids,
         }
         return res
     def checkIfStart(self, status, lobby):
