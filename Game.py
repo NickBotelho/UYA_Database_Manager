@@ -5,6 +5,7 @@ from Parsers.TimeParser import timeParser
 from Parsers.GamerulesParser import gamerulesParser
 from Parsers.AdvancedRulesParser import advancedRulesParser
 from Parsers.ToLadderstatswide import HextoLadderstatswide
+from HashId import hash_id
 import time
 
 GAME_STATUS = {
@@ -20,9 +21,7 @@ class Game():
         self.cached_stats = {}
     def parse(self):
         self.status = self.packet['status']
-        self.id = str(self.packet['created_date'])
-        self.dme_id = str(self.packet["dme_world_id"])
-        self.id = self.id + self.dme_id
+        self.id = hash_id(self.packet)
         self.player_ids = [player['account_id'] for player in self.packet['players']]
         ##########Status##########
         self.creation_time = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(self.packet['created_date']))

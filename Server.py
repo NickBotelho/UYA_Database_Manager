@@ -2,6 +2,7 @@ import requests
 from Parsers.ToLadderstatswide import HextoLadderstatswide
 from Player import Player
 from Game import Game
+from HashId import hash_id
 import time
 
 PLAYERS_API = 'https://uya.raconline.gg/tapi/robo/players'
@@ -31,12 +32,13 @@ def getGames(games):
     active_games = set()
     for i, game in enumerate(res):
         if len(game['players']) > 0:
-            active_games.add(game['created_date'])
-            if game['created_date'] not in games: 
-                games[game['created_date']]= Game(game)
+            game_id = hash_id(game)
+            active_games.add(game_id)
+            if game_id not in games: 
+                games[game_id]= Game(game)
             else:
-                if games[game['created_date']].status == 'Staging':
-                    games[game['created_date']].checkIfStart(game['status'], game['players'])
+                if games[game_id].status == 'Staging':
+                    games[game_id].checkIfStart(game['status'], game['players'])
 
     ended_games = {}
     for id in games:
