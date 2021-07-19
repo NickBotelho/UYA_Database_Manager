@@ -24,6 +24,7 @@ class Database():
         return self.collection
     def clear(self):
         '''Wipe a collection'''
+        if self.collection.count() == 0: return None
         if self.collection.name == 'Players_Online' or self.collection.name == 'Games_Active': #Protection to not whipe stats or game history
             self.collection.delete_many({})
     def addToDB(self, name, player_info):      
