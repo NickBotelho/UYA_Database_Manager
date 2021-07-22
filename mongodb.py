@@ -12,6 +12,7 @@ except:
     print(MongoPW, MongoUser)
     print('failed to load credentials')
     exit(1)
+    
 PLAYER_STATUS={
     0:"Offline",
     2:"Lobby",

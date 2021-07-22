@@ -38,6 +38,7 @@ def getGames(games):
                 games[game_id]= Game(game)
             else:
                 if games[game_id].status == 'Staging':
+                    games[game_id].updatePlayers(game['players'])
                     games[game_id].checkIfStart(game['status'], game['players'])
 
     ended_games = {}

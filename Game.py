@@ -59,6 +59,10 @@ class Game():
             self.status = GAME_STATUS[2]
             return True
         return False
+    def updatePlayers(self, lobby):
+        '''updates the players in the staging'''
+        self.player_ids = [player['account_id'] for player in lobby]
+
 def cacheStats(games, player_stats):
     for game_id in games:
         if games[game_id].status == "In_Progress" and len(games[game_id].cached_stats) == 0:
