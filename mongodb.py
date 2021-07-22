@@ -179,6 +179,7 @@ class Database():
                         "$set":{
                             'status':onlinePlayers[id].status,
                             'stats':HextoLadderstatswide(onlinePlayers[id].ladderstatswide)
+                            #advanced stats here
                         }
                     }
                 )

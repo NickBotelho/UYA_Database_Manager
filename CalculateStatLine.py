@@ -46,12 +46,12 @@ def calculateStatLine(updated, cache, game):
    
     weapons = {}
     gun = 'wrench'
-    weapons['{}_kills'.format(gun)] = updated['stats']['weapons']['{}_kills'.format(gun)] - cache['overall']['{}_kills'.format(gun)]
-    weapons['{}_deaths'.format(gun)] = updated['stats']['weapons']['{}_deaths'.format(gun)] - cache['overall']['{}_deaths'.format(gun)]
+    weapons['{}_kills'.format(gun)] = updated['stats']['weapons']['{}_kills'.format(gun)] - cache['weapons']['{}_kills'.format(gun)]
+    weapons['{}_deaths'.format(gun)] = updated['stats']['weapons']['{}_deaths'.format(gun)] - cache['weapons']['{}_deaths'.format(gun)]
 
     for gun in game.weapons:
         gun = WEAPONS_CONVERT[gun]
-        weapons['{}_kills'.format(gun)] = updated['stats']['weapons']['{}_kills'.format(gun)] - cache['overall']['{}_kills'.format(gun)]
-        weapons['{}_deaths'.format(gun)] = updated['stats']['weapons']['{}_deaths'.format(gun)] - cache['overall']['{}_deaths'.format(gun)]
+        weapons['{}_kills'.format(gun)] = updated['stats']['weapons']['{}_kills'.format(gun)] - cache['weapons']['{}_kills'.format(gun)]
+        weapons['{}_deaths'.format(gun)] = updated['stats']['weapons']['{}_deaths'.format(gun)] - cache['weapons']['{}_deaths'.format(gun)]
     res['weapons'] = weapons
     return res
