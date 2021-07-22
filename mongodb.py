@@ -249,8 +249,7 @@ class Database():
                 'weapons':game.weapons,
                 'player_ids':game.player_ids,
                 'game_results':game_results,
-                # 'date':time.strftime('(%H:%M) %m/%d/%Y', game.start_time),
-                'date':game.start_time
+                'date':time.strftime('(%H:%M) %m/%d/%Y', time.localtime(game.start_time)),
             }
         )
     def addGameToPlayerHistory(self, game_id, player_ids):
