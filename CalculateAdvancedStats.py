@@ -18,7 +18,7 @@ def calculateAdvancedStats(player):
 
     res['flux_usage'] = round(flux_kills/kills, 2)
     res['flux/blitz_ratio'] = round(flux_kills/blitz_kills, 2)
-    
+
 
 
     return res
@@ -28,8 +28,20 @@ def calculateAdvancedStats(player):
 
 
 
-
-
 player_stats = Database("UYA","Player_Stats")
 nick = player_stats.collection.find_one({'account_id': 18})
 print(calculateAdvancedStats(nick))
+
+for player in player_stats.collection.find():
+    username = player['username']
+    player_stats.collection.find_one_and_update(
+        {
+            'username':username
+        },
+        {
+            "$set":{
+                'username_lowercase':username.lower().strip()
+            }
+        }
+    )
+    

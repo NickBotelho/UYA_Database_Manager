@@ -43,7 +43,8 @@ class Database():
                     "numLogins":1,
                     "stats":HextoLadderstatswide(player_info.ladderstatswide),
                     "match_history":{},
-                    "last_login":None                     
+                    "last_login":None,
+                    'username_lowercase':name.lower.strip()                     
                 }
             )
         else:         
@@ -249,7 +250,9 @@ class Database():
                 'weapons':game.weapons,
                 'player_ids':game.player_ids,
                 'game_results':game_results,
-                'date':time.strftime('(%H:%M) %m/%d/%Y', time.localtime(game.start_time)),
+                # 'date':time.strftime('(%H:%M) %m/%d/%Y', time.localtime(game.start_time)),
+                'date':game.creation_time,
+
             }
         )
     def addGameToPlayerHistory(self, game_id, player_ids):

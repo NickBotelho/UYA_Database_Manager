@@ -5,7 +5,7 @@ WEAPONS_CONVERT = {
     "Morph O' Ray": 'morph',
     "Mines":'mines',
     "Gravity Bomb":'gravity_bomb',
-    "Rockets":'rockets',
+    "Rockets":'rocket',
     "Blitz":'blitz',
     "N60":'n60',
     "Flux":'flux'
