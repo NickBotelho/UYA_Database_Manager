@@ -44,7 +44,7 @@ class Database():
                     "stats":HextoLadderstatswide(player_info.ladderstatswide),
                     "match_history":{},
                     "last_login":None,
-                    'username_lowercase':name.lower.strip()                     
+                    'username_lowercase':name.lower().strip()                     
                 }
             )
         else:         
