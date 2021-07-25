@@ -239,6 +239,7 @@ class Database():
                 )
     def addGameToGameHistory(self, game, game_results):
         '''Adds a finished game to the history collection wite game as game object and results and res from calculate stat line function'''
+        date = time.strftime("%a, %d %b %Y", time.localtime())
         self.collection.insert_one(
             {
                 'game_id':game.id,
@@ -250,8 +251,7 @@ class Database():
                 'weapons':game.weapons,
                 'player_ids':game.player_ids,
                 'game_results':game_results,
-                # 'date':time.strftime('(%H:%M) %m/%d/%Y', time.localtime(game.start_time)),
-                'date':game.creation_time,
+                'date':date,
 
             }
         )
@@ -289,13 +289,17 @@ class Database():
     def calculateGameStats(self, game, player_stats):
 
         '''returns true if the game was legit and finished, false if fake game or didnt finish'''
+        'goes through each player in the game andd finds the difference between the cached stats and their updated stats'
         teams = {
             'winners':[],
-            'losers':[]
+            'losers':[],
+            'winner_score':0,
+            'loser_score':0,
         }
         total_kills = 0
         
         for id in game.player_ids:
+            cache= None
             updated_player_entry = player_stats.collection.find_one({'account_id':id})
             if len(game.cached_stats) == 0:
                 return None
@@ -306,6 +310,7 @@ class Database():
             #check to see if tie ################################
             if stat_line['game_result'] == 'tie' and 'tie' not in teams:
                 teams['tie'] = []
+                teams['total_score'] = 0
             #####################################################
              #check to see if disconnected ################################
             if stat_line['game_result'] == 'disconnect' and 'disconnect' not in teams:
@@ -315,12 +320,39 @@ class Database():
 
             if stat_line['game_result'] == 'win':
                 teams['winners'].append(stat_line)
+                #####Calculate the score of the game
+                if game.game_mode == 'CTF':
+                    teams['winner_score'] += stat_line['caps']
+                elif game.game_mode == 'Siege':
+                    teams['winner_score'] += stat_line['base_dmg']
+                else:
+                    teams['winner_score'] += stat_line['kills']
             elif stat_line['game_result'] == 'loss':
                 teams['losers'].append(stat_line)
+                #####Calculate the score of the game
+                if game.game_mode == 'CTF':
+                    teams['loser_score'] += stat_line['caps']
+                elif game.game_mode == 'Siege':
+                    teams['loser_score'] += stat_line['base_dmg']
+                else:
+                    teams['loser_score'] += stat_line['kills']
             elif stat_line['game_result'] == 'disconnect':
                 teams['disconnect'].append(stat_line)
             else:
                 teams['tie'].append(stat_line)
+                if game.game_mode == 'CTF':
+                    teams['total_score'] += stat_line['caps']
+                elif game.game_mode == 'Siege':
+                    teams['total_score'] += stat_line['base_dmg']
+                else:
+                    teams['total_score'] += stat_line['kills']
+
+
+        if 'total_score' in teams:
+            teams['winner_score'], teams['loser_score'] = teams['total_score']//2, teams['total_score']//2
+
+
+
         return teams if total_kills > 0 else None
 
 
