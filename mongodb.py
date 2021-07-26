@@ -240,6 +240,7 @@ class Database():
     def addGameToGameHistory(self, game, game_results):
         '''Adds a finished game to the history collection wite game as game object and results and res from calculate stat line function'''
         date = time.strftime("%a, %d %b %Y", time.localtime())
+        entries = self.collection.count()
         self.collection.insert_one(
             {
                 'game_id':game.id,
@@ -251,8 +252,8 @@ class Database():
                 'weapons':game.weapons,
                 'player_ids':game.player_ids,
                 'game_results':game_results,
-                'date':date,
-
+                'date':date, # Thu, 28 Jun 2001
+                'entryNumber' : entries+1
             }
         )
     def addGameToPlayerHistory(self, game_id, player_ids):

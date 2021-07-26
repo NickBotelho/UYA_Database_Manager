@@ -31,17 +31,39 @@ def calculateAdvancedStats(player):
 player_stats = Database("UYA","Player_Stats")
 nick = player_stats.collection.find_one({'account_id': 18})
 print(calculateAdvancedStats(nick))
+game_history = Database("UYA", "Game_History")
 
-for player in player_stats.collection.find():
-    username = player['username']
-    player_stats.collection.find_one_and_update(
+print(game_history.collection.count())
+# for player in player_stats.collection.find().sort():
+#     username = player['username']
+#     player_stats.collection.find_one_and_update(
+#         {
+#             'username':username
+#         },
+#         {
+#             "$set":{
+#                 'username_lowercase':username.lower().strip()
+#             }
+#         }
+#     )
+    
+for game in game_history.collection.find({'gamemode':"Deathmatch"}):
+    winners = game['game_results']['winners']
+    wcaps = 0
+    for player in winners:
+        wcaps+=player['kills']
+    losers = game['game_results']['losers']
+    lcaps = 0
+    for player in losers:
+        lcaps+=player['kills']
+    game_history.collection.find_one_and_update(
         {
-            'username':username
+            "game_id":game['game_id']
         },
         {
             "$set":{
-                'username_lowercase':username.lower().strip()
+                'game_results.winner_score':wcaps,
+                'game_results.loser_score':lcaps
             }
         }
     )
-    
