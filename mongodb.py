@@ -327,7 +327,7 @@ class Database():
                 elif game.game_mode == 'Siege':
                     teams['winner_score'] += stat_line['base_dmg']
                 else:
-                    teams['winner_score'] += stat_line['kills']
+                    teams['winner_score'] += stat_line['kills'] - stat_line['suicides']
             elif stat_line['game_result'] == 'loss':
                 teams['losers'].append(stat_line)
                 #####Calculate the score of the game
@@ -336,7 +336,7 @@ class Database():
                 elif game.game_mode == 'Siege':
                     teams['loser_score'] += stat_line['base_dmg']
                 else:
-                    teams['loser_score'] += stat_line['kills']
+                    teams['loser_score'] += stat_line['kills'] - stat_line['suicides']
             elif stat_line['game_result'] == 'disconnect':
                 teams['disconnect'].append(stat_line)
             else:
@@ -346,7 +346,7 @@ class Database():
                 elif game.game_mode == 'Siege':
                     teams['total_score'] += stat_line['base_dmg']
                 else:
-                    teams['total_score'] += stat_line['kills']
+                    teams['total_score'] += stat_line['kills'] - stat_line['suicides']
 
 
         if 'total_score' in teams:
