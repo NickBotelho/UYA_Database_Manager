@@ -253,7 +253,7 @@ class Database():
                 'player_ids':game.player_ids,
                 'game_results':game_results,
                 'date':date, # Thu, 28 Jun 2001
-                'entryNumber' : entries+1
+                'entry_number' : entries+1
             }
         )
     def addGameToPlayerHistory(self, game_id, player_ids):
