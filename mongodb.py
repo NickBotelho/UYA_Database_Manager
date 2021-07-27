@@ -232,7 +232,7 @@ class Database():
                     },
                     {
                         "$set":{
-                            'details.status':games[id].status,
+                            'details':games[id].details()
                             
                         }
                     }
