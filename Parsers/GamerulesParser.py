@@ -21,7 +21,7 @@ def gamerulesParser(num):
     num=num[2:] #cut off the front 2 bytes
     num = int(num,16)
     num = format(num, "#026b")[2:]
-    game_mode = MODE[num[3:5]]
+    game_mode = MODE[num[3:5]] if num[3:5] in MODE else "Unknown Game Mode"
     isTeams = True if num[SUBMODES['isTeams']] == '1' else False
     isAttrition = True if num[SUBMODES['isAttrition']]== '1' else False
     
