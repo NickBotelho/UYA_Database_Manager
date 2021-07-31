@@ -155,7 +155,11 @@ class Database():
         for id in onlinePlayers:
             player = self.collection.find_one({"account_id":id})
             if player == None:
-                self.addToDB(onlinePlayers[id].username, onlinePlayers[id])
+                stats = HextoLadderstatswide(onlinePlayers[id].ladderstatswide)
+                if stats_cheated(stats):
+                    return
+                else:
+                    self.addToDB(onlinePlayers[id].username, onlinePlayers[id])
             
             elif player['status'] == 0:
                 self.collection.find_one_and_update( #player logging in
@@ -298,7 +302,7 @@ class Database():
             'loser_score':0,
         }
         total_kills = 0
-        
+        isCheating = False
         for id in game.player_ids:
             cache= None
             updated_player_entry = player_stats.collection.find_one({'account_id':id})
@@ -307,6 +311,7 @@ class Database():
             else:
                 cache = game.cached_stats[id]
             stat_line = calculateStatLine(updated_player_entry, cache, game)
+            isCheating = True if stat_line['kills'] > 300 else False 
             total_kills+=stat_line['kills']
             #check to see if tie ################################
             if stat_line['game_result'] == 'tie' and 'tie' not in teams:
@@ -318,6 +323,9 @@ class Database():
                 teams['disconnect'] = []
             #####################################################
 
+            if game.game_mode == "CTF":
+                isCheating = True if stat_line['caps'] > 50 else False
+                isCheating = True if stat_line['saves'] > 50 else False
 
             if stat_line['game_result'] == 'win':
                 teams['winners'].append(stat_line)
@@ -354,10 +362,14 @@ class Database():
 
 
 
-        return teams if total_kills > 0 else None
+        return teams if total_kills > 0 and not isCheating else None
 
 
-    
+def stats_cheated(stats):
+    '''checks if a players total stats are cheated
+    check1 : KD is not more than 10
+    check2: the amount of suicides is not 10x more than kills which is ridiculous'''
+    return True if (stats['overall']['kills'] // (stats['overall']['deaths']+1) > 10) or (stats['overall']['suicides'] // (stats['overall']['kills']+1) > 10) else False   
 
 # client = pymongo.MongoClient("mongodb+srv://nick:{}@cluster0.yhf0e.mongodb.net/UYA-Bot?retryWrites=true&w=majority".format(mongoPW))
 # print(client.list_database_names())
