@@ -6,14 +6,15 @@ from CalculateStatLine import calculateStatLine
 import os
 print(MongoPW, MongoUser)
 try:
-    if not MongoPW or not MongoUser:
+    if MongoPW == '' or not MongoUser == '':
+        print("Loading Credentials")
         MongoPW = os.environ["MongoPW"]
         MongoUser = os.environ["MongoUser"]
 except:
     print(MongoPW, MongoUser)
     print('failed to load credentials')
     exit(1)
-print(MongoPW, MongoUser)
+print('user = {} pw = {}'.format(MongoUser, MongoPW))
 
 PLAYER_STATUS={
     0:"Offline",
