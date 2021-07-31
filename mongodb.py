@@ -4,6 +4,7 @@ from config import MongoPW, MongoUser
 from Parsers.ToLadderstatswide import HextoLadderstatswide
 from CalculateStatLine import calculateStatLine
 import os
+print(MongoPW, MongoUser)
 try:
     if not MongoPW or not MongoUser:
         MongoPW = os.environ["MongoPW"]
@@ -12,7 +13,8 @@ except:
     print(MongoPW, MongoUser)
     print('failed to load credentials')
     exit(1)
-    
+print(MongoPW, MongoUser)
+
 PLAYER_STATUS={
     0:"Offline",
     2:"Lobby",
