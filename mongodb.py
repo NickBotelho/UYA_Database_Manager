@@ -157,7 +157,7 @@ class Database():
             if player == None:
                 stats = HextoLadderstatswide(onlinePlayers[id].ladderstatswide)
                 if stats_cheated(stats):
-                    return
+                    continue
                 else:
                     self.addToDB(onlinePlayers[id].username, onlinePlayers[id])
             
