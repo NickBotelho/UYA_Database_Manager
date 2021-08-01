@@ -283,13 +283,17 @@ class Database():
         for id in ended_games:
             #add to history###
             ended_games[id].end_time = time.time()
-            game_results = self.calculateGameStats(ended_games[id], player_stats)
-            ##################
-            self.collection.find_one_and_delete({'game_id':id})
+            game_results = None
+            try:
+                game_results = self.calculateGameStats(ended_games[id], player_stats)
+            except:
+                print("Game could not be logged. Possible reason: stat cheater present")
+            finally:
+                self.collection.find_one_and_delete({'game_id':id})
 
-            if game_results: #will be none if games flagged as fake 
-                game_history.addGameToGameHistory(ended_games[id], game_results)
-                player_stats.addGameToPlayerHistory(id, ended_games[id].player_ids)
+                if game_results: #will be none if games flagged as fake 
+                    game_history.addGameToGameHistory(ended_games[id], game_results)
+                    player_stats.addGameToPlayerHistory(id, ended_games[id].player_ids)
 
     def calculateGameStats(self, game, player_stats):
 
