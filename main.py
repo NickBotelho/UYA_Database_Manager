@@ -1,11 +1,15 @@
 import Server
 import time
+import os
 from mongodb import Database
 import Game
 player_stats = Database("UYA","Player_Stats")
 players_online = Database("UYA","Players_Online")
 game_history = Database("UYA", "Game_History")
 games_active = Database("UYA","Games_Active")
+os.environ['TZ'] = 'EST+05EDT,M4.1.0,M10.5.0'
+time.tzset()
+
 
 DEBUG = False
 if __name__ == "__main__":
@@ -39,6 +43,7 @@ if __name__ == "__main__":
 
             print("Getting Games....")
             games, ended_games = Server.getGames(games)
+            print(games)
             print("Updating game DBs")
             Game.cacheStats(games, player_stats)
             games_active.addGames(games)

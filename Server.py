@@ -3,7 +3,6 @@ from Parsers.ToLadderstatswide import HextoLadderstatswide
 from Player import Player
 from Game import Game
 from HashId import hash_id
-import time
 
 PLAYERS_API = 'https://uya.raconline.gg/tapi/robo/players'
 GAMES_API = 'https://uya.raconline.gg/tapi/robo/games'

@@ -7,6 +7,9 @@ from Parsers.AdvancedRulesParser import advancedRulesParser
 from Parsers.ToLadderstatswide import HextoLadderstatswide
 from HashId import hash_id
 import time
+import os
+os.environ['TZ'] = 'EST+05EDT,M4.1.0,M10.5.0'
+time.tzset()
 
 GAME_STATUS = {
     1:"Staging",

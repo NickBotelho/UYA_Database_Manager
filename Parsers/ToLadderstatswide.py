@@ -1,5 +1,6 @@
 import base64
 from Parsers.Ladderstatswide_Byte_Field import ladderstatswide_bytes_field
+
 def Base64toLadderstatswide(base, bytes_field):
     hx = base64.b64decode(base).hex() #base64 converted to hex
     output = {}

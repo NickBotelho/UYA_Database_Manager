@@ -4,6 +4,8 @@ from config import MongoPW, MongoUser
 from Parsers.ToLadderstatswide import HextoLadderstatswide
 from CalculateStatLine import calculateStatLine
 import os
+os.environ['TZ'] = 'EST+05EDT,M4.1.0,M10.5.0'
+time.tzset()
 try:
     if not MongoPW or not MongoUser:
         print("Loading Credentials")
@@ -373,7 +375,8 @@ def stats_cheated(stats):
     '''checks if a players total stats are cheated
     check1 : KD is not more than 10
     check2: the amount of suicides is not 10x more than kills which is ridiculous'''
-    return True if (stats['overall']['kills'] // (stats['overall']['deaths']+1) > 10) or (stats['overall']['suicides'] // (stats['overall']['kills']+1) > 10) else False   
+    return True if (stats['overall']['kills'] // (stats['overall']['deaths']+1) > 10) \
+        or (stats['overall']['suicides'] // (stats['overall']['kills']+1) > 10) else False   
 
 # client = pymongo.MongoClient("mongodb+srv://nick:{}@cluster0.yhf0e.mongodb.net/UYA-Bot?retryWrites=true&w=majority".format(mongoPW))
 # print(client.list_database_names())
