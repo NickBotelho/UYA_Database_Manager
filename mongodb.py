@@ -220,6 +220,17 @@ class Database():
                         'status':PLAYER_STATUS[players[id].status]
                     }
                 )
+            else:
+                self.collection.find_one_and_update(
+                    {
+                        "account_id":id
+                    },
+                    {
+                        "$set":{
+                            'status':PLAYER_STATUS[players[id].status]                  
+                        }
+                    }
+                )
     def addGames(self, games):
         '''add new games to the activate games collection'''
         for id in games:
