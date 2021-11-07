@@ -9,7 +9,11 @@ GAMES_API = 'https://uya.raconline.gg/tapi/robo/games'
 def getOnlinePlayers(players):
     '''Returns a dict of playername --> Player class object that hold various things (see player.py)
     Will also log off players who got off '''
-    res = requests.get(PLAYERS_API).json()
+    try:
+        res = requests.get(PLAYERS_API).json()
+    except:
+        res = {}
+
     online_players = set()
     for player in res:
         online_players.add(player['account_id'])       
@@ -27,7 +31,10 @@ def getOnlinePlayers(players):
 
 def getGames(games):
     '''Returns a list of '''
-    res = requests.get(GAMES_API).json()
+    try:
+        res = requests.get(GAMES_API).json()
+    except:
+        res = {}
     active_games = set()
     for i, game in enumerate(res):
         if len(game['players']) > 0:
