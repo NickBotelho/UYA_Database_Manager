@@ -24,7 +24,7 @@ def mapParser(num):
     game_map = MAPS[game_map]
     return game_map
     
-# MapParser(3898886210)
+# mapParser(300154888)
 
 
 class MapBytes:
