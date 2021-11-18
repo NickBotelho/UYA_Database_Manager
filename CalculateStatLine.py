@@ -14,6 +14,7 @@ WEAPONS_CONVERT = {
 def calculateStatLine(updated, cache, game):
     '''upddated is an entire mongo entry for the player'''
     '''cached is just a dict of the old stats'''
+    '''Game is a mongo document of the game'''
 
     game_result = None
 

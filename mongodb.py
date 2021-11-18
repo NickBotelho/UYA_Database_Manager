@@ -4,6 +4,8 @@ from config import MongoPW, MongoUser
 from Parsers.ToLadderstatswide import HextoLadderstatswide
 from CalculateStatLine import calculateStatLine
 import os
+import blankRatios
+
 os.environ['TZ'] = 'EST+05EDT,M4.1.0,M10.5.0'
 time.tzset()
 try:
@@ -43,10 +45,14 @@ class Database():
                     'account_id':player_info.id,
                     'status':player_info.status,
                     "numLogins":1,
-                    "stats":HextoLadderstatswide(player_info.ladderstatswide),
+                    "stats": HextoLadderstatswide(player_info.ladderstatswide),
                     "match_history":{},
                     "last_login":None,
-                    'username_lowercase':name.lower().strip()                     
+                    'username_lowercase':name.lower().strip(),
+                    "advanced_stats":{
+                        'per_gm':blankRatios.blank_per_game,
+                        'per_min':blankRatios.blank_per_minute
+                    }                 
                 }
             )
         else:         
@@ -164,6 +170,7 @@ class Database():
                     self.addToDB(onlinePlayers[id].username, onlinePlayers[id])
             
             elif player['status'] == 0:
+                #############add advanced
                 self.collection.find_one_and_update( #player logging in
                     {
                         "account_id":id
@@ -186,7 +193,6 @@ class Database():
                         "$set":{
                             'status':onlinePlayers[id].status,
                             'stats':HextoLadderstatswide(onlinePlayers[id].ladderstatswide)
-                            #advanced stats here
                         }
                     }
                 )
@@ -273,11 +279,23 @@ class Database():
                 'entry_number' : entries+1
             }
         )
-    def addGameToPlayerHistory(self, game_id, player_ids):
-        for id in player_ids:
+    def addGameToPlayerHistory(self, game_id, player_ids, game_history):
+        '''add a recent game to players stats'''
+        game = game_history.collection.find_one( #grab the game
+                {
+                    'game_id':game_id
+                }
+            )
+        for id in player_ids: #go through each player
             player = self.collection.find_one({'account_id': id})
             match_history = player['match_history']
             match_history[str(game_id)] = player['stats']['overall']['games_played']
+
+
+            per_game = per_gm(player, game)
+            per_minute = per_min(player, game)
+
+            
             self.collection.find_one_and_update(
                     {
                         "account_id":id
@@ -285,6 +303,9 @@ class Database():
                     {
                         "$set":{
                             'match_history':match_history,
+                            'advanced_stats.per_gm':per_game,
+                            'advanced_stats.per_min':per_minute
+
                             
                         }
                     }
@@ -306,7 +327,7 @@ class Database():
 
                 if game_results: #will be none if games flagged as fake 
                     game_history.addGameToGameHistory(ended_games[id], game_results)
-                    player_stats.addGameToPlayerHistory(id, ended_games[id].player_ids)
+                    player_stats.addGameToPlayerHistory(id, ended_games[id].player_ids, game_history)
 
     def calculateGameStats(self, game, player_stats):
 
@@ -388,6 +409,140 @@ def stats_cheated(stats):
     check2: the amount of suicides is not 10x more than kills which is ridiculous'''
     return True if (stats['overall']['kills'] // (stats['overall']['deaths']+1) > 10) \
         or (stats['overall']['suicides'] // (stats['overall']['kills']+1) > 10) else False   
+
+def per_gm(player, game):
+    stats = player['stats']['overall']
+    ctf = player['stats']['ctf']
+    weapons = player['stats']['weapons']
+
+    game_map = game['map']
+    maps = player['advanced_stats']['per_gm']['maps']
+    maps[game_map] +=1
+
+    flux_gms= player['advanced_stats']['per_gm']['flux_gms']
+    blitz_gms= player['advanced_stats']['per_gm']['grav_gms']
+    grav_gms= player['advanced_stats']['per_gm']['grav_gms']
+
+    flux_gms = flux_gms + 1 if 'Flux' in game['weapons'] else flux_gms
+    blitz_gms = blitz_gms + 1 if 'Blitz' in game['weapons'] else blitz_gms
+    grav_gms = grav_gms + 1 if 'Gravity Bomb' in game['weapons'] else grav_gms
+
+    try:
+        per_game = {
+            'kills/gm' : round(stats['kills'] / stats['games_played'], 2),
+            'deaths/gm' : round(stats['deaths'] / stats['games_played'], 2),
+            'suicides/gm' : round(stats['suicides'] / stats['games_played'], 2),
+            'caps/gm' : round(ctf['ctf_caps']/ (ctf['ctf_wins'] + ctf['ctf_losses']), 2),
+            'saves/gm' : round(ctf['ctf_saves']/ (ctf['ctf_wins'] + ctf['ctf_losses']), 2),
+            'flux_kills/gm' : round(weapons['flux_kills'] / flux_gms, 2),
+            'blitz_kills/gm' : round(weapons['blitz_kills'] / blitz_gms, 2),
+            'gravity_bomb_kills/gm' : round(weapons['gravity_bomb_kills'] / grav_gms, 2),
+            'flux_deaths/gm' : round(weapons['flux_deaths'] / flux_gms, 2),
+            'blitz_deaths/gm' : round(weapons['blitz_deaths'] / blitz_gms, 2),
+            'gravity_bomb_deaths/gm' : round(weapons['gravity_bomb_deaths'] / grav_gms, 2),
+            'flux_gms':flux_gms,
+            'grav_gms': grav_gms,
+            'blitz_gms' :blitz_gms,
+            'maps':maps
+        }
+    except:
+        per_game = {
+            'kills/gm' : 0,
+            'deaths/gm' : 0,
+            'suicides/gm' : 0,
+            'caps/gm' : 0,
+            'saves/gm' : 0,
+            'flux_kills/gm' :0,
+            'blitz_kills/gm' : 0,
+            'gravity_bomb_kills/gm' : 0,
+            'flux_deaths/gm' : 0,
+            'blitz_deaths/gm' : 0,
+            'gravity_bomb_deaths/gm' :0,
+            'flux_gms':flux_gms,
+            'grav_gms': grav_gms,
+            'blitz_gms' :blitz_gms,
+            'maps' : maps,
+        }
+
+    return per_game
+
+def per_min(player, game):
+    stats = player['stats']['overall']
+    ctf = player['stats']['ctf']
+    weapons = player['stats']['weapons']
+
+    ctf_mins = player['advanced_stats']['per_min']['ctf_mins']
+    siege_mins = player['advanced_stats']['per_min']['siege_mins']
+    tdm_mins = player['advanced_stats']['per_min']['deathmatch_mins']
+    flux_mins= player['advanced_stats']['per_min']['flux_mins']
+    blitz_mins= player['advanced_stats']['per_min']['grav_mins']
+    grav_mins= player['advanced_stats']['per_min']['grav_mins']
+
+    ctf_mins = ctf_mins + game['minutes'] if game['gamemode'] == 'CTF' else ctf_mins
+    siege_mins = siege_mins + game['minutes'] if game['gamemode'] == 'Siege' else siege_mins
+    tdm_mins = tdm_mins + game['minutes'] if game['gamemode'] == 'Deathmatch' else tdm_mins
+
+    game_map = game['map']
+    game_minutes = game['minutes']
+    minutes = player['advanced_stats']['per_min']['total_mins'] + game_minutes
+
+    maps = player['advanced_stats']['per_min']['maps']
+    maps[game_map] += game_minutes
+
+
+    flux_mins = flux_mins + game_minutes if 'Flux' in game['weapons'] else flux_mins
+    blitz_mins = blitz_mins + game_minutes if 'Blitz' in game['weapons'] else blitz_mins
+    grav_mins = grav_mins + game_minutes if 'Gravity Bomb' in game['weapons'] else grav_mins
+
+    try:
+        per_minute = {
+            'kills/min' : round(stats['kills'] / minutes, 2),
+            'deaths/min' : round(stats['deaths'] / minutes, 2),
+            'suicides/min' : round(stats['suicides'] / minutes, 2),
+            'avg_game_length' : round(minutes/ stats['games_played'], 2),
+            'caps/min' : round(ctf['ctf_caps']/ ctf_mins, 2),
+            'saves/min' : round(ctf['ctf_saves']/ ctf_mins, 2),
+            'flux_kills/min' : round(weapons['flux_kills'] / flux_mins, 2),
+            'blitz_kills/min' : round(weapons['blitz_kills'] / blitz_mins, 2),
+            'gravity_bomb_kills/min' : round(weapons['gravity_bomb_kills'] / grav_mins, 2),
+            'flux_deaths/min' : round(weapons['flux_deaths'] / flux_mins, 2),
+            'blitz_deaths/min' : round(weapons['blitz_deaths'] / blitz_mins, 2),
+            'gravity_bomb_deaths/min' : round(weapons['gravity_bomb_deaths'] / grav_mins, 2),
+            'total_mins':minutes,
+            'flux_mins':flux_mins,
+            'blitz_mins':blitz_mins,
+            'grav_mins':grav_mins,
+            'ctf_mins': ctf_mins,
+            'siege_mins': siege_mins,
+            'deathmatch_mins': tdm_mins,
+            'maps':maps
+        }
+    except:
+        per_minute = {
+            'kills/min' : 0,
+            'deaths/min' : 0,
+            'suicides/min' : 0,
+            'avg_game_length' : 0,
+            'caps/min' : 0,
+            'saves/min' : 0,
+            'flux_kills/min' : 0,
+            'blitz_kills/min' : 0,
+            'gravity_bomb_kills/min' : 0,
+            'flux_deaths/min' : 0,
+            'blitz_deaths/min' : 0,
+            'gravity_bomb_deaths/min' : 0,
+            'total_mins':minutes,
+            'flux_mins':flux_mins,
+            'blitz_mins':blitz_mins,
+            'grav_mins':grav_mins,
+            'ctf_mins': ctf_mins,
+            'siege_mins': siege_mins,
+            'deathmatch_mins': tdm_mins,
+            'maps':maps
+        }
+
+    return per_minute
+
 
 # client = pymongo.MongoClient("mongodb+srv://nick:{}@cluster0.yhf0e.mongodb.net/UYA-Bot?retryWrites=true&w=majority".format(mongoPW))
 # print(client.list_database_names())

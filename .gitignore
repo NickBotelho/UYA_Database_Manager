@@ -3,3 +3,6 @@ __pycache__
 config.py
 CalculateAdvancedStats.py
 general.py
+backups
+freeBlitz.py
+updateDB.py
