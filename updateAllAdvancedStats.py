@@ -3,12 +3,17 @@ from mongodb import Database
 import json
 import os
 from time import gmtime, strftime
+from loadElos import loadElos
+
 player_stats = Database("UYA","Player_Stats")
 players_online = Database("UYA","Players_Online")
 game_history = Database("UYA", "Game_History")
 games_active = Database("UYA","Games_Active")
 player_stats_backup = Database("UYA","Player_Stats_Backup")
-
+overall_elos = loadElos("elosv2(OVERALL).txt")
+ctf_elos = loadElos("elosv2(CTF).txt")
+siege_elos = loadElos("elosv2(Siege).txt")
+dm_elos = loadElos("elosv2(Deathmatch).txt")
 def updateAllAdvancedStats():
     for player in player_stats.collection.find():
         print("updating {}...".format(player['username']))
@@ -90,6 +95,8 @@ def updateAllAdvancedStats():
                 'maps':map_min_count
             }
             per_game = {
+                'kills/death': round(stats['kills'] / stats['deaths'], 2),
+                'wins/loss': round(stats['wins'] / stats['losses'], 2),
                 'kills/gm' : round(stats['kills'] / stats['games_played'], 2),
                 'deaths/gm' : round(stats['deaths'] / stats['games_played'], 2),
                 'suicides/gm' : round(stats['suicides'] / stats['games_played'], 2),
@@ -107,9 +114,17 @@ def updateAllAdvancedStats():
                 'maps' : map_game_count,
 
             }
+            elo = {
+                'overall':1200 if player['username'] not in overall_elos else overall_elos[player['username']],
+                'CTF':1200 if player['username'] not in ctf_elos else ctf_elos[player['username']],
+                'Siege':1200 if player['username'] not in siege_elos else siege_elos[player['username']],
+                'Deathmatch':1200 if player['username'] not in dm_elos else dm_elos[player['username']],
+            }
         except:
             print("Error on {}".format(player['username']))
             per_game = {
+                'kills/death':0,
+                'wins/loss':0,
                 'kills/gm' : 0,
                 'deaths/gm' : 0,
                 'suicides/gm' : 0,
@@ -148,6 +163,12 @@ def updateAllAdvancedStats():
                 'deathmatch_mins': tdm_mins,
                 'maps':map_min_count
             }
+            elo = {
+                'overall':1200,
+                'CTF':1200,
+                'Siege':1200,
+                'Deathmatch':1200,
+            }
 
         player_stats.collection.find_one_and_update(
             {
@@ -157,6 +178,8 @@ def updateAllAdvancedStats():
                 "$set":{
                     'advanced_stats.per_min': per_minute,
                     'advanced_stats.per_gm' : per_game,
+                    'advanced_stats.elo' : elo,
+
 
                     
                 }

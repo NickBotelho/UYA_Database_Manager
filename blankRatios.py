@@ -33,6 +33,8 @@ blank_per_minute = {
 }
 
 blank_per_game = {
+    'kills/death':0,
+    'wins/loss':0,
     'kills/gm' : 0,
     'deaths/gm' : 0,
     'suicides/gm' : 0,
@@ -59,4 +61,11 @@ blank_per_game = {
         "Blackwater_Dox":0,
         "Marcadia_Palace":0
     }
+}
+
+blank_elo = {
+    'overall':1200,
+    'CTF':1200,
+    'Siege':1200,
+    'Deathmatch':1200,
 }

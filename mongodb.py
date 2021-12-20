@@ -51,7 +51,8 @@ class Database():
                     'username_lowercase':name.lower().strip(),
                     "advanced_stats":{
                         'per_gm':blankRatios.blank_per_game,
-                        'per_min':blankRatios.blank_per_minute
+                        'per_min':blankRatios.blank_per_minute,
+                        'elo':blankRatios.blank_elo
                     }                 
                 }
             )
@@ -286,14 +287,29 @@ class Database():
                     'game_id':game_id
                 }
             )
+        ######Calculate elo stats for the teams#####
+        isTie = True if 'tie' in game['game_results'] else False
+            
+        if not isTie:
+            teams, overall_e = self.calculateGameElo(game)
+            teams, gamemode_e = self.calculateGameElo(game, type = game['gamemode'])
+
+
+        ############################################
         for id in player_ids: #go through each player
             player = self.collection.find_one({'account_id': id})
             match_history = player['match_history']
+            player_elo = player['advanced_stats']['elo']
+            username = player['username']
+
             match_history[str(game_id)] = player['stats']['overall']['games_played']
 
 
             per_game = per_gm(player, game)
             per_minute = per_min(player, game)
+            player_elo = updateElo(username, player_elo,teams, overall_e, K=64, type = 'overall')
+            player_elo = updateElo(username, player_elo,teams, gamemode_e, K=64, type = game['gamemode'])
+
 
             
             self.collection.find_one_and_update(
@@ -304,7 +320,8 @@ class Database():
                         "$set":{
                             'match_history':match_history,
                             'advanced_stats.per_gm':per_game,
-                            'advanced_stats.per_min':per_minute
+                            'advanced_stats.per_min':per_minute,
+                            'advanced_stats.elo':player_elo
 
                             
                         }
@@ -341,6 +358,7 @@ class Database():
         }
         total_kills = 0
         isCheating = False
+
         for id in game.player_ids:
             cache= None
             updated_player_entry = player_stats.collection.find_one({'account_id':id})
@@ -401,8 +419,34 @@ class Database():
 
 
         return teams if total_kills > 0 and not isCheating else None
+    def calculateGameElo(self, game, type = 'overall'):
+        results = game['game_results']
+        winner_names = [player['username'] for player in results['winners']]
+        loser_names = [player['username'] for player in results['losers']]
+        winner_elo, loser_elo = 0, 0
+        for name in winner_names:
+            player = self.collection.find_one({'username': name})
+            winner_elo+=player['advanced_stats']['elo'][type]
 
+        for name in loser_names:
+            player = self.collection.find_one({'username': name})
+            loser_elo+=player['advanced_stats']['elo'][type]   
+        loser_elo/=len(loser_names) if len(loser_names) > 0 else 1
+        winner_elo/=len(winner_names) if len(winner_names) > 0 else 1
+        winner_e, loser_e = getExpected(winner_elo,loser_elo)
+        return (winner_names, loser_names), (winner_e, loser_e)      
 
+def getExpected(r1, r2):
+    r1 = 10**(r1/400)
+    r2 = 10**(r2/400)
+
+    e1 = r1/(r1+r2)
+    e2 = r2/(r1+r2)
+
+    return e1, e2
+def getAdjusted(old, expected, K, win=1):
+    '''win = 1 if won'''
+    return int(old + (K * (win - expected)))    
 def stats_cheated(stats):
     '''checks if a players total stats are cheated
     check1 : KD is not more than 10
@@ -429,6 +473,8 @@ def per_gm(player, game):
 
     try:
         per_game = {
+            'kills/death': round(stats['kills'] / stats['deaths'], 2),
+            'wins/loss': round(stats['wins'] / stats['losses'], 2),
             'kills/gm' : round(stats['kills'] / stats['games_played'], 2),
             'deaths/gm' : round(stats['deaths'] / stats['games_played'], 2),
             'suicides/gm' : round(stats['suicides'] / stats['games_played'], 2),
@@ -447,6 +493,8 @@ def per_gm(player, game):
         }
     except:
         per_game = {
+            'kills/death':0,
+            'wins/loss':0,
             'kills/gm' : 0,
             'deaths/gm' : 0,
             'suicides/gm' : 0,
@@ -542,6 +590,26 @@ def per_min(player, game):
         }
 
     return per_minute
+
+def updateElo(username, player_elo, teams, e, K=64, type = 'overall'):
+    '''
+    player_elo = dict of elos for the player
+    teams[0] = winning team
+    teams[1] = losing teams
+    e[0] = winner_expected value
+    e[1] = loser_expected_value
+    '''
+
+    if username in teams[0]:
+        player_elo[type] = getAdjusted(player_elo[type], e[0], K, 1)
+    else:
+        player_elo[type] = getAdjusted(player_elo[type], e[1], K, 0)
+
+    return player_elo
+
+
+    
+
 
 
 # client = pymongo.MongoClient("mongodb+srv://nick:{}@cluster0.yhf0e.mongodb.net/UYA-Bot?retryWrites=true&w=majority".format(mongoPW))

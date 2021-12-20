@@ -46,8 +46,10 @@ def backupToCollection (main, backup):
 
 backupToJSON("player_stats_back.json", player_stats)
 backupToJSON("game_history_backup.json", game_history)
+#BACKUP
 backupToCollection(player_stats, players_stats_backup)
 backupToCollection(game_history, game_history_backup)
 
+#RESTORE
 # backupToCollection(players_stats_backup, player_stats )
 # backupToCollection(game_history_backup, game_history )
