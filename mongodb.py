@@ -53,7 +53,9 @@ class Database():
                         'per_gm':blankRatios.blank_per_game,
                         'per_min':blankRatios.blank_per_minute,
                         'elo':blankRatios.blank_elo
-                    }                 
+                    },
+                    'clan_id' : -1,
+                    'clan_tag': "",                 
                 }
             )
         else:         
@@ -181,7 +183,9 @@ class Database():
                             'status':onlinePlayers[id].status,
                             'numLogins':player['numLogins'] + 1,
                             'last_login':time.time(),
-                            'stats':HextoLadderstatswide(onlinePlayers[id].ladderstatswide)
+                            'stats':HextoLadderstatswide(onlinePlayers[id].ladderstatswide),
+                            'clan_id':onlinePlayers[id].clan_id,
+                            'clan_tag':onlinePlayers[id].clan_tag
                         }
                     }
                 )
@@ -193,7 +197,9 @@ class Database():
                     {
                         "$set":{
                             'status':onlinePlayers[id].status,
-                            'stats':HextoLadderstatswide(onlinePlayers[id].ladderstatswide)
+                            'stats':HextoLadderstatswide(onlinePlayers[id].ladderstatswide),
+                            'clan_id':onlinePlayers[id].clan_id,
+                            'clan_tag':onlinePlayers[id].clan_tag
                         }
                     }
                 )
@@ -206,7 +212,9 @@ class Database():
                     {
                         "$set":{
                             'status':0,
-                            'stats':HextoLadderstatswide(offline_players[id].ladderstatswide)
+                            'stats':HextoLadderstatswide(offline_players[id].ladderstatswide),
+                            'clan_id':onlinePlayers[id].clan_id,
+                            'clan_tag':onlinePlayers[id].clan_tag
                         }
                     }
                 )
@@ -224,7 +232,9 @@ class Database():
                     {
                         "username":players[id].username,
                         'account_id':players[id].id,
-                        'status':PLAYER_STATUS[players[id].status]
+                        'status':PLAYER_STATUS[players[id].status],
+                        'clan_id':players[id].clan_id,
+                        'clan_tag':players[id].clan_tag
                     }
                 )
             else:

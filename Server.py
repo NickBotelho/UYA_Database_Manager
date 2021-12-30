@@ -16,8 +16,12 @@ def getOnlinePlayers(players):
 
     online_players = set()
     for player in res:
-        online_players.add(player['account_id'])       
-        players[player['account_id']] = Player(player) 
+        online_players.add(player['account_id'])
+        update = True
+        if player['account_id'] in players: 
+            update = players[player['account_id']].updateCache()
+        if update:
+            players[player['account_id']] = Player(player) 
 
     offline_ids = {}
     for player_id in players: #loop that check if a cached player is not in the online list and logs them off
@@ -55,7 +59,6 @@ def getGames(games):
         del games[id]
     return games, ended_games
 
-# printGames(getGames({}))
 
 
 class MediusWorldStatus:

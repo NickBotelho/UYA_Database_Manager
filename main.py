@@ -7,6 +7,7 @@ player_stats = Database("UYA","Player_Stats")
 players_online = Database("UYA","Players_Online")
 game_history = Database("UYA", "Game_History")
 games_active = Database("UYA","Games_Active")
+# clans = Database("UYA", "clans")
 os.environ['TZ'] = 'EST+05EDT,M4.1.0,M10.5.0'
 time.tzset()
 
@@ -51,7 +52,7 @@ if __name__ == "__main__":
             # Game.printGames(games)
 
             print("Waiting...")
-            time.sleep(60*.5)
+            time.sleep(60.5)
 
     
     
