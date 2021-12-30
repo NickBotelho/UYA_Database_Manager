@@ -30,3 +30,8 @@ class Player():
         Returns true if it is time to update the player'''
         self.cached_ticks+=1
         return self.cached_ticks >= CACHE_LIMIT
+    def softUpdate(self, packet):
+        self.id = packet['account_id']
+        self.username = packet['username']
+        self.status = packet['status']
+        self.ladderstatswide = packet['ladderstatswide']

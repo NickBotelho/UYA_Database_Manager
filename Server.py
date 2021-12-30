@@ -19,7 +19,9 @@ def getOnlinePlayers(players):
         online_players.add(player['account_id'])
         update = True
         if player['account_id'] in players: 
+            players[player['account_id']].softUpdate(player)
             update = players[player['account_id']].updateCache()
+
         if update:
             players[player['account_id']] = Player(player) 
 

@@ -213,8 +213,8 @@ class Database():
                         "$set":{
                             'status':0,
                             'stats':HextoLadderstatswide(offline_players[id].ladderstatswide),
-                            'clan_id':onlinePlayers[id].clan_id,
-                            'clan_tag':onlinePlayers[id].clan_tag
+                            'clan_id':offline_players[id].clan_id,
+                            'clan_tag':offline_players[id].clan_tag
                         }
                     }
                 )
