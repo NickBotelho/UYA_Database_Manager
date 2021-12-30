@@ -12,7 +12,7 @@ os.environ['TZ'] = 'EST+05EDT,M4.1.0,M10.5.0'
 time.tzset()
 
 
-DEBUG = True
+DEBUG = False
 if __name__ == "__main__":
     players = {}
     games = {}
@@ -52,7 +52,7 @@ if __name__ == "__main__":
             # Game.printGames(games)
 
             print("Waiting...")
-            time.sleep(1.5)
+            time.sleep(60.5)
 
     
     
