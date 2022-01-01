@@ -488,56 +488,60 @@ class Database():
         Scan through all the clans of people on
         if the clan is new, add it into the DB
         if the player left an old clan, we take him out of it and put into new one'''
-        cached_player = player_stats.collection.find_one({"account_id":player.id}) #DB information
-        cached_clan_id = cached_player['clan_id']
-        cached_clan_name = cached_player['clan_name']
+        try:
+            cached_player = player_stats.collection.find_one({"account_id":player.id}) #DB information
+            cached_clan_id = cached_player['clan_id']
+            cached_clan_name = cached_player['clan_name']
 
 
-        clan = self.collection.find_one({'clan_name':player.clan_name})
-        if clan == None:
-            self.addNewClan(player.clan_id)
-        
-        
-        old_clan = self.getClan(cached_clan_id)
-        if old_clan != None:
-            if old_clan['clan_name'] != player.clan_name:
-                updatedIds = old_clan['member_ids']
-                updatedIds.remove(player.id)
-                updatedNames = old_clan['member_names']
-                updatedNames.remove(player.username)
+            clan = self.collection.find_one({'clan_name':player.clan_name})
+            if clan == None:
+                self.addNewClan(player.clan_id)
+            
+            
+            old_clan = self.getClan(cached_clan_id)
+            if old_clan != None:
+                if old_clan['clan_name'] != player.clan_name:
+                    updatedIds = old_clan['member_ids']
+                    updatedIds.remove(player.id)
+                    updatedNames = old_clan['member_names']
+                    updatedNames.remove(player.username)
 
-                if old_clan != None:
-                    if len(updatedIds) > 0:
-                        self.collection.find_one_and_update(
-                            {
-                                "clan_id":old_clan['clan_id']
-                            },
-                            {
-                                "$set":{
-                                    'member_ids':updatedIds,
-                                    'member_names':updatedNames                  
+                    if old_clan != None:
+                        if len(updatedIds) > 0:
+                            self.collection.find_one_and_update(
+                                {
+                                    "clan_id":old_clan['clan_id']
+                                },
+                                {
+                                    "$set":{
+                                        'member_ids':updatedIds,
+                                        'member_names':updatedNames                  
+                                    }
                                 }
-                            }
-                        )
-                    else:
-                        self.collection.find_one_and_delete({"clan_id":old_clan['clan_id']})
-                
-        new_clan = self.getClan(player.clan_id)
-        updatedIds = new_clan['member_ids']
-        updatedIds.append(player.id)
-        updatedNames = new_clan['member_names']
-        updatedNames.append(player.username)
-        self.collection.find_one_and_update(
-                {
-                    "clan_id":player.clan_id
-                },
-                {
-                    "$set":{
-                        'member_ids':updatedIds,
-                        'member_names':updatedNames                  
+                            )
+                        else:
+                            self.collection.find_one_and_delete({"clan_id":old_clan['clan_id']})
+                    
+            new_clan = self.getClan(player.clan_id)
+            updatedIds = new_clan['member_ids']
+            updatedIds.append(player.id)
+            updatedNames = new_clan['member_names']
+            updatedNames.append(player.username)
+            self.collection.find_one_and_update(
+                    {
+                        "clan_id":player.clan_id
+                    },
+                    {
+                        "$set":{
+                            'member_ids':updatedIds,
+                            'member_names':updatedNames                  
+                        }
                     }
-                }
-            )
+                )
+        except:
+            print(f"Error on plaayer: {player.username}, clan {player.clan_id}\
+                | {player.clan_name}")
 
     def getClan(self, id):
         '''get a clan object from id'''
