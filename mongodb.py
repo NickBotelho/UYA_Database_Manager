@@ -494,7 +494,7 @@ class Database():
             cached_clan_name = cached_player['clan_name']
 
 
-            clan = self.collection.find_one({'clan_name':player.clan_name})
+            clan = self.collection.find_one({'clan_name':player.clan_name}) if player.clan_name != None else None
             if clan == None:
                 self.addNewClan(player.clan_id)
             
@@ -540,8 +540,8 @@ class Database():
                     }
                 )
         except:
-            print(f"Error on plaayer: {player.username}, clan {player.clan_id}\
-                | {player.clan_name}")
+            print(f"Error on player: {player.username}, clan {player.clan_id}\
+| {player.clan_name}")
 
     def getClan(self, id):
         '''get a clan object from id'''
