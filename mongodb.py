@@ -524,7 +524,7 @@ class Database():
                     else:
                         self.collection.find_one_and_delete({"clan_id":old_clan['clan_id']})
 
-            if player.clan_id != -1:
+            if player.clan_id != cached_clan_id or player.clan_name != cached_clan_name:
                 new_clan = self.getClan(player.clan_id)
                 updatedIds = new_clan['member_ids']
                 updatedIds.append(player.id)
