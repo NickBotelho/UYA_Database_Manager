@@ -18,10 +18,8 @@ def getClanTag(packet):
             continue
         else:
             if char.isalpha():
-                if char.islower():
-                    tag[i] = char.upper()
-                else:
-                    tag[i] = char.lower()
+                tag[i] = char.upper() if char.islower() else char.lower()
+
     return tag
 
 
