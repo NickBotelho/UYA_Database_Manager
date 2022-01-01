@@ -493,8 +493,8 @@ class Database():
             cached_clan_id = cached_player['clan_id']
             cached_clan_name = cached_player['clan_name']
 
-
-            clan = self.collection.find_one({'clan_name':player.clan_name}) if player.clan_name != None else None
+        
+            clan = self.collection.find_one({'clan_name':player.clan_name})
             if clan == None:
                 self.addNewClan(player.clan_id)
             

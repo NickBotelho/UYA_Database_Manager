@@ -24,7 +24,8 @@ def getOnlinePlayers(players, clans, player_stats):
             update = players[player['account_id']].updateCache()
         if update:
             players[player['account_id']] = Player(player)
-            clans.updateClans(players[player['account_id']],  player_stats)
+            if players[player['account_id']].clan_id != -1: #if is in a clan 
+                clans.updateClans(players[player['account_id']],  player_stats)
 
 
     offline_ids = {}
