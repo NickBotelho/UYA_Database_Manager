@@ -21,7 +21,7 @@ if __name__ == "__main__":
     print("Running...")
     if not DEBUG:
         while True:
-            players, offline_players = Server.getOnlinePlayers(players) #dict of {player id --> Player obj}
+            players, offline_players = Server.getOnlinePlayers(players, clans, player_stats) #dict of {player id --> Player obj}
             player_stats.updateOnlinePlayersStats(players, offline_players)
             players_online.addOnlinePlayers(players)
             players_online.logPlayersOff(offline_players)
