@@ -507,21 +507,21 @@ class Database():
                     updatedNames = old_clan['member_names']
                     updatedNames.remove(player.username)
 
-                    if old_clan != None:
-                        if len(updatedIds) > 0:
-                            self.collection.find_one_and_update(
-                                {
-                                    "clan_id":old_clan['clan_id']
-                                },
-                                {
-                                    "$set":{
-                                        'member_ids':updatedIds,
-                                        'member_names':updatedNames                  
-                                    }
+                    
+                    if len(updatedIds) > 0:
+                        self.collection.find_one_and_update(
+                            {
+                                "clan_id":old_clan['clan_id']
+                            },
+                            {
+                                "$set":{
+                                    'member_ids':updatedIds,
+                                    'member_names':updatedNames                  
                                 }
-                            )
-                        else:
-                            self.collection.find_one_and_delete({"clan_id":old_clan['clan_id']})
+                            }
+                        )
+                    else:
+                        self.collection.find_one_and_delete({"clan_id":old_clan['clan_id']})
 
             if player.clan_id != -1:
                 new_clan = self.getClan(player.clan_id)
