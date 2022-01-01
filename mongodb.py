@@ -502,7 +502,7 @@ class Database():
             
             old_clan = self.getClan(cached_clan_id)
             if old_clan != None:
-                if old_clan['clan_name'] != player.clan_name or cached_clan_id != player.clan_id:
+                if old_clan['clan_name'] != player.clan_name or old_clan['clan_id'] != player.clan_id:
                     updatedIds = old_clan['member_ids']
                     updatedIds.remove(player.id)
                     updatedNames = old_clan['member_names']
