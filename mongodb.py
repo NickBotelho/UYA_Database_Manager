@@ -493,15 +493,15 @@ class Database():
             cached_clan_id = cached_player['clan_id']
             cached_clan_name = cached_player['clan_name']
 
-        
-            clan = self.collection.find_one({'clan_name':player.clan_name})
-            if clan == None:
-                self.addNewClan(player.clan_id)
+            if player.clan_id != -1:
+                clan = self.collection.find_one({'clan_name':player.clan_name})
+                if clan == None:
+                    self.addNewClan(player.clan_id)
             
             
             old_clan = self.getClan(cached_clan_id)
             if old_clan != None:
-                if old_clan['clan_name'] != player.clan_name:
+                if old_clan['clan_name'] != player.clan_name or cached_clan_id != player.clan_id:
                     updatedIds = old_clan['member_ids']
                     updatedIds.remove(player.id)
                     updatedNames = old_clan['member_names']
@@ -522,23 +522,24 @@ class Database():
                             )
                         else:
                             self.collection.find_one_and_delete({"clan_id":old_clan['clan_id']})
-                    
-            new_clan = self.getClan(player.clan_id)
-            updatedIds = new_clan['member_ids']
-            updatedIds.append(player.id)
-            updatedNames = new_clan['member_names']
-            updatedNames.append(player.username)
-            self.collection.find_one_and_update(
-                    {
-                        "clan_id":player.clan_id
-                    },
-                    {
-                        "$set":{
-                            'member_ids':updatedIds,
-                            'member_names':updatedNames                  
+
+            if player.clan_id != -1:
+                new_clan = self.getClan(player.clan_id)
+                updatedIds = new_clan['member_ids']
+                updatedIds.append(player.id)
+                updatedNames = new_clan['member_names']
+                updatedNames.append(player.username)
+                self.collection.find_one_and_update(
+                        {
+                            "clan_id":player.clan_id
+                        },
+                        {
+                            "$set":{
+                                'member_ids':updatedIds,
+                                'member_names':updatedNames                  
+                            }
                         }
-                    }
-                )
+                    )
         except:
             print(f"Error on player: {player.username}, clan {player.clan_id}\
 | {player.clan_name}")
