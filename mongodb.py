@@ -478,7 +478,8 @@ class Database():
                         "stats": HexToClanstatswide(res['clan_statswide']),
                         'clan_tag': clan_tag,
                         'member_names':[],
-                        'member_ids':[]            
+                        'member_ids':[],
+                        'clan_name_lower': res['clan_name'].lower()         
                     }
                 )
 
