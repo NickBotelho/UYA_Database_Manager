@@ -7,12 +7,12 @@ player_stats = Database("UYA","Player_Stats")
 players_online = Database("UYA","Players_Online")
 game_history = Database("UYA", "Game_History")
 games_active = Database("UYA","Games_Active")
-# clans = Database("UYA", "clans")
+clans = Database("UYA", "Clans")
 os.environ['TZ'] = 'EST+05EDT,M4.1.0,M10.5.0'
 time.tzset()
 
 
-DEBUG = False
+DEBUG = True
 if __name__ == "__main__":
     players = {}
     games = {}
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     else:
         while True:
             print("Getting Players...")
-            players, offline_players = Server.getOnlinePlayers(players) #dict of {player id --> Player obj}
+            players, offline_players = Server.getOnlinePlayers(players, clans, player_stats) #dict of {player id --> Player obj}
             print("Updating DBs...")
             player_stats.updateOnlinePlayersStats(players, offline_players)
             players_online.addOnlinePlayers(players)
@@ -51,8 +51,11 @@ if __name__ == "__main__":
             games_active.cancelGames(ended_games, player_stats, game_history)
             # Game.printGames(games)
 
+
+
+
             print("Waiting...")
-            time.sleep(60.5)
+            time.sleep(2*.5)
 
     
     

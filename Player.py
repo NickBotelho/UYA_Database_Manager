@@ -14,11 +14,13 @@ class Player():
         self.status = self.packet['status']
         self.ladderstatswide = self.packet['ladderstatswide']
         self.clan_id = getClanId(self.packet['stats'])['clan_id']
+        self.clan_name = None
         if self.clan_id != -1:
             try:
                 res = requests.get(f"{CLANS_API}/{self.clan_id}").json()
             except:
                 res = {}
+            self.clan_name = res['clan_name']
             self.clan_tag = getClanTag(res['clan_stats']) if len(res) > 0 else ""
             self.clan_tag = "".join([char for char in self.clan_tag if len(char)==1])
         else:

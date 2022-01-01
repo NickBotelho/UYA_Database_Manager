@@ -6,7 +6,7 @@ from HashId import hash_id
 
 PLAYERS_API = 'https://uya.raconline.gg/tapi/robo/players'
 GAMES_API = 'https://uya.raconline.gg/tapi/robo/games'
-def getOnlinePlayers(players):
+def getOnlinePlayers(players, clans, player_stats):
     '''Returns a dict of playername --> Player class object that hold various things (see player.py)
     Will also log off players who got off '''
     try:
@@ -19,11 +19,13 @@ def getOnlinePlayers(players):
         online_players.add(player['account_id'])
         update = True
         if player['account_id'] in players: 
+            #if the player is already online
             players[player['account_id']].softUpdate(player)
             update = players[player['account_id']].updateCache()
-
         if update:
-            players[player['account_id']] = Player(player) 
+            players[player['account_id']] = Player(player)
+            clans.updateClans(players[player['account_id']],  player_stats)
+
 
     offline_ids = {}
     for player_id in players: #loop that check if a cached player is not in the online list and logs them off

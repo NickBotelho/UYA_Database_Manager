@@ -5,6 +5,9 @@ from Parsers.ToLadderstatswide import HextoLadderstatswide
 from CalculateStatLine import calculateStatLine
 import os
 import blankRatios
+import requests
+from Parsers.ClanStatsParser import getClanTag
+from Parsers.ClanStatswideParser import HexToClanstatswide
 
 os.environ['TZ'] = 'EST+05EDT,M4.1.0,M10.5.0'
 time.tzset()
@@ -55,7 +58,8 @@ class Database():
                         'elo':blankRatios.blank_elo
                     },
                     'clan_id' : -1,
-                    'clan_tag': "",                 
+                    'clan_tag': "",
+                    'clan_name':"",                 
                 }
             )
         else:         
@@ -185,7 +189,8 @@ class Database():
                             'last_login':time.time(),
                             'stats':HextoLadderstatswide(onlinePlayers[id].ladderstatswide),
                             'clan_id':onlinePlayers[id].clan_id,
-                            'clan_tag':onlinePlayers[id].clan_tag
+                            'clan_tag':onlinePlayers[id].clan_tag,
+                            'clan_name':onlinePlayers[id].clan_name,
                         }
                     }
                 )
@@ -199,7 +204,9 @@ class Database():
                             'status':onlinePlayers[id].status,
                             'stats':HextoLadderstatswide(onlinePlayers[id].ladderstatswide),
                             'clan_id':onlinePlayers[id].clan_id,
-                            'clan_tag':onlinePlayers[id].clan_tag
+                            'clan_tag':onlinePlayers[id].clan_tag,
+                            'clan_name':onlinePlayers[id].clan_name,
+
                         }
                     }
                 )
@@ -214,7 +221,9 @@ class Database():
                             'status':0,
                             'stats':HextoLadderstatswide(offline_players[id].ladderstatswide),
                             'clan_id':offline_players[id].clan_id,
-                            'clan_tag':offline_players[id].clan_tag
+                            'clan_tag':offline_players[id].clan_tag,
+                            'clan_name':offline_players[id].clan_name,
+
                         }
                     }
                 )
@@ -444,7 +453,100 @@ class Database():
         loser_elo/=len(loser_names) if len(loser_names) > 0 else 1
         winner_elo/=len(winner_names) if len(winner_names) > 0 else 1
         winner_e, loser_e = getExpected(winner_elo,loser_elo)
-        return (winner_names, loser_names), (winner_e, loser_e)      
+        return (winner_names, loser_names), (winner_e, loser_e)
+    def addNewClan(self, clan_id):
+        '''add new clan to DB given clan id'''
+        CLANS_API = 'https://uya.raconline.gg/tapi/robo/clans/id' #/id
+        existing_clan = self.collection.find_one({'clan_id':clan_id})
+        if existing_clan != None:
+            #This executes if a new clan has the same ID as a deleted clan
+            self.collection.find_one_and_delete({'clan_id':clan_id})
+        try:
+            res = requests.get(f"{CLANS_API}/{clan_id}").json()
+        except:
+            res = {}
+        if len(res) > 0:
+            clan_tag = getClanTag(res['clan_stats'])
+            clan_tag = "".join([char for char in clan_tag if len(char)==1])
+
+            self.collection.insert_one(
+                    {
+                        "clan_name":res['clan_name'],
+                        'clan_id':res['clan_id'],
+                        'leader_account_id':res['leader_account_id'],
+                        'leader_account_name':res['leader_account_name'],
+                        "stats": HexToClanstatswide(res['clan_statswide']),
+                        'clan_tag': clan_tag,
+                        'member_names':[],
+                        'member_ids':[]            
+                    }
+                )
+
+
+    def updateClans(self, player, player_stats):
+        '''
+        Scan through all the clans of people on
+        if the clan is new, add it into the DB
+        if the player left an old clan, we take him out of it and put into new one'''
+        cached_player = player_stats.collection.find_one({"account_id":player.id}) #DB information
+        cached_clan_id = cached_player['clan_id']
+        cached_clan_name = cached_player['clan_name']
+
+
+        clan = self.collection.find_one({'clan_name':player.clan_name})
+        if clan == None:
+            self.addNewClan(player.clan_id)
+        
+        
+        old_clan = self.getClan(cached_clan_id)
+        if old_clan != None:
+            if old_clan['clan_name'] != player.clan_name:
+                updatedIds = old_clan['member_ids']
+                updatedIds.remove(player.id)
+                updatedNames = old_clan['member_names']
+                updatedNames.remove(player.username)
+
+                if old_clan != None:
+                    if len(updatedIds) > 0:
+                        self.collection.find_one_and_update(
+                            {
+                                "clan_id":old_clan['clan_id']
+                            },
+                            {
+                                "$set":{
+                                    'member_ids':updatedIds,
+                                    'member_names':updatedNames                  
+                                }
+                            }
+                        )
+                    else:
+                        self.collection.find_one_and_delete({"clan_id":old_clan['clan_id']})
+                
+        new_clan = self.getClan(player.clan_id)
+        updatedIds = new_clan['member_ids']
+        updatedIds.append(player.id)
+        updatedNames = new_clan['member_names']
+        updatedNames.append(player.username)
+        self.collection.find_one_and_update(
+                {
+                    "clan_id":player.clan_id
+                },
+                {
+                    "$set":{
+                        'member_ids':updatedIds,
+                        'member_names':updatedNames                  
+                    }
+                }
+            )
+
+    def getClan(self, id):
+        '''get a clan object from id'''
+        return self.collection.find_one({"clan_id":id})
+
+            
+
+
+
 
 def getExpected(r1, r2):
     r1 = 10**(r1/400)
