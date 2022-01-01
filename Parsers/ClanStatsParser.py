@@ -1,5 +1,5 @@
-# from Parsers.symbols import CLANTAG_ALLOWED_CHARACTERS
-from symbols import CLANTAG_ALLOWED_CHARACTERS
+from Parsers.symbols import CLANTAG_ALLOWED_CHARACTERS
+# from symbols import CLANTAG_ALLOWED_CHARACTERS #DEBUG
 
 tag_indices = [32, 36, 40, 44]
 
