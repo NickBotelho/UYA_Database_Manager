@@ -541,9 +541,9 @@ class Database():
                             }
                         }
                     )
-        except:
+        except Exception as e:
             print(f"Error on player: {player.username}, clan {player.clan_id}\
-| {player.clan_name}")
+| {player.clan_name}...with error as {e}")
 
     def getClan(self, id):
         '''get a clan object from id'''
