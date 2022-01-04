@@ -243,7 +243,8 @@ class Database():
                         'account_id':players[id].id,
                         'status':PLAYER_STATUS[players[id].status],
                         'clan_id':players[id].clan_id,
-                        'clan_tag':players[id].clan_tag
+                        'clan_tag':players[id].clan_tag,
+                        'clan_name':players[id].clan_name,
                     }
                 )
             else:
