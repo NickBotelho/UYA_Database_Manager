@@ -61,12 +61,15 @@ class Game():
         if self.status == "Staging" and status == 2:
             self.start_time = time.time()
             self.player_ids = [player['account_id'] for player in lobby]
+            self.player_names = [player['username'] for player in lobby]
             self.status = GAME_STATUS[2]
             return True
         return False
     def updatePlayers(self, lobby):
         '''updates the players in the staging'''
         self.player_ids = [player['account_id'] for player in lobby]
+        self.player_names = [player['username'] for player in lobby]
+
 
 def cacheStats(games, player_stats):
     for game_id in games:
