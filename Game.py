@@ -26,6 +26,8 @@ class Game():
         self.status = self.packet['status']
         self.id = hash_id(self.packet)
         self.player_ids = [player['account_id'] for player in self.packet['players']]
+        self.player_names = [player['username'] for player in self.packet['players']]
+
         ##########Status##########
         self.creation_time = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(self.packet['created_date']))
         self.status = GAME_STATUS[self.packet['status']] if self.packet['status'] in GAME_STATUS else "Zombie/Ghost Game"
@@ -46,12 +48,12 @@ class Game():
         self.game_mode,self.game_submode, self.weapons, self.game_length, self.advanced_rules)
     def details(self):
         res = {
-            'host':self.player_ids[0],
+            'host':self.player_names[0],
             'status':self.status,
             'map':self.map,
             'gamemode':self.game_mode, #array [mode, submode]
             'weapons':self.weapons, #array of weapons,
-            'players':self.player_ids,
+            'players':self.player_names,
         }
         return res
     def checkIfStart(self, status, lobby):
