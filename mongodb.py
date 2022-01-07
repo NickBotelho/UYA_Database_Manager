@@ -8,6 +8,7 @@ import blankRatios
 import requests
 from Parsers.ClanStatsParser import getClanTag
 from Parsers.ClanStatswideParser import HexToClanstatswide
+import urllib.parse
 
 os.environ['TZ'] = 'EST+05EDT,M4.1.0,M10.5.0'
 time.tzset()
@@ -39,7 +40,7 @@ class Database():
         if self.collection.count() == 0: return None
         if self.collection.name == 'Players_Online' or self.collection.name == 'Games_Active': #Protection to not whipe stats or game history
             self.collection.delete_many({})
-    def addToDB(self, name, player_info):      
+    def addToDB(self, name, player_info, elo):      
         player = self.collection.find_one({"name":name})
         if player == None:
             self.collection.insert_one(
@@ -59,7 +60,8 @@ class Database():
                     },
                     'clan_id' : -1,
                     'clan_tag': "",
-                    'clan_name':"",                 
+                    'clan_name':"",       
+                    'elo_id':self.getEloId(elo, name)
                 }
             )
         else:         
@@ -75,6 +77,29 @@ class Database():
                     }
                 }
             )
+    def getEloId(self, elo, player):
+        url = 'https://uya.raconline.gg/tapi/robo/alts/{}'
+        encoded_name = urllib.parse.quote(player)
+        accounts = requests.get(url.format(encoded_name))
+
+        accounts=accounts.json() if accounts.status_code == 200 else [player]
+        if accounts == '[]' or len(accounts) == 1:
+            elo.collection.insert_one({
+                'elo_id':elo.collection.count_documents({}),
+                'overall':1200,
+                'CTF':1200,
+                "Siege":1200,
+                'Deathmatch':1200,
+                'accounts' : [player],
+            })
+            return elo.collection.count_documents({})
+        for alt in accounts:
+            alt_id = self.collection.find_one({'username':alt})
+            if alt_id != None:
+                alt_id = alt_id['elo_id']
+                return alt_id
+        print(f"Error assigning Elo id to {player}")
+        return -1
     def logPlayerOff(self, online, name):
         player = self.collection.find_one({"name":name})   
         start = online[name]
@@ -162,7 +187,7 @@ class Database():
                 i+=1
                 res +="{}. {}\t {:.1f}\n".format(i, player['name'], player['time_hours'])
         return res
-    def updateOnlinePlayersStats(self, onlinePlayers, offline_players):
+    def updateOnlinePlayersStats(self, onlinePlayers, offline_players, elo):
         '''onlinePlayers is a dict id --> player object'''
         '''will add new players to DB and check some stuff every 5 mins'''
         '''Will logg players off'''
@@ -174,7 +199,7 @@ class Database():
                 if stats_cheated(stats):
                     continue
                 else:
-                    self.addToDB(onlinePlayers[id].username, onlinePlayers[id])
+                    self.addToDB(onlinePlayers[id].username, onlinePlayers[id], elo)
             
             elif player['status'] == 0:
                 #############add advanced
@@ -300,7 +325,7 @@ class Database():
                 'entry_number' : entries+1
             }
         )
-    def addGameToPlayerHistory(self, game_id, player_ids, game_history):
+    def addGameToPlayerHistory(self, game_id, player_ids, game_history, elo):
         '''add a recent game to players stats'''
         game = game_history.collection.find_one( #grab the game
                 {
@@ -311,15 +336,15 @@ class Database():
         isTie = True if 'tie' in game['game_results'] else False
             
         if not isTie:
-            teams, overall_e = self.calculateGameElo(game)
-            teams, gamemode_e = self.calculateGameElo(game, type = game['gamemode'])
+            teams, overall_e = self.calculateGameElo(elo, game)
+            teams, gamemode_e = self.calculateGameElo(elo, game, type = game['gamemode'])
 
 
         ############################################
         for id in player_ids: #go through each player
             player = self.collection.find_one({'account_id': id})
             match_history = player['match_history']
-            player_elo = player['advanced_stats']['elo']
+            player_elo = elo.collection.find_one({"elo_id":player['elo_id']})
             username = player['username']
 
             match_history[str(game_id)] = player['stats']['overall']['games_played']
@@ -327,11 +352,21 @@ class Database():
 
             per_game = per_gm(player, game)
             per_minute = per_min(player, game)
-            player_elo = updateElo(username, player_elo,teams, overall_e, K=64, type = 'overall')
-            player_elo = updateElo(username, player_elo,teams, gamemode_e, K=64, type = game['gamemode'])
+            player_elo = updateElo(player['elo_id'], username, player_elo,teams, overall_e, K=64, type = 'overall')
+            player_elo = updateElo(player['elo_id'], username, player_elo,teams, gamemode_e, K=64, type = game['gamemode'])
 
 
             
+            elo.collection.find_one_and_update({
+                {'elo_id':player['elo_id']},
+                {
+                    "$set":{
+                        'overall':player_elo['overall'],
+                        game['gamemode']:  player_elo[game['gamemode']]
+                    }
+                }
+
+            })
             self.collection.find_one_and_update(
                     {
                         "account_id":id
@@ -347,7 +382,7 @@ class Database():
                         }
                     }
                 )
-    def cancelGames(self, ended_games, player_stats, game_history):
+    def cancelGames(self, ended_games, player_stats, game_history, elo):
         '''Ended Games is a dict of id --> ended Game object and player stats is the DB object holding new stats'''
         '''removes ended games from the active games collection'''
         '''before we dump the game, we'll add it to the history collection'''
@@ -364,7 +399,7 @@ class Database():
 
                 if game_results: #will be none if games flagged as fake 
                     game_history.addGameToGameHistory(ended_games[id], game_results)
-                    player_stats.addGameToPlayerHistory(id, ended_games[id].player_ids, game_history)
+                    player_stats.addGameToPlayerHistory(id, ended_games[id].player_ids, game_history, elo)
 
     def calculateGameStats(self, game, player_stats):
 
@@ -439,18 +474,21 @@ class Database():
 
 
         return teams if total_kills > 0 and not isCheating else None
-    def calculateGameElo(self, game, type = 'overall'):
+    def calculateGameElo(self, elo, game, type = 'overall'):
         results = game['game_results']
         winner_names = [player['username'] for player in results['winners']]
         loser_names = [player['username'] for player in results['losers']]
         winner_elo, loser_elo = 0, 0
         for name in winner_names:
             player = self.collection.find_one({'username': name})
-            winner_elo+=player['advanced_stats']['elo'][type]
+            player_elo = elo.collection.find_one({'elo_id':player['elo_id']})[type]
+            winner_elo+=player_elo
 
         for name in loser_names:
             player = self.collection.find_one({'username': name})
-            loser_elo+=player['advanced_stats']['elo'][type]   
+            player_elo = elo.collection.find_one({'elo_id':player['elo_id']})[type]
+            loser_elo+=player_elo  
+
         loser_elo/=len(loser_names) if len(loser_names) > 0 else 1
         winner_elo/=len(winner_names) if len(winner_names) > 0 else 1
         winner_e, loser_e = getExpected(winner_elo,loser_elo)
@@ -492,28 +530,51 @@ class Database():
         if the player left an old clan, we take him out of it and put into new one'''
         try:
             cached_player = player_stats.collection.find_one({"account_id":player.id}) #DB information
-            cached_clan_id = cached_player['clan_id']
-            cached_clan_name = cached_player['clan_name']
 
-            if player.clan_id != -1:
-                clan = self.collection.find_one({'clan_name':player.clan_name})
-                if clan == None:
-                    self.addNewClan(player.clan_id)
-            
-            
-            old_clan = self.getClan(cached_clan_id)
-            if old_clan != None:
-                if old_clan['clan_name'] != player.clan_name or old_clan['clan_id'] != player.clan_id:
-                    updatedIds = old_clan['member_ids']
-                    updatedIds.remove(player.id)
-                    updatedNames = old_clan['member_names']
-                    updatedNames.remove(player.username)
+            if not cached_player!= None:
 
-                    
-                    if len(updatedIds) > 0:
-                        self.collection.find_one_and_update(
+                cached_clan_id = cached_player['clan_id']
+                cached_clan_name = cached_player['clan_name']
+
+                if player.clan_id != -1:
+                    clan = self.collection.find_one({'clan_name':player.clan_name})
+                    if clan == None:
+                        self.addNewClan(player.clan_id)
+                
+                
+                old_clan = self.getClan(cached_clan_id)
+                if old_clan != None:
+                    if old_clan['clan_name'] != player.clan_name or old_clan['clan_id'] != player.clan_id:
+                        updatedIds = old_clan['member_ids']
+                        updatedIds.remove(player.id)
+                        updatedNames = old_clan['member_names']
+                        updatedNames.remove(player.username)
+
+                        
+                        if len(updatedIds) > 0:
+                            self.collection.find_one_and_update(
+                                {
+                                    "clan_id":old_clan['clan_id']
+                                },
+                                {
+                                    "$set":{
+                                        'member_ids':updatedIds,
+                                        'member_names':updatedNames                  
+                                    }
+                                }
+                            )
+                        else:
+                            self.collection.find_one_and_delete({"clan_id":old_clan['clan_id']})
+
+                if player.clan_id != cached_clan_id or player.clan_name != cached_clan_name:
+                    new_clan = self.getClan(player.clan_id)
+                    updatedIds = new_clan['member_ids']
+                    updatedIds.append(player.id)
+                    updatedNames = new_clan['member_names']
+                    updatedNames.append(player.username)
+                    self.collection.find_one_and_update(
                             {
-                                "clan_id":old_clan['clan_id']
+                                "clan_id":player.clan_id
                             },
                             {
                                 "$set":{
@@ -522,26 +583,6 @@ class Database():
                                 }
                             }
                         )
-                    else:
-                        self.collection.find_one_and_delete({"clan_id":old_clan['clan_id']})
-
-            if player.clan_id != cached_clan_id or player.clan_name != cached_clan_name:
-                new_clan = self.getClan(player.clan_id)
-                updatedIds = new_clan['member_ids']
-                updatedIds.append(player.id)
-                updatedNames = new_clan['member_names']
-                updatedNames.append(player.username)
-                self.collection.find_one_and_update(
-                        {
-                            "clan_id":player.clan_id
-                        },
-                        {
-                            "$set":{
-                                'member_ids':updatedIds,
-                                'member_names':updatedNames                  
-                            }
-                        }
-                    )
         except Exception as e:
             print(f"Error on player: {player.username}, clan {player.clan_id}\
 | {player.clan_name}...with error as {e}")
@@ -712,12 +753,14 @@ def per_min(player, game):
 
 def updateElo(username, player_elo, teams, e, K=64, type = 'overall'):
     '''
-    player_elo = dict of elos for the player
+    player_elo = elo mongo doc for player
     teams[0] = winning team
     teams[1] = losing teams
     e[0] = winner_expected value
     e[1] = loser_expected_value
     '''
+
+
 
     if username in teams[0]:
         player_elo[type] = getAdjusted(player_elo[type], e[0], K, 1)
@@ -727,7 +770,7 @@ def updateElo(username, player_elo, teams, e, K=64, type = 'overall'):
     return player_elo
 
 
-    
+
 
 
 

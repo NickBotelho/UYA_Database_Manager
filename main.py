@@ -8,11 +8,12 @@ players_online = Database("UYA","Players_Online")
 game_history = Database("UYA", "Game_History")
 games_active = Database("UYA","Games_Active")
 clans = Database("UYA", "Clans")
+elo=Database("UYA", 'Elo')
 os.environ['TZ'] = 'EST+05EDT,M4.1.0,M10.5.0'
 time.tzset()
 
 
-DEBUG = False
+DEBUG = True
 if __name__ == "__main__":
     players = {}
     games = {}
@@ -22,14 +23,14 @@ if __name__ == "__main__":
     if not DEBUG:
         while True:
             players, offline_players = Server.getOnlinePlayers(players, clans, player_stats) #dict of {player id --> Player obj}
-            player_stats.updateOnlinePlayersStats(players, offline_players)
+            player_stats.updateOnlinePlayersStats(players, offline_players, elo)
             players_online.addOnlinePlayers(players)
             players_online.logPlayersOff(offline_players)
 
             games, ended_games = Server.getGames(games)
             Game.cacheStats(games, player_stats)
             games_active.addGames(games)
-            games_active.cancelGames(ended_games, player_stats, game_history)
+            games_active.cancelGames(ended_games, player_stats, game_history, elo)
             
             time.sleep(60*.5)
     else:
@@ -37,7 +38,7 @@ if __name__ == "__main__":
             print("Getting Players...")
             players, offline_players = Server.getOnlinePlayers(players, clans, player_stats) #dict of {player id --> Player obj}
             print("Updating DBs...")
-            player_stats.updateOnlinePlayersStats(players, offline_players)
+            player_stats.updateOnlinePlayersStats(players, offline_players, elo)
             players_online.addOnlinePlayers(players)
             players_online.logPlayersOff(offline_players)
 
@@ -48,7 +49,8 @@ if __name__ == "__main__":
             print("Updating game DBs")
             Game.cacheStats(games, player_stats)
             games_active.addGames(games)
-            games_active.cancelGames(ended_games, player_stats, game_history)
+            games_active.cancelGames(ended_games, player_stats, game_history, elo)
+
             # Game.printGames(games)
 
 
