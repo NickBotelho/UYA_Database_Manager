@@ -376,7 +376,12 @@ class Database():
                             'match_history':match_history,
                             'advanced_stats.per_gm':per_game,
                             'advanced_stats.per_min':per_minute,
-                            'advanced_stats.elo':player_elo
+                            'advanced_stats.elo':{
+                                'overall':player_elo['overall'],
+                                'CTF': player_elo['CTF'],
+                                'Siege': player_elo['Siege'],
+                                'Deathmatch' :player_elo['Deathmatch'],
+                            }
 
                             
                         }
