@@ -309,7 +309,7 @@ class Database():
     def addGameToGameHistory(self, game, game_results):
         '''Adds a finished game to the history collection wite game as game object and results and res from calculate stat line function'''
         date = time.strftime("%a, %d %b %Y", time.localtime())
-        entries = self.collection.count()
+        entries = self.collection.count_documents({})
         self.collection.insert_one(
             {
                 'game_id':game.id,
@@ -352,8 +352,8 @@ class Database():
 
             per_game = per_gm(player, game)
             per_minute = per_min(player, game)
-            player_elo = updateElo(player['elo_id'], username, player_elo,teams, overall_e, K=64, type = 'overall')
-            player_elo = updateElo(player['elo_id'], username, player_elo,teams, gamemode_e, K=64, type = game['gamemode'])
+            player_elo = updateElo(username, player_elo,teams, overall_e, K=64, type = 'overall')
+            player_elo = updateElo(username, player_elo,teams, gamemode_e, K=64, type = game['gamemode'])
 
 
             
