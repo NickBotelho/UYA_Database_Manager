@@ -357,7 +357,7 @@ class Database():
 
 
             
-            elo.collection.find_one_and_update({
+            elo.collection.find_one_and_update(
                 {'elo_id':player['elo_id']},
                 {
                     "$set":{
@@ -366,7 +366,7 @@ class Database():
                     }
                 }
 
-            })
+            )
             self.collection.find_one_and_update(
                     {
                         "account_id":id
