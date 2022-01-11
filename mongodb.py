@@ -536,7 +536,7 @@ class Database():
         try:
             cached_player = player_stats.collection.find_one({"account_id":player.id}) #DB information
 
-            if not cached_player!= None:
+            if cached_player!= None:
 
                 cached_clan_id = cached_player['clan_id']
                 cached_clan_name = cached_player['clan_name']
@@ -570,6 +570,18 @@ class Database():
                             )
                         else:
                             self.collection.find_one_and_delete({"clan_id":old_clan['clan_id']})
+                    elif old_clan['clan_tag'] != player.clan_tag:
+                        self.collection.find_one_and_update(
+                            {
+                                'clan_id':player.clan_id
+                            },
+                            {
+                            "$set":{
+                                    'clan_tag':player.clan_tag             
+                                }
+                            }
+                        )
+
 
                 if player.clan_id != cached_clan_id or player.clan_name != cached_clan_name:
                     new_clan = self.getClan(player.clan_id)
