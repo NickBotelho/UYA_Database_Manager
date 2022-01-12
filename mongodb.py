@@ -603,8 +603,8 @@ class Database():
                 
                 if player.clan_id == cached_clan_id and player.clan_name == cached_clan_name and player.clan_id != -1:
                     current_clan = self.getClan(player.clan_id)
-                    ids = new_clan['member_ids']
-                    names = new_clan['member_names']
+                    ids = current_clan['member_ids']
+                    names = current_clan['member_names']
                     update = False
 
                     if player.id not in ids:
