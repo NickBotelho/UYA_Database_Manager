@@ -97,6 +97,19 @@ class Database():
             alt_id = self.collection.find_one({'username':alt})
             if alt_id != None:
                 alt_id = alt_id['elo_id']
+                eloAccount = elo.collection.find_one({'elo_id':alt_id})
+                alts = eloAccount['accounts']
+                alts.append(player)
+                elo.collection.find_one_and_update(
+                    {
+                        'elo_id':alt_id
+                    },
+                    {
+                        '$set':{
+                            'accounts':alts
+                        }
+                    }
+                )
                 return alt_id
         print(f"Error assigning Elo id to {player}")
         return -1
