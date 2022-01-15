@@ -46,7 +46,7 @@ CLANTAG_ALLOWED_CHARACTERS = {
     '3544': ']', '3342': ';', '3237': "'", '3245': '.',
     '3243': ',',
     '3030': 'empty',
-    # Symbols_Unicode.DEFAULT: 'default color',
+    Symbols_Unicode.DEFAULT: 'default color',
     Symbols_Unicode.BLUE: 'blue',
     Symbols_Unicode.GREEN: 'green',
     Symbols_Unicode.PINK: 'pink',
