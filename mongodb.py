@@ -498,14 +498,22 @@ class Database():
         loser_names = [player['username'] for player in results['losers']]
         winner_elo, loser_elo = 0, 0
         for name in winner_names:
-            player = self.collection.find_one({'username': name})
-            player_elo = elo.collection.find_one({'elo_id':player['elo_id']})[type]
-            winner_elo+=player_elo
+            try:
+                player = self.collection.find_one({'username': name})
+                player_elo = elo.collection.find_one({'elo_id':player['elo_id']})[type]
+                winner_elo+=player_elo
+            except:
+                print("Error Grabbing Elo of {} with id {}".format(name, player['elo_id']))
+                winner_elo+=1200
 
         for name in loser_names:
-            player = self.collection.find_one({'username': name})
-            player_elo = elo.collection.find_one({'elo_id':player['elo_id']})[type]
-            loser_elo+=player_elo  
+            try:
+                player = self.collection.find_one({'username': name})
+                player_elo = elo.collection.find_one({'elo_id':player['elo_id']})[type]
+                loser_elo+=player_elo  
+            except:
+                print("Error Grabbing Elo of {} with id {}".format(name, player['elo_id']))
+                loser_elo+=1200
 
         loser_elo/=len(loser_names) if len(loser_names) > 0 else 1
         winner_elo/=len(winner_names) if len(winner_names) > 0 else 1
