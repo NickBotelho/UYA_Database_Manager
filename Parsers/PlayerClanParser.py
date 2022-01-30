@@ -5,7 +5,7 @@ def getClanId(stats):
     i = 9*8 #9th position * 8 characters per position
     hex_field = stats[i:i+8]
 
-    if hex_field == 'FFFFFFFF': #no clan
+    if hex_field == 'FFFFFFFF' or hex_field == '00000000': #no clan
         return {'clan_id':-1}
 
     little_endian = []

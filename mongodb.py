@@ -111,6 +111,16 @@ class Database():
                     }
                 )
                 return alt_id
+            else:
+                elo.collection.insert_one({
+                'elo_id':elo.collection.count_documents({}),
+                'overall':1200,
+                'CTF':1200,
+                "Siege":1200,
+                'Deathmatch':1200,
+                'accounts' : [player],
+                })
+                return elo.collection.count_documents({})
         print(f"Error assigning Elo id to {player}")
         return -1
     def logPlayerOff(self, online, name):
