@@ -58,9 +58,9 @@ class Database():
                         'per_min':blankRatios.blank_per_minute,
                         'elo':blankRatios.blank_elo
                     },
-                    'clan_id' : -1,
-                    'clan_tag': "",
-                    'clan_name':"",       
+                    'clan_id' : player_info.clan_id,
+                    'clan_tag': player_info.clan_tag,
+                    'clan_name':player_info.clan_name,       
                     'elo_id':self.getEloId(elo, name)
                 }
             )
