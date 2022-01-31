@@ -1,7 +1,7 @@
 from Parsers.PlayerClanParser import getClanId
 from Parsers.ClanStatsParser import getClanTag
 import requests
-CLANS_API = 'https://uya.raconline.gg/tapi/robo/clans/id' #/clanId
+CLANS_API = 'https://uya.raconline.gg/tapi/robo/clans/name' #/clanName
 CACHE_LIMIT = 20
 class Player():
     def __init__(self, packet) -> None:
@@ -13,18 +13,17 @@ class Player():
         self.username = self.packet['username']
         self.status = self.packet['status']
         self.ladderstatswide = self.packet['ladderstatswide']
-        self.clan_id = getClanId(self.packet['stats'])['clan_id']
-        self.clan_name = None
-        if self.clan_id != -1:
+        # self.clan_id = getClanId(self.packet['stats'])['clan_id']
+        self.clan_name = self.packet['clan']
+        self.clan_tag = self.packet['clan_tag']
+        if self.clan_name != "":
             try:
-                res = requests.get(f"{CLANS_API}/{self.clan_id}").json()
+                res = requests.get(f"{CLANS_API}/{self.clan_name}").json()
             except:
                 res = {}
-            self.clan_name = res['clan_name']
-            self.clan_tag = getClanTag(res['clan_stats']) if len(res) > 0 else ""
-            self.clan_tag = "".join([char for char in self.clan_tag if len(char)==1])
+            self.clan_id = res['clan_id']
         else:
-            self.clan_tag = ""
+            self.clan_id = -1
     def updateCache(self):
         '''if player is in the cache. 
         this will increment ticks by 1 until threshold is met and is resets.

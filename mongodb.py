@@ -541,9 +541,6 @@ class Database():
         except:
             res = {}
         if len(res) > 0:
-            clan_tag = getClanTag(res['clan_stats'])
-            clan_tag = "".join([char for char in clan_tag if len(char)==1])
-
             self.collection.insert_one(
                     {
                         "clan_name":res['clan_name'],
@@ -551,7 +548,7 @@ class Database():
                         'leader_account_id':res['leader_account_id'],
                         'leader_account_name':res['leader_account_name'],
                         "stats": HexToClanstatswide(res['clan_statswide']),
-                        'clan_tag': clan_tag,
+                        'clan_tag': res['clan_tag'],
                         'member_names':[],
                         'member_ids':[],
                         'clan_name_lower': res['clan_name'].lower()         
@@ -617,9 +614,11 @@ class Database():
                 if player.clan_id != cached_clan_id or player.clan_name != cached_clan_name:
                     new_clan = self.getClan(player.clan_id)
                     updatedIds = new_clan['member_ids']
-                    updatedIds.append(player.id)
                     updatedNames = new_clan['member_names']
-                    updatedNames.append(player.username)
+
+                    if player.id not in updatedIds:
+                        updatedIds.append(player.id)
+                        updatedNames.append(player.username)
                     self.collection.find_one_and_update(
                             {
                                 "clan_id":player.clan_id
