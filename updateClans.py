@@ -7,7 +7,7 @@ import requests
 clans = Database("UYA","Clans")
 players = Database("UYA","Player_Stats")
 
-CLANS_API = 'https://uya.raconline.gg/tapi/robo/clans/id/{}' #/id
+CLANS_API = 'https://uya.raconline.gg/tapi/robo/robo/clans/id/{}' #/id
 
 def updateAllClans():
     for clan in clans.collection.find():
