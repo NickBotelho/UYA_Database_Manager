@@ -78,7 +78,7 @@ class Database():
                 }
             )
     def getEloId(self, elo, player):
-        url = 'https://uya.raconline.gg/tapi/robo/robo/alts/{}'
+        url = 'http://107.155.81.113:8281/robo/alts/{}'
         encoded_name = urllib.parse.quote(player)
         accounts = requests.get(url.format(encoded_name))
 
@@ -531,7 +531,7 @@ class Database():
         return (winner_names, loser_names), (winner_e, loser_e)
     def addNewClan(self, clan_id):
         '''add new clan to DB given clan id'''
-        CLANS_API = 'https://uya.raconline.gg/tapi/robo/robo/clans/id' #/id
+        CLANS_API = 'http://107.155.81.113:8281/robo/clans/id' #/id
         existing_clan = self.collection.find_one({'clan_id':clan_id})
         if existing_clan != None:
             #This executes if a new clan has the same ID as a deleted clan

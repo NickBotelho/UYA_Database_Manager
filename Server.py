@@ -4,8 +4,8 @@ from Player import Player
 from Game import Game
 from HashId import hash_id
 
-PLAYERS_API = 'https://uya.raconline.gg/tapi/robo/robo/players'
-GAMES_API = 'https://uya.raconline.gg/tapi/robo/robo/games'
+PLAYERS_API = 'http://107.155.81.113:8281/robo/players'
+GAMES_API = 'http://107.155.81.113:8281/robo/games'
 def getOnlinePlayers(players, clans, player_stats):
     '''Returns a dict of playername --> Player class object that hold various things (see player.py)
     Will also log off players who got off '''
