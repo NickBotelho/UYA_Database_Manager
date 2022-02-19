@@ -126,7 +126,7 @@ class Database():
                 })
                 return fresh_id
         print(f"Error assigning Elo id to {player}")
-        return -1
+        return elo.collection.count_documents({})
     def logPlayerOff(self, online, name):
         player = self.collection.find_one({"name":name})   
         start = online[name]
@@ -514,7 +514,10 @@ class Database():
         for name in winner_names:
             try:
                 player = self.collection.find_one({'username': name})
-                player_elo = elo.collection.find_one({'elo_id':player['elo_id']})[type]
+                if player['elo_id'] == -1:
+                    self.checkForAlts(name, elo)
+                else:
+                    player_elo = elo.collection.find_one({'elo_id':player['elo_id']})[type]
                 winner_elo+=player_elo
             except:
                 print("Error Grabbing Elo of {} with id {}".format(name, player['elo_id']))
@@ -523,7 +526,10 @@ class Database():
         for name in loser_names:
             try:
                 player = self.collection.find_one({'username': name})
-                player_elo = elo.collection.find_one({'elo_id':player['elo_id']})[type]
+                if player['elo_id'] == -1:
+                    self.checkForAlts(name, elo)
+                else:
+                    player_elo = elo.collection.find_one({'elo_id':player['elo_id']})[type]
                 loser_elo+=player_elo  
             except:
                 print("Error Grabbing Elo of {} with id {}".format(name, player['elo_id']))
@@ -675,8 +681,57 @@ class Database():
     def getClan(self, id):
         '''get a clan object from id'''
         return self.collection.find_one({"clan_id":id})
+    def checkForAlts(self, player, elo):
+        url = 'http://107.155.81.113:8281/robo/alts/{}'
+        encoded_name = urllib.parse.quote(player)
+        accounts = requests.get(url.format(encoded_name))
 
-            
+        accounts=accounts.json() if accounts.status_code == 200 else [player]
+        if accounts == '[]' or len(accounts) == 1:
+            fresh_id = elo.collection.count_documents({})
+
+            elo.collection.insert_one({
+                'elo_id':fresh_id,
+                'overall':1200,
+                'CTF':1200,
+                "Siege":1200,
+                'Deathmatch':1200,
+                'accounts' : [player],
+            })
+            return None
+        for alt in accounts:
+            alt_id = self.collection.find_one({'username':alt})
+            if alt_id != None:
+                alt_id = alt_id['elo_id']
+                eloAccount = elo.collection.find_one({'elo_id':alt_id})
+                if eloAccount == None: continue
+                alts = eloAccount['accounts']
+                alts.append(player)
+                elo.collection.find_one_and_update(
+                    {
+                        'elo_id':alt_id
+                    },
+                    {
+                        '$set':{
+                            'accounts':alts
+                        }
+                    }
+                )
+                return None
+            else:
+                fresh_id = elo.collection.count_documents({})
+                elo.collection.insert_one({
+                'elo_id': fresh_id,
+                'overall':1200,
+                'CTF':1200,
+                "Siege":1200,
+                'Deathmatch':1200,
+                'accounts' : [player],
+                })
+                return None
+        print(f"Error assigning Elo id to {player} after completed game")
+        return elo.collection.count_documents({})
+                
 
 
 
