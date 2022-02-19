@@ -80,53 +80,58 @@ class Database():
             )
     def getEloId(self, elo, player):
         url = 'http://107.155.81.113:8281/robo/alts/{}'
-        encoded_name = urllib.parse.quote(player)
-        accounts = requests.get(url.format(encoded_name))
+        try:
+            encoded_name = urllib.parse.quote(player)
+            accounts = requests.get(url.format(encoded_name))
 
-        accounts=accounts.json() if accounts.status_code == 200 else [player]
-        if accounts == '[]' or len(accounts) == 1:
-            fresh_id = elo.collection.count_documents({})
-
-            elo.collection.insert_one({
-                'elo_id':fresh_id,
-                'overall':1200,
-                'CTF':1200,
-                "Siege":1200,
-                'Deathmatch':1200,
-                'accounts' : [player],
-            })
-            return fresh_id
-        for alt in accounts:
-            alt_id = self.collection.find_one({'username':alt})
-            if alt_id != None:
-                alt_id = alt_id['elo_id']
-                eloAccount = elo.collection.find_one({'elo_id':alt_id})
-                if eloAccount == None: continue
-                alts = eloAccount['accounts']
-                alts.append(player)
-                elo.collection.find_one_and_update(
-                    {
-                        'elo_id':alt_id
-                    },
-                    {
-                        '$set':{
-                            'accounts':alts
-                        }
-                    }
-                )
-                return alt_id
-            else:
+            accounts=accounts.json() if accounts.status_code == 200 else [player]
+            if accounts == '[]' or len(accounts) == 1:
                 fresh_id = elo.collection.count_documents({})
+
                 elo.collection.insert_one({
-                'elo_id': fresh_id,
-                'overall':1200,
-                'CTF':1200,
-                "Siege":1200,
-                'Deathmatch':1200,
-                'accounts' : [player],
+                    'elo_id':fresh_id,
+                    'overall':1200,
+                    'CTF':1200,
+                    "Siege":1200,
+                    'Deathmatch':1200,
+                    'accounts' : [player],
                 })
                 return fresh_id
-        print(f"Error assigning Elo id to {player}")
+            for i, alt in enumerate(accounts):
+                alt_id = self.collection.find_one({'username':alt})
+                if alt_id != None or i <= len(accounts) - 1:
+                    if alt_id == None: continue
+                    alt_id = alt_id['elo_id']
+                    eloAccount = elo.collection.find_one({'elo_id':alt_id})
+                    if eloAccount == None: continue
+                    alts = eloAccount['accounts']
+                    alts.append(player)
+                    elo.collection.find_one_and_update(
+                        {
+                            'elo_id':alt_id
+                        },
+                        {
+                            '$set':{
+                                'accounts':alts
+                            }
+                        }
+                    )
+                    return alt_id
+                else:
+                    fresh_id = elo.collection.count_documents({})
+                    elo.collection.insert_one({
+                    'elo_id': fresh_id,
+                    'overall':1200,
+                    'CTF':1200,
+                    "Siege":1200,
+                    'Deathmatch':1200,
+                    'accounts' : [player],
+                    })
+                    return fresh_id
+        except:
+            print(f"Error assigning Elo id to {player}")
+            print("RECOMPILE ELO!")
+        print(f"Assigned ID {elo.collection.count_documents({})} to {player}")
         return elo.collection.count_documents({})
     def logPlayerOff(self, online, name):
         player = self.collection.find_one({"name":name})   
