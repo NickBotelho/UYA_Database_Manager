@@ -84,20 +84,23 @@ class Database():
 
         accounts=accounts.json() if accounts.status_code == 200 else [player]
         if accounts == '[]' or len(accounts) == 1:
+            fresh_id = elo.collection.count_documents({})
+
             elo.collection.insert_one({
-                'elo_id':elo.collection.count_documents({}),
+                'elo_id':fresh_id,
                 'overall':1200,
                 'CTF':1200,
                 "Siege":1200,
                 'Deathmatch':1200,
                 'accounts' : [player],
             })
-            return elo.collection.count_documents({})
+            return fresh_id
         for alt in accounts:
             alt_id = self.collection.find_one({'username':alt})
             if alt_id != None:
                 alt_id = alt_id['elo_id']
                 eloAccount = elo.collection.find_one({'elo_id':alt_id})
+                if eloAccount == None: continue
                 alts = eloAccount['accounts']
                 alts.append(player)
                 elo.collection.find_one_and_update(
