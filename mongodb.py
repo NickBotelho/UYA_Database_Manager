@@ -1,3 +1,4 @@
+import enum
 import pymongo
 import time
 from config import MongoPW, MongoUser
@@ -229,7 +230,7 @@ class Database():
                     self.addToDB(onlinePlayers[id].username, onlinePlayers[id], elo)
             
             elif player['status'] == 0:
-                #############add advanced
+                if player['elo_id'] == -1: self.checkForAlts(player['username'], elo)
                 self.collection.find_one_and_update( #player logging in
                     {
                         "account_id":id
@@ -247,6 +248,7 @@ class Database():
                     }
                 )
             else:
+                if player['elo_id'] == -1: self.checkForAlts(player['username'], elo)
                 self.collection.find_one_and_update( #normal update
                     {
                         "account_id":id
@@ -262,6 +264,7 @@ class Database():
                         }
                     }
                 )
+            
         ################LOG PLAYERS OUT###############################
         for id in offline_players:
             self.collection.find_one_and_update( #reset their time
@@ -698,10 +701,19 @@ class Database():
                 'Deathmatch':1200,
                 'accounts' : [player],
             })
+            self.collection.find_one_and_update({
+                'username':player
+            },
+            {
+                '$set':{
+                    'elo_id':fresh_id
+                }
+            })
             return None
-        for alt in accounts:
+        for i, alt in enumerate(accounts):
             alt_id = self.collection.find_one({'username':alt})
-            if alt_id != None:
+            if alt_id != None or i <= len(accounts) - 1:
+                if alt_id == None: continue
                 alt_id = alt_id['elo_id']
                 eloAccount = elo.collection.find_one({'elo_id':alt_id})
                 if eloAccount == None: continue
@@ -717,18 +729,33 @@ class Database():
                         }
                     }
                 )
-                return None
-            else:
-                fresh_id = elo.collection.count_documents({})
-                elo.collection.insert_one({
-                'elo_id': fresh_id,
-                'overall':1200,
-                'CTF':1200,
-                "Siege":1200,
-                'Deathmatch':1200,
-                'accounts' : [player],
+                self.collection.find_one_and_update({
+                    'username':player
+                },
+                {
+                    '$set':{
+                        'elo_id':alt_id
+                    }
                 })
                 return None
+            fresh_id = elo.collection.count_documents({})
+            elo.collection.insert_one({
+            'elo_id': fresh_id,
+            'overall':1200,
+            'CTF':1200,
+            "Siege":1200,
+            'Deathmatch':1200,
+            'accounts' : [player],
+            })
+            self.collection.find_one_and_update({
+                'username':player
+            },
+            {
+                '$set':{
+                    'elo_id':fresh_id
+                }
+            })
+            return None
         print(f"Error assigning Elo id to {player} after completed game")
         return elo.collection.count_documents({})
                 
