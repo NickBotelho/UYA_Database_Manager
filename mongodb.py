@@ -355,7 +355,7 @@ class Database():
                 'entry_number' : entries+1
             }
         )
-    def addGameToPlayerHistory(self, game_id, player_ids, game_history, elo):
+    def addGameToPlayerHistory(self, game_id, player_ids, game_history, elo, logger):
         '''add a recent game to players stats'''
         game = game_history.collection.find_one( #grab the game
                 {
@@ -366,8 +366,8 @@ class Database():
         isTie = True if 'tie' in game['game_results'] else False
             
         if not isTie:
-            teams, overall_e = self.calculateGameElo(elo, game)
-            teams, gamemode_e = self.calculateGameElo(elo, game, type = game['gamemode'])
+            teams, overall_e = self.calculateGameElo(elo, game, logger )
+            teams, gamemode_e = self.calculateGameElo(elo, game, logger, type = game['gamemode'])
 
 
         ############################################
@@ -417,7 +417,7 @@ class Database():
                         }
                     }
                 )
-    def cancelGames(self, ended_games, player_stats, game_history, elo):
+    def cancelGames(self, ended_games, player_stats, game_history, elo, logger):
         '''Ended Games is a dict of id --> ended Game object and player stats is the DB object holding new stats'''
         '''removes ended games from the active games collection'''
         '''before we dump the game, we'll add it to the history collection'''
@@ -426,17 +426,17 @@ class Database():
             ended_games[id].end_time = time.time()
             game_results = None
             try:
-                game_results = self.calculateGameStats(ended_games[id], player_stats)
+                game_results = self.calculateGameStats(ended_games[id], player_stats, logger)
             except:
-                print("Game could not be logged. Possible reason: stat cheater present")
+                logger.critical("Game could not be logged. Possible reason: stat cheater present")
             finally:
                 self.collection.find_one_and_delete({'game_id':id})
 
                 if game_results: #will be none if games flagged as fake 
                     game_history.addGameToGameHistory(ended_games[id], game_results)
-                    player_stats.addGameToPlayerHistory(id, ended_games[id].player_ids, game_history, elo)
+                    player_stats.addGameToPlayerHistory(id, ended_games[id].player_ids, game_history, elo, logger)
 
-    def calculateGameStats(self, game, player_stats):
+    def calculateGameStats(self, game, player_stats, logger):
 
         '''returns true if the game was legit and finished, false if fake game or didnt finish'''
         'goes through each player in the game andd finds the difference between the cached stats and their updated stats'
@@ -509,7 +509,7 @@ class Database():
 
 
         return teams if total_kills > 0 and not isCheating else None
-    def calculateGameElo(self, elo, game, type = 'overall'):
+    def calculateGameElo(self, elo, game, logger, type = 'overall'):
         results = game['game_results']
         winner_names = [player['username'] for player in results['winners']]
         loser_names = [player['username'] for player in results['losers']]
@@ -518,24 +518,28 @@ class Database():
             try:
                 player = self.collection.find_one({'username': name})
                 if player['elo_id'] == -1:
+                    logger.warning("Player with elo id of -1 finished a game")
                     self.checkForAlts(name, elo)
                 else:
                     player_elo = elo.collection.find_one({'elo_id':player['elo_id']})[type]
                 winner_elo+=player_elo
             except:
-                print("Error Grabbing Elo of {} with id {}".format(name, player['elo_id']))
+                logger.critical("Error Grabbing Elo of {} with id {}".format(name, player['elo_id']))
+                logger.critical("need to recompile elo!!")
                 winner_elo+=1200
 
         for name in loser_names:
             try:
                 player = self.collection.find_one({'username': name})
                 if player['elo_id'] == -1:
+                    logger.warning("Player with elo id of -1 finished a game")
                     self.checkForAlts(name, elo)
                 else:
                     player_elo = elo.collection.find_one({'elo_id':player['elo_id']})[type]
                 loser_elo+=player_elo  
             except:
-                print("Error Grabbing Elo of {} with id {}".format(name, player['elo_id']))
+                logger.critical("Error Grabbing Elo of {} with id {}".format(name, player['elo_id']))
+                logger.critical("need to recompile elo!!")
                 loser_elo+=1200
 
         loser_elo/=len(loser_names) if len(loser_names) > 0 else 1

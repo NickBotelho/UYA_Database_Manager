@@ -3,6 +3,8 @@ import time
 import os
 from mongodb import Database
 import Game
+import logging
+
 player_stats = Database("UYA","Player_Stats")
 players_online = Database("UYA","Players_Online")
 game_history = Database("UYA", "Game_History")
@@ -12,52 +14,39 @@ elo=Database("UYA", 'Elo')
 os.environ['TZ'] = 'EST+05EDT,M4.1.0,M10.5.0'
 time.tzset()
 
-
 DEBUG = False
 if __name__ == "__main__":
     players = {}
     games = {}
     players_online.clear()
     games_active.clear()
-    print("Running...")
-    if not DEBUG:
-        while True:
-            players, offline_players = Server.getOnlinePlayers(players, clans, player_stats) #dict of {player id --> Player obj}
-            player_stats.updateOnlinePlayersStats(players, offline_players, elo)
-            players_online.addOnlinePlayers(players)
-            players_online.logPlayersOff(offline_players)
+    #init logger###
+    level = 'DEBUG' if DEBUG else "INFO"
+    logger = logging.getLogger("UYA Database Manager")
+    logger.setLevel(logging.getLevelName(level))
+    formatter = logging.Formatter("%(name)s | %(message)s")
+    sh = logging.StreamHandler()
+    sh.setFormatter(formatter)
+    sh.setLevel(logging.getLevelName(level))
+    logger.addHandler(sh)
+    ######
 
-            games, ended_games = Server.getGames(games)
-            Game.cacheStats(games, player_stats)
-            games_active.addGames(games)
-            games_active.cancelGames(ended_games, player_stats, game_history, elo)
-            
-            time.sleep(60*.5)
-    else:
-        while True:
-            print("Getting Players...")
-            players, offline_players = Server.getOnlinePlayers(players, clans, player_stats) #dict of {player id --> Player obj}
-            print("Updating DBs...")
-            player_stats.updateOnlinePlayersStats(players, offline_players, elo)
-            players_online.addOnlinePlayers(players)
-            players_online.logPlayersOff(offline_players)
+    logger.info("Running")
+    while True:
+        logger.debug("Getting Players...")
+        players, offline_players = Server.getOnlinePlayers(players, clans, player_stats) #dict of {player id --> Player obj}
+        player_stats.updateOnlinePlayersStats(players, offline_players, elo)
+        players_online.addOnlinePlayers(players)
+        players_online.logPlayersOff(offline_players)
 
+        games, ended_games = Server.getGames(games)
+        Game.cacheStats(games, player_stats)
 
-            print("Getting Games....")
-            games, ended_games = Server.getGames(games)
-            print(games)
-            print("Updating game DBs")
-            Game.cacheStats(games, player_stats)
-            games_active.addGames(games)
-            games_active.cancelGames(ended_games, player_stats, game_history, elo)
-
-            # Game.printGames(games)
-
-
-
-
-            print("Waiting...")
-            time.sleep(2*.5)
+        games_active.addGames(games)
+        games_active.cancelGames(ended_games, player_stats, game_history, elo, logger)
+        
+        logger.debug("Waiting...")
+        time.sleep(60*.5 if not DEBUG else 2*.5)
 
     
     
