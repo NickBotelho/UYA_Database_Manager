@@ -387,21 +387,22 @@ class Database():
 
             per_game = per_gm(player, game)
             per_minute = per_min(player, game)
-            player_elo = updateElo(username, player_elo,teams, overall_e, K=64, type = 'overall')
-            player_elo = updateElo(username, player_elo,teams, gamemode_e, K=64, type = game['gamemode'])
+            if not isTie:
+                player_elo = updateElo(username, player_elo,teams, overall_e, K=64, type = 'overall')
+                player_elo = updateElo(username, player_elo,teams, gamemode_e, K=64, type = game['gamemode'])
 
 
             
-            elo.collection.find_one_and_update(
-                {'elo_id':player['elo_id']},
-                {
-                    "$set":{
-                        'overall':player_elo['overall'],
-                        game['gamemode']:  player_elo[game['gamemode']]
+                elo.collection.find_one_and_update(
+                    {'elo_id':player['elo_id']},
+                    {
+                        "$set":{
+                            'overall':player_elo['overall'],
+                            game['gamemode']:  player_elo[game['gamemode']]
+                        }
                     }
-                }
 
-            )
+                )
             self.collection.find_one_and_update(
                     {
                         "account_id":id
