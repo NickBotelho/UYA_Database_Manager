@@ -74,7 +74,7 @@ class Game():
 
 def cacheStats(games, player_stats):
     for game_id in games:
-        if games[game_id].status == "In_Progress" and len(games[game_id].cached_stats) == 0:
+        if games[game_id].status == "In_Progress" and len(games[game_id].cached_stats) == 0 and not games[game_id].isCPU:
             player_ids = games[game_id].player_ids
             for id in player_ids:
                 player_info =  player_stats.collection.find_one({'account_id':id})
