@@ -326,7 +326,9 @@ class Database():
                 self.collection.insert_one(
                     {
                         'game_id':games[id].id,
-                        'details':games[id].details()
+                        "dme_id":games[id].dme_id,
+                        'details':games[id].details(),
+                        
                     }
             )
             else:

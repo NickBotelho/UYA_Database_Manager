@@ -38,7 +38,7 @@ def getOnlinePlayers(players, clans, player_stats):
 
 
 def getGames(games):
-    '''Returns a list of '''
+    '''Returns a list of active games'''
     try:
         res = requests.get(GAMES_API).json()
     except:

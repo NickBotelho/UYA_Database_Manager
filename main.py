@@ -4,34 +4,28 @@ import os
 from mongodb import Database
 import Game
 import logging
+from blarg.blarg import Blarg
 
-player_stats = Database("UYA","Player_Stats")
-players_online = Database("UYA","Players_Online")
-game_history = Database("UYA", "Game_History")
-games_active = Database("UYA","Games_Active")
-clans = Database("UYA", "Clans")
-elo=Database("UYA", 'Elo')
+import asyncio
+import websockets
+from collections import deque
+import json
+
+
 os.environ['TZ'] = 'EST+05EDT,M4.1.0,M10.5.0'
 time.tzset()
 
-DEBUG = False
-if __name__ == "__main__":
+async def update():
+    player_stats = Database("UYA","Player_Stats")
+    players_online = Database("UYA","Players_Online")
+    game_history = Database("UYA", "Test_Game_History")
+    games_active = Database("UYA","Games_Active")
+    clans = Database("UYA", "Clans")
+    elo=Database("UYA", 'Elo')
     players = {}
     games = {}
     players_online.clear()
     games_active.clear()
-    #init logger###
-    level = 'DEBUG' if DEBUG else "INFO"
-    logger = logging.getLogger("UYA Database Manager")
-    logger.setLevel(logging.getLevelName(level))
-    formatter = logging.Formatter("%(name)s | %(message)s")
-    sh = logging.StreamHandler()
-    sh.setFormatter(formatter)
-    sh.setLevel(logging.getLevelName(level))
-    logger.addHandler(sh)
-    ######
-
-    logger.info("Running")
     while True:
         logger.debug("Getting Players...")
         players, offline_players = Server.getOnlinePlayers(players, clans, player_stats) #dict of {player id --> Player obj}
@@ -46,7 +40,53 @@ if __name__ == "__main__":
         games_active.cancelGames(ended_games, player_stats, game_history, elo, logger)
         
         logger.debug("Waiting...")
-        time.sleep(60*.5 if not DEBUG else 2*.5)
+        await asyncio.sleep(60*.5 if not DEBUG else 60*5)
+    
+async def main():
+    config = read_config("blarg/config.json")
+    blarg = Blarg(config)
+
+    socket = loop.create_task(blarg.read_websocket())
+    stats = loop.create_task(update())
+    garbageCollection = loop.create_task(blarg.garbageCollect())
+
+    await asyncio.wait([stats, socket, garbageCollection])
+
+
+
+def read_config(config_file='config.json'):
+    with open(config_file, 'r') as f:
+        return json.loads(f.read())
+
+
+DEBUG = True
+# DEBUG = False
+if __name__ == "__main__":
+    #init logger###
+    level = 'DEBUG' if DEBUG else "INFO"
+    logger = logging.getLogger("UYA Database Manager")
+    logger.setLevel(logging.getLevelName(level))
+    formatter = logging.Formatter("%(name)s | %(message)s")
+    sh = logging.StreamHandler()
+    sh.setFormatter(formatter)
+    sh.setLevel(logging.getLevelName(level))
+    logger.addHandler(sh)
+    ######
+
+    logger.info("Running")
+    loop = asyncio.get_event_loop()
+
+
+    loop.run_until_complete(main())
+    loop.close()
+
+
+
 
     
     
+
+
+
+
+
