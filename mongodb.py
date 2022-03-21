@@ -437,7 +437,7 @@ class Database():
             try:
                 game_results = self.calculateGameStats(ended_games[id], player_stats, logger)
             except:
-                logger.critical("Game could not be logged. Possible reason: stat cheater present")
+                logger.warning("Game could not be logged. Possible reason: stat cheater present or bot")
             finally:
                 self.collection.find_one_and_delete({'game_id':id})
 
