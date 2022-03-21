@@ -28,7 +28,7 @@ class Game():
         self.player_ids = [player['account_id'] for player in self.packet['players']]
         self.player_names = [player['username'] for player in self.packet['players']]
         self.dme_id = self.packet['dme_world_id']
-
+        self.isCPU = self.packet["is_cpu_game"]
         ##########Status##########
         self.creation_time = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(self.packet['created_date']))
         self.status = GAME_STATUS[self.packet['status']] if self.packet['status'] in GAME_STATUS else "Zombie/Ghost Game"
@@ -74,7 +74,7 @@ class Game():
 
 def cacheStats(games, player_stats):
     for game_id in games:
-        if games[game_id].status == "In_Progress" and len(games[game_id].cached_stats) == 0:
+        if games[game_id].status == "In_Progress" and len(games[game_id].cached_stats) == 0 and not games[game_id].isCPU:
             player_ids = games[game_id].player_ids
             for id in player_ids:
                 player_info =  player_stats.collection.find_one({'account_id':id})
