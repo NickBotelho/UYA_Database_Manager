@@ -28,7 +28,7 @@ class Game():
         self.player_ids = [player['account_id'] for player in self.packet['players']]
         self.player_names = [player['username'] for player in self.packet['players']]
         self.dme_id = self.packet['dme_world_id']
-
+        self.isCPU = self.packet["is_cpu_game"]
         ##########Status##########
         self.creation_time = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(self.packet['created_date']))
         self.status = GAME_STATUS[self.packet['status']] if self.packet['status'] in GAME_STATUS else "Zombie/Ghost Game"

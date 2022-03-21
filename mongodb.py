@@ -229,7 +229,7 @@ class Database():
             player = self.collection.find_one({"account_id":id})
             if player == None:
                 stats = HextoLadderstatswide(onlinePlayers[id].ladderstatswide)
-                if stats_cheated(stats):
+                if stats_cheated(stats) or isBot(onlinePlayers[id].username):
                     continue
                 else:
                     self.addToDB(onlinePlayers[id].username, onlinePlayers[id], elo)
@@ -295,6 +295,7 @@ class Database():
     def addOnlinePlayers(self, players):
         '''Add players to the online list if theyre not on it'''
         for id in players:
+            if isBot(players[id].username): continue
             player = self.collection.find_one({'account_id':id})
             if player == None:
                 self.collection.insert_one(
@@ -456,6 +457,9 @@ class Database():
         }
         total_kills = 0
         isCheating = False
+        isCPU = game.isCPU
+        if isCPU:
+            return False
 
         for id in game.player_ids:
             cache= None
@@ -947,7 +951,11 @@ def updateElo(username, player_elo, teams, e, K=64, type = 'overall'):
         player_elo[type] = getAdjusted(player_elo[type], e[1], K, 0)
 
     return player_elo
+def isBot(username):
+    '''bot names have prefixes of cpu so return false if the prefix is not cpu'''
+    if len(username) <3: return False
 
+    return username[:3].lower() == 'cpu'
 
 
 
