@@ -27,6 +27,7 @@ class Game():
         self.id = hash_id(self.packet)
         self.player_ids = [player['account_id'] for player in self.packet['players']]
         self.player_names = [player['username'] for player in self.packet['players']]
+        self.dme_id = self.packet['dme_world_id']
 
         ##########Status##########
         self.creation_time = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(self.packet['created_date']))
