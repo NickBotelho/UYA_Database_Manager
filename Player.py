@@ -16,7 +16,8 @@ class Player():
         # self.clan_id = getClanId(self.packet['stats'])['clan_id']
         self.clan_name = self.packet['clan']
         self.clan_tag = self.packet['clan_tag']
-        if self.clan_name != "":
+        self.isBot = isBot(self.username)
+        if self.clan_name != "" and not self.isBot:
             try:
                 res = requests.get(f"{CLANS_API}/{self.clan_name}").json()
             except:
@@ -36,3 +37,8 @@ class Player():
         self.username = packet['username']
         self.status = packet['status']
         self.ladderstatswide = packet['ladderstatswide']
+def isBot(username):
+    '''bot names have prefixes of cpu so return false if the prefix is not cpu'''
+    if len(username) <3: return False
+
+    return username[:3].lower() == 'cpu'

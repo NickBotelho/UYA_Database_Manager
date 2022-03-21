@@ -23,9 +23,11 @@ def getOnlinePlayers(players, clans, player_stats):
             players[player['account_id']].softUpdate(player)
             update = players[player['account_id']].updateCache()
         if update:
-            players[player['account_id']] = Player(player)
-            clans.updateClans(players[player['account_id']],  player_stats)
-
+            plyr = Player(player)
+            if not plyr.isBot: #make sure player is not a bot
+                players[player['account_id']] = plyr
+                clans.updateClans(players[player['account_id']],  player_stats)
+            #skip player if its a bot
 
     offline_ids = {}
     for player_id in players: #loop that check if a cached player is not in the online list and logs them off
