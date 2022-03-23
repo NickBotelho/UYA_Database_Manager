@@ -7,6 +7,8 @@ class Player():
         self.hp = 0
         self.deaths = 0
         self.caps = 0
+        self.x, self.y = -1, -1
+        self.isPlaced = False
     def __str__(self):
         return "{} HP = {}, Kills = {}, Deaths = {}, Caps = {}".format(self.username, self.hp, self.kills, self.deaths, self.caps)
     def adjustHP(self, hp):
@@ -32,5 +34,13 @@ class Player():
             'team':self.team
         }
         return state
+    def place(self, coords):
+        self.x = coords[0]
+        self.y = coords[1]
+        self.isPlaced = True
+    def unPlace(self):
+        self.x, self.y = -1, -1
+        self.isPlaced = False
+
         
 

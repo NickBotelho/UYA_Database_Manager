@@ -52,7 +52,7 @@ AI = {
     249:"Shock Droids"
 }
 class LiveGame():
-    def __init__(self, dme_id = None, delay = False, delayTime = 1) -> None:
+    def __init__(self, dme_id = None, delay = True, delayTime = 15) -> None:
         '''
         itos = index to string
         ntt = name to team
@@ -77,6 +77,7 @@ class LiveGame():
         self.logger = BatchLogger(level, self.dme_id)
         self.createTime = datetime.datetime.now()
         self.delay = delay
+        self.numPlaced = 0
         if delay:
             self.delayTime = delayTime #in seconds
             self.pipe = []
@@ -124,9 +125,10 @@ class LiveGame():
         return self.state != 2
     def startGame(self, serialized, packet):
         '''triggers on game start'''
-        self.logger.info(f"STARTING GAME | DME ID = {self.dme_id}")
+        self.logger.info(f"| STARTING GAME! |")
         self.state = 1
         self.startTime = datetime.datetime.now()
+        self.logger.startTime = self.startTime
         res = requests.get(GAMES).json()
         self.game = None
         self.current_time = 0
@@ -136,7 +138,7 @@ class LiveGame():
                 break
         for team in set(self.ntt.values()):
             self.teams[team] = [player for player in self.ntt if self.ntt[player] == team]
-        self.logger.info(self.teams)
+        self.logger.debug(self.teams)
         self.map = game['map']
         self.logger.setMap(self.map)
         self.mode = game['game_mode']
@@ -146,7 +148,7 @@ class LiveGame():
         self.scores = {team:0 for team in self.ntt.values()}
         self.hp_boxes = generateHealthIDs(self.map.lower(), nodes = False, base = game['advanced_rules']['baseDefenses'])
 
-        self.logger.critical(f"PREVIEW | MAP = {self.map} | MODE = {self.mode} | LIMIT = {self.limit}")
+        self.logger.critical(f"LIMIT = {self.limit}")
         self.logger.setScores(self.scores)
         # if len(self.scores) <= 1: print("Invalid Game Not Enough Teams")
         if not self.isImplemented():
@@ -165,7 +167,7 @@ class LiveGame():
                     username = self.itos[int(packet['src'])]
                     self.players[int(packet['src'])].cap()
                     team = self.ntt[username]
-                    self.logger.info(f"{EVENTS[event]} | TEAM = {team} | PLAYER = {username}")
+                    self.logger.info(f"{EVENTS[event]} by {username}")
                     self.scores[team] += 1
                     update = "SCORE UPDATE: "
                     for team in self.scores:
@@ -193,12 +195,20 @@ class LiveGame():
 
         elif packet_id == '020E' and packet['type'] == 'udp':
             self.logger.debug(f"{self.itos[int(serialized['src'])]} is {EVENTS[serialized['event']]} a {serialized['weapon']}")
-        elif packet_id == '0204' and packet['type'] == 'tcp':
+        elif packet_id == '0204' and packet['type'] == 'tcp': #KILLS
             if serialized['killer_id'] > 7:
-                self.logger.info(f"{AI[int(serialized['killer_id'])]} {EVENTS[serialized['event']]} {self.itos[int(serialized['killed_id'])]}")
+                self.logger.info(f"{self.itos[int(serialized['killed_id'])]} Died")
+                if self.mode == 'Deathmatch':
+                    username = self.itos[int(serialized['killed_id'])]
+                    team = self.ntt[username]
+                    self.scores[team] -=1
             else:
                 self.logger.info(f"{self.itos[int(serialized['killer_id'])]} {EVENTS[serialized['event']]} {self.itos[int(serialized['killed_id'])]} with {serialized['weapon']}")
                 self.players[int(serialized['killer_id'])].kill()
+                if self.mode == 'Deathmatch':
+                    username = self.itos[int(serialized['killer_id'])]
+                    team = self.ntt[username]
+                    self.scores[team] +=1
             self.players[int(serialized['killed_id'])].death()
         elif packet_id == '0003' and packet['type'] == 'tcp':
             # assert int(serialized['src']) == int(packet['src'])
@@ -211,22 +221,25 @@ class LiveGame():
     def placeOnMap(self, serialized, packet):
         serialized['coord'].pop()
         point = serialized['coord']
-        packet_num = serialized['packet_num']
+        player_idx = int(packet['src'])
+        player = self.players[player_idx]
 
-        display = True if packet_num != self.current_time else False
+        if player.isPlaced == False:
+            player.place(point)
+            self.numPlaced+=1
+
+        display = True if self.numPlaced == len(self.players) else False
         if display:
-            self.current_time = packet_num
-            colors = [self.ntt[name] for name in self.names]
-            self.logger.setCoords((self.x, self.y, self.names, colors))
+            colors = [self.players[i].team for i in self.players]
+            x = [self.players[i].x for i in self.players]
+            y = [self.players[i].y for i in self.players]
+            hp = [self.players[i].hp for i in self.players]
+            names = [self.players[i].username for i in self.players]
+            self.logger.setCoords((x, y, names, colors, hp))
             self.logger.setStates(self.players)
             self.logger.log()
-            self.logger.flush()
-
-            self.x, self.y, self.names = [], [] ,[]
-        self.x.append(point[0])
-        self.y.append(point[1])
-        self.names.append(self.itos[packet['src']])
-
+            self.logger.flush(self.players)
+            self.numPlaced = 0
     def isImplemented(self):
         # return self.map in READY_MAPS and self.mode in READY_MODES
         return True
@@ -286,3 +299,4 @@ class LiveGame():
 #So when a player G's up it sends a 0211 packet with their name, color, skin
 #ctf = = 'cap_limit'
 #tdm = 'frag'
+#Deathmatch 

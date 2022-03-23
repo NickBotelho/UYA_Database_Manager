@@ -43,6 +43,7 @@ async def update():
         await asyncio.sleep(60*.5 if not DEBUG else 60*5)
     
 async def main():
+
     config = read_config("blarg/config.json")
     blarg = Blarg(config)
 
@@ -59,8 +60,8 @@ def read_config(config_file='config.json'):
         return json.loads(f.read())
 
 
-DEBUG = True
-# DEBUG = False
+# DEBUG = True
+DEBUG = False
 if __name__ == "__main__":
     #init logger###
     level = 'DEBUG' if DEBUG else "INFO"

@@ -1,6 +1,6 @@
 {
 	"robo_ip": "107.155.81.113",
-	"logger": "ERROR",
+	"logger": "WARNING",
     "filter": "",
     "warn_on_unknown": "False"
 }

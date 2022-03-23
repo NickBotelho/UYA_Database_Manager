@@ -1,5 +1,6 @@
 from mongodb import Database
 import traceback
+import datetime
 # logs = Database("UYA", "Logger")
 VALUES = {
 
@@ -27,6 +28,7 @@ class BatchLogger():
         self.scores = {}
         self.currentMessage = 0
         self.cacheMessage = 0
+        self.startTime = None
     def debug(self, message):
         if type(message) != str:
             message = str(message)
@@ -52,10 +54,12 @@ class BatchLogger():
             message = str(message)
         if self.level <= 50:
             self.batch.append(message)
-    def flush(self):
+    def flush(self, players):
         # self.batch = []
         self.players = {}
         self.coords = {}
+        for i in players:
+            players[i].unPlace()
     def setMap(self, m):
         self.map = m
     def print(self):
@@ -71,6 +75,7 @@ class BatchLogger():
         self.coords['y'] = info[1]
         self.coords['names'] = info[2]
         self.coords['color'] = info[3]
+        self.coords['hp'] = info[4]
     def setStates(self, players):
         self.players = {}
         for i in players:
@@ -82,11 +87,15 @@ class BatchLogger():
         self.scores = scores
     def log(self):
         try:
-
+            duration = datetime.datetime.now() - self.startTime
             if not self.exists:
+                existing = self.mongo.collection.find_one({'dme_id':self.id})
+                if existing != None:
+                    self.mongo.collection.find_one_and_delete({'dme_id':self.id})
                 self.mongo.collection.insert_one({
                     'dme_id':self.id,
                     'map':self.map,
+                    'start_time':self.startTime,
                     'logger':self.batch,
                     'graph': self.coords,
                     'player_states': self.players,
@@ -105,6 +114,7 @@ class BatchLogger():
                         'player_states': self.players,
                         'scores':self.scores,
                         'batch_num':self.currentMessage,
+                        'duration': "{}:{}".format(duration.seconds//60, duration.seconds%60),
 
                     }
                 })

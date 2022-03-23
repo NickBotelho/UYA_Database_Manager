@@ -84,7 +84,7 @@ class Blarg:
             # Don't print correctly serialized unless it matches filter or the filter is empty.
             try:
                 if packet_id == '0004' and packet['dme_world_id'] not in self.games:
-                    self._logger.info(f"Creating Live Game for DME ID = {packet['dme_world_id']}")
+                    self._logger.warning(f"Creating Live Game for DME ID = {packet['dme_world_id']}")
                     self.games[packet['dme_world_id']] = LiveGame(dme_id=packet['dme_world_id'], delay=True)
                 if self._config['filter'] == packet_id or self._config['filter'] == '' :
                     if packet['dme_world_id'] in self.games:
@@ -106,25 +106,32 @@ class Blarg:
 
     async def read_websocket(self):
         uri = f"ws://{self._config['robo_ip']}:8765"
-        async with websockets.connect(uri) as websocket:
-            while True:
-                try:
-                    data = await websocket.recv()
-                    data = json.loads(data)
+        connected = True
+        while True:
+            async with websockets.connect(uri) as websocket:
+                while connected:
+                    try:
+                        data = await websocket.recv()
+                        data = json.loads(data)
 
-                    self._logger.debug(f"{data}")
-                    self.process(data)
-                except Exception as e:
-                    self._logger.critical("Problem with socket")
-                    self._logger.critical(e)
-                finally:
-                    continue
+                        self._logger.debug(f"{data}")
+                        self.process(data)
+                        connected = True
+                    except Exception as e:
+                        self._logger.critical("Problem with socket")
+                        self._logger.critical(e)
+                        self._logger.warning("Restarting socket in 60 seconds")
+                        connected = False
+                        await asyncio.sleep(60)
+                    finally:
+                        continue
     async def garbageCollect(self):
         minutes = 10
         while True:
             try:
                 self._logger.info("RUNNING GARBAGE COLLECTOR")
-                self._logger.info(f"before cleanup {self.games}")
+                before = len(self.games)
+                self._logger.info(f"before cleanup {before}")
                 currentTime = datetime.datetime.now()
                 stale = []
                 for dme_id in self.games:
@@ -135,13 +142,14 @@ class Blarg:
                         if (timeUp.total_seconds()//60) > 120:
                             game.endGame()
                             stale.append(dme_id)
-                    elif (totalTime.total_seconds()//60) > 180:
+                    elif (totalTime.total_seconds()//60) > 120:
                         game.endGame()
                         stale.append(dme_id)
                 for dme_id in stale:
                     del self.games[dme_id]
-                self._logger.info(f"after cleanup {self.games}")
-
+                after = len(self.games)
+                self._logger.info(f"after cleanup {after}")
+                self._logger.error(f"GARBAGE COLLECTOR REMOVED {after - before} GAMES")
                 await asyncio.sleep(60*minutes)
             except Exception as e:
                 self._logger.critical("Problem collection garbage")
