@@ -18,7 +18,7 @@ time.tzset()
 async def update():
     player_stats = Database("UYA","Player_Stats")
     players_online = Database("UYA","Players_Online")
-    game_history = Database("UYA", "Test_Game_History")
+    game_history = Database("UYA", "Game_History")
     games_active = Database("UYA","Games_Active")
     clans = Database("UYA", "Clans")
     elo=Database("UYA", 'Elo')
@@ -40,7 +40,7 @@ async def update():
         games_active.cancelGames(ended_games, player_stats, game_history, elo, logger)
         
         logger.debug("Waiting...")
-        await asyncio.sleep(60*.5 if not DEBUG else 60*5)
+        await asyncio.sleep(60*.5)
     
 async def main():
 
