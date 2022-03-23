@@ -9,4 +9,4 @@ updateDB.py
 updateElo.py
 Oracle.py
 recompileElo.py
-utils.py
+eloUtils.py
