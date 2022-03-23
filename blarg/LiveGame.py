@@ -76,6 +76,7 @@ class LiveGame():
         # level = "CRITICAL"
         self.logger = BatchLogger(level, self.dme_id)
         self.createTime = datetime.datetime.now()
+        self.startTime = datetime.datetime.now()
         self.delay = delay
         self.numPlaced = 0
         if delay:
