@@ -2,5 +2,7 @@
 	"robo_ip": "107.155.81.113",
 	"logger": "WARNING",
     "filter": "",
-    "warn_on_unknown": "False"
+    "warn_on_unknown": "False",
+    "delay":"True",
+    "delayTime": "15"
 }
