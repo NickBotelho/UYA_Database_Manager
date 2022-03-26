@@ -111,23 +111,21 @@ class Blarg:
         connected = True
         while True:
             self._logger.error("SOCKET STARTING")
+            connected = True
             async with websockets.connect(uri) as websocket:
                 while connected:
                     try:
                         data = await websocket.recv()
                         data = json.loads(data)
-
                         self._logger.debug(f"{data}")
                         self.process(data)
-                        connected = True
                     except Exception as e:
                         self._logger.critical("Problem with socket")
                         self._logger.critical(e)
                         self._logger.warning("Restarting socket in 60 seconds")
                         connected = False
                         await asyncio.sleep(60)
-                    finally:
-                        continue
+
     async def garbageCollect(self):
         minutes = 25
         self._logger.error("INITIALIZING GARBAGE COLLECTOR")
