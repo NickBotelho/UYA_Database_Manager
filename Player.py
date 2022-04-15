@@ -41,4 +41,4 @@ def isBot(username):
     '''bot names have prefixes of cpu so return false if the prefix is not cpu'''
     if len(username) <3: return False
 
-    return username[:3].lower() == 'cpu'
+    return username[:3].lower() == 'cpu' 

@@ -6,3 +6,7 @@ general.py
 backups
 freeBlitz.py
 updateDB.py
+updateElo.py
+Oracle.py
+recompileElo.py
+eloUtils.py

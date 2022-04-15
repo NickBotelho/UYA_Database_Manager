@@ -27,7 +27,7 @@ def getOnlinePlayers(players, clans, player_stats):
             if not plyr.isBot: #make sure player is not a bot
                 players[player['account_id']] = plyr
                 clans.updateClans(players[player['account_id']],  player_stats)
-            #skip player if its a bot
+
 
     offline_ids = {}
     for player_id in players: #loop that check if a cached player is not in the online list and logs them off
@@ -40,7 +40,7 @@ def getOnlinePlayers(players, clans, player_stats):
 
 
 def getGames(games):
-    '''Returns a list of '''
+    '''Returns a list of active games'''
     try:
         res = requests.get(GAMES_API).json()
     except:

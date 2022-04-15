@@ -295,7 +295,7 @@ class Database():
     def addOnlinePlayers(self, players):
         '''Add players to the online list if theyre not on it'''
         for id in players:
-            if isBot(players[id].username): continue
+            if isBot(players[id].username): continue #bot check
             player = self.collection.find_one({'account_id':id})
             if player == None:
                 self.collection.insert_one(
@@ -437,7 +437,7 @@ class Database():
             try:
                 game_results = self.calculateGameStats(ended_games[id], player_stats, logger)
             except:
-                logger.warning("Game could not be logged. Possible reason: stat cheater present or bot")
+                logger.error("Game was not logged. either bot game or stat cheater")
             finally:
                 self.collection.find_one_and_delete({'game_id':id})
 
@@ -460,7 +460,6 @@ class Database():
         isCPU = game.isCPU
         if isCPU:
             return False
-
         for id in game.player_ids:
             cache= None
             updated_player_entry = player_stats.collection.find_one({'account_id':id})
@@ -955,8 +954,11 @@ def isBot(username):
     '''bot names have prefixes of cpu so return false if the prefix is not cpu'''
     if len(username) <3: return False
 
-    return username[:3].lower() == 'cpu'
+def isBot(username):
+    '''bot names have prefixes of cpu so return false if the prefix is not cpu'''
+    if len(username) <3: return False
 
+    return username[:3].lower() == 'cpu'
 
 
 
