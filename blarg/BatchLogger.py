@@ -88,7 +88,7 @@ class BatchLogger():
     def log(self):
         try:
             now = datetime.datetime.now()
-            duration = now - self.startTime
+            duration = now - self.startTime if self.startTime != None else now - now
             if not self.exists:
                 existing = self.mongo.collection.find_one({'dme_id':self.id})
                 if existing != None:
