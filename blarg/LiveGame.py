@@ -67,7 +67,7 @@ class LiveGame():
         self.scores = {}
         self.state = 0
         self.lobby = {}
-        self.players = {} #holds pllayer objs
+        self.players = {} #holds player objs
         self.liveMap = True
         self.startTime = None
         self.flags = {}
@@ -122,7 +122,10 @@ class LiveGame():
             # self.parseLobby()
         elif packet_id in GAME_EVENTS and self.state == 1:
             self.processEvent(packet_id, serialized, packet)
-
+        elif self.state == 0 and packet_id == '0209' and packet['type'] == 'udp':
+            self.parseLobby()
+            self._initPlayers()
+            self.startGame(serialized, packet)
         return self.state != 2
     def startGame(self, serialized, packet):
         '''triggers on game start'''
