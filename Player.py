@@ -20,7 +20,7 @@ class Player():
         self.isBot = isBot(self.username)
         if self.clan_name != "" and not self.isBot:
             try:
-                self.clan_name = urllib.parse.quote_plus(self.clan_name)
+                self.clan_name = urllib.parse.quote(self.clan_name)
                 query = f"{CLANS_API}/{self.clan_name}"
                 res = requests.get(query).json()
             except:
