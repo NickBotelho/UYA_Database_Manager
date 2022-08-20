@@ -1,5 +1,6 @@
 from Parsers.PlayerClanParser import getClanId
 from Parsers.ClanStatsParser import getClanTag
+import urllib.parse
 import requests
 CLANS_API = 'http://107.155.81.113:8281/robo/clans/name' #/clanName
 CACHE_LIMIT = 20
@@ -19,7 +20,9 @@ class Player():
         self.isBot = isBot(self.username)
         if self.clan_name != "" and not self.isBot:
             try:
-                res = requests.get(f"{CLANS_API}/{self.clan_name}").json()
+                self.clan_name = urllib.parse.quote_plus(self.clan_name)
+                query = f"{CLANS_API}/{self.clan_name}"
+                res = requests.get(query).json()
             except:
                 res = {}
             self.clan_id = res['clan_id']
