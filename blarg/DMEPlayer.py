@@ -16,6 +16,10 @@ class Player():
         self.hasFlag = False
         self.flagPickups, self.flagDrops = 0, 0
         self.healthBoxesGrabbed = 0
+
+        self.stagedNick = False
+        self.nicker = None
+        self.nicksReceived, self.nicksGiven = 0, 0
     def __str__(self):
         return "{} HP = {}, Kills = {}, Deaths = {}, Caps = {}".format(self.username, self.hp, self.kills, self.deaths, self.caps)
     def adjustHP(self, hp):
@@ -51,7 +55,9 @@ class Player():
             'blitz_shots':self.blitzShots,
             'blitz_hits':self.blitzHits,
             'blitz_accuracy':self.blitzAccuracy,
-            'health_boxes':self.healthBoxesGrabbed
+            'health_boxes':self.healthBoxesGrabbed,
+            'nicks_given':self.nicksGiven,
+            'nicks_received':self.nicksReceived
         }
         return state
     def place(self, coords):
@@ -79,5 +85,16 @@ class Player():
             self.blitzShots+=1
             self.blitzHits = self.blitzHits + 1 if serialized['player_hit'] != "FF" else self.blitzHits
             self.blitzAccuracy = round((self.blitzHits/self.blitzShots)*100, 1)
-        
-
+    def stageNick(self, nicker):
+        '''Nicker is the player object that shot the nickee'''
+        self.stagedNick = True
+        self.nicker = nicker
+    def checkNick(self, hp):
+        if self.stagedNick:
+            if abs(self.hp - hp) < 87:
+                self.nicker.addNick()
+                self.nicksReceived+=1
+            self.nicker = None
+            self.stagedNick = False
+    def addNick(self):
+        self.nicksGiven+=1
