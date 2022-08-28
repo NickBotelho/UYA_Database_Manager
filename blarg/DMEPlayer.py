@@ -1,10 +1,11 @@
+X12_UNIT = 35162
 class Player():
     def __init__(self, username, lobby_idx, team):
         self.username = username
         self.lobby_idx = lobby_idx
         self.team = team
         self.kills = 0
-        self.hp = 0
+        self.hp = 100
         self.deaths = 0
         self.caps = 0
         self.x, self.y = -1, -1
@@ -45,7 +46,7 @@ class Player():
             'deaths':self.deaths,
             'caps':self.caps,
             'team':self.team,
-            'distance_travelled':self.distanceTravelled,
+            'distance_travelled':round(self.distanceTravelled/X12_UNIT, 2),
             'hasFlag':self.hasFlag,
             'flag_pickups':self.flagPickups,
             'flag_drops':self.flagDrops,

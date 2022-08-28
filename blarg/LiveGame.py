@@ -13,6 +13,7 @@ import datetime
 from blarg.constants.constants import TIMES
 from blarg.utils.utils import generateFlagIDs, generateHealthIDs
 from Parsers.GamestateGameSettingsParser import hasNodes
+from HashId import hash_id
 logs = Database("UYA", "Logger")
 GAMES = 'http://107.155.81.113:8281/robo/games'
 GAME_EVENTS = {'020C', '020A', '0200', '020E', '0204', '0003'}
@@ -81,6 +82,7 @@ class LiveGame():
         self.startTime = datetime.datetime.now()
         self.delay = delay
         self.numPlaced = 0
+        self.uyaTrackerId = None
         if delay:
             self.delayTime = delayTime #in seconds
             self.pipe = []
@@ -143,6 +145,7 @@ class LiveGame():
             if game['dme_world_id'] == self.dme_id:
                 self.game = game
                 break
+        self.uyaTrackerId = hash_id(self.game)
         for team in set(self.ntt.values()):
             self.teams[team] = [player for player in self.ntt if self.ntt[player] == team]
         self.logger.debug(self.teams)
@@ -156,7 +159,6 @@ class LiveGame():
         self.hasNodes = self.hasNodes if self.hasNodes == None else False
         self.hp_boxes = generateHealthIDs(self.map.lower(), nodes = self.hasNodes, base = game['advanced_rules']['baseDefenses'])
         self.flags = generateFlagIDs(self.map, nodes = self.hasNodes, base=game['advanced_rules']['baseDefenses']) if self.mode == "CTF" else []
-        print(self.flags)
         self.logger.critical(f"LIMIT = {self.limit}")
         self.logger.setScores(self.scores)
         # if len(self.scores) <= 1: print("Invalid Game Not Enough Teams")
@@ -202,7 +204,7 @@ class LiveGame():
                         update = f"{self.itos[int(packet['src'])]} grabbed health"
                         self.players[int(packet['src'])].heal()
                 if update != None:
-                    # print(update)
+                    print(update)
                     self.logger.info(update)             
         elif packet_id == '020A' and packet['type'] == 'tcp':
             self.logger.info(f"{self.itos[int(serialized['player'])]} {EVENTS[serialized['event']]}")
@@ -210,7 +212,7 @@ class LiveGame():
 
         elif packet_id == '020E' and packet['type'] == 'udp':
             self.players[int(packet['src'])].fire(serialized)
-            # print(serialized)
+            print(serialized)
             if serialized['player_hit'] != "FF" and serialized['weapon'].lower() == 'flux':
                 self.players[int(serialized['player_hit'])].stageNick(self.players[int(packet['src'])])
             self.logger.debug(f"{self.itos[int(serialized['src'])]} is {EVENTS[serialized['event']]} a {serialized['weapon']}")
@@ -246,6 +248,8 @@ class LiveGame():
         if player.isPlaced == False:
             player.place(point)
             self.numPlaced+=1
+        else: # a player quit because the packets have looped a quit player
+            self.removeQuitPlayer()
 
         display = True if self.numPlaced == len(self.players) else False
         if display:
@@ -262,6 +266,13 @@ class LiveGame():
     def isImplemented(self):
         # return self.map in READY_MAPS and self.mode in READY_MODES
         return True
+    def removeQuitPlayer(self):
+        quitter = None
+        for player in self.players.values():
+            if player.isPlaced == False:
+                print(f"quitter detected {player}")
+                quitter = player
+        del self.players[quitter.lobby_idx]
     def getState(self):
         return STATE[self.state]
     def isLoaded(self):
@@ -291,7 +302,7 @@ class LiveGame():
     def endGame(self):
         self.state = 2
         self.logger.log()
-        self.logger.close()
+        self.logger.close(self.uyaTrackerId, self.players)
     def isComplete(self):
         '''returns true if the game is complete'''
         for team in self.scores:

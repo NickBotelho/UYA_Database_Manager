@@ -22,6 +22,7 @@ class BatchLogger():
         self.id = id
         self.map = None
         self.mongo = Database("UYA", "Logger")
+        self.liveHistory = Database("UYA", "LiveGame_History-Test")
         self.exists = False
         self.coords = {}
         self.players = {}
@@ -127,10 +128,16 @@ class BatchLogger():
             print("Problem logging")
             print(traceback.format_exc())
 
-    def close(self):
+    def close(self, uyaTrackerId, players):
+        '''close the game and save the states'''
+        self.setStates(players)
         try:
             self.mongo.collection.find_one_and_delete({
                 'dme_id':self.id
+            })
+            self.liveHistory.collection.insert_one({
+                'game_id':uyaTrackerId,
+                'results':self.players
             })
         except Exception as e:
             print("Problem closing")
