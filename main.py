@@ -52,6 +52,8 @@ async def main():
     garbageCollection = loop.create_task(blarg.garbageCollect())
 
     await asyncio.wait([stats, socket, garbageCollection])
+    # await asyncio.wait([socket, garbageCollection])
+
 
 
 

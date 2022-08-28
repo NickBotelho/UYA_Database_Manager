@@ -80,7 +80,7 @@ class Blarg:
                 self._logger.info(packet['dme_world_id'])
                 self._logger.info(traceback.format_exc())
                 data = []
-                packet_id = '-1'
+                packet_id = '-1' if packet_id != '0004' else packet_id
                 serialized = {}
 
             # Don't print correctly serialized unless it matches filter or the filter is empty.

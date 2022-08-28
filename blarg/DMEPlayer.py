@@ -12,7 +12,7 @@ class Player():
         self.lastX = -1
         self.distanceTravelled = 0
         self.fluxShots,self.fluxHits, self.fluxAccuracy = 0,0,0
-        self.blitzShots,self.blitzHits, self.blitzAccuracy = 0,0,0
+        self.blitzShots,self.gravityBombShots= 0,0
         self.hasFlag = False
         self.flagPickups, self.flagDrops = 0, 0
         self.healthBoxesGrabbed = 0
@@ -52,16 +52,15 @@ class Player():
             'flux_shots':self.fluxShots,
             'flux_hits':self.fluxHits,
             'flux_accuracy':self.fluxAccuracy,
-            'blitz_shots':self.blitzShots,
-            'blitz_hits':self.blitzHits,
-            'blitz_accuracy':self.blitzAccuracy,
+            'blitz_shots':self.blitzShots//3,
+            'gravity_bomb_shots':self.gravityBombShots//3,
             'health_boxes':self.healthBoxesGrabbed,
             'nicks_given':self.nicksGiven,
             'nicks_received':self.nicksReceived
         }
         return state
     def place(self, coords):
-        self.distanceTravelled = abs(self.distanceTravelled - coords[0]) if self.lastX != -1 else self.distanceTravelled
+        self.distanceTravelled = self.distanceTravelled + abs(self.lastX - coords[0]) if self.lastX != -1 else self.distanceTravelled
         self.x = coords[0]
         self.y = coords[1]
         self.isPlaced = True
@@ -80,18 +79,19 @@ class Player():
         if weapon == "flux":
             self.fluxShots+=1
             self.fluxHits = self.fluxHits + 1 if serialized['player_hit'] != "FF" else self.fluxHits
-            self.fluxAccuracy = round(self.fluxHits/self.fluxShots, 1)
+            self.fluxAccuracy = round((self.fluxHits/self.fluxShots)*100, 1)
         if weapon == "blitz":
             self.blitzShots+=1
-            self.blitzHits = self.blitzHits + 1 if serialized['player_hit'] != "FF" else self.blitzHits
-            self.blitzAccuracy = round((self.blitzHits/self.blitzShots)*100, 1)
+        if weapon == "gravity bomb":
+            self.gravityBombShots+=1
+
     def stageNick(self, nicker):
         '''Nicker is the player object that shot the nickee'''
         self.stagedNick = True
         self.nicker = nicker
     def checkNick(self, hp):
         if self.stagedNick:
-            if abs(self.hp - hp) < 87:
+            if self.hp > 20 and abs(self.hp - hp) < 87:
                 self.nicker.addNick()
                 self.nicksReceived+=1
             self.nicker = None

@@ -155,7 +155,7 @@ class LiveGame():
         self.scores = {team:0 for team in self.ntt.values()}
         self.hasNodes = self.hasNodes if self.hasNodes == None else False
         self.hp_boxes = generateHealthIDs(self.map.lower(), nodes = self.hasNodes, base = game['advanced_rules']['baseDefenses'])
-        self.flags = generateFlagIDs(self.map, nodes = self.hasNodes, base=game['advanced_rules']['baseDefenses'])
+        self.flags = generateFlagIDs(self.map, nodes = self.hasNodes, base=game['advanced_rules']['baseDefenses']) if self.mode == "CTF" else []
         print(self.flags)
         self.logger.critical(f"LIMIT = {self.limit}")
         self.logger.setScores(self.scores)
@@ -187,7 +187,7 @@ class LiveGame():
                     if player_idx != "FF":
                         update = f"{username} saved the flag"
                     else:
-                        update = f"Flag returned to base due to inactivityy"
+                        update = f"Flag returned to base due to inactivity"
                 elif event == 2:
                     item = serialized['object_id'][:2]
                     if item in self.flags:
@@ -202,7 +202,7 @@ class LiveGame():
                         update = f"{self.itos[int(packet['src'])]} grabbed health"
                         self.players[int(packet['src'])].heal()
                 if update != None:
-                    print(update)
+                    # print(update)
                     self.logger.info(update)             
         elif packet_id == '020A' and packet['type'] == 'tcp':
             self.logger.info(f"{self.itos[int(serialized['player'])]} {EVENTS[serialized['event']]}")
@@ -210,6 +210,9 @@ class LiveGame():
 
         elif packet_id == '020E' and packet['type'] == 'udp':
             self.players[int(packet['src'])].fire(serialized)
+            # print(serialized)
+            if serialized['player_hit'] != "FF" and serialized['weapon'].lower() == 'flux':
+                self.players[int(serialized['player_hit'])].stageNick(self.players[int(packet['src'])])
             self.logger.debug(f"{self.itos[int(serialized['src'])]} is {EVENTS[serialized['event']]} a {serialized['weapon']}")
         elif packet_id == '0204' and packet['type'] == 'tcp': #KILLS
             if serialized['killer_id'] > 7:
@@ -230,6 +233,7 @@ class LiveGame():
             messages = serialized['messages']
             for message in messages:
                 if message['type'] == 'health':
+                    self.players[packet['src']].checkNick(message['health'])
                     self.players[packet['src']].adjustHP(message['health'])
          
         return self.isComplete()

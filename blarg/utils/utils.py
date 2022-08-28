@@ -101,7 +101,7 @@ def generateFlagIDs(map = 'bakisi_isles', nodes = True, base = True):
     blue = red - 1
     red = hex(red)[2:] if len(hex(red)[2:]) > 1 else f"0{hex(red)[2:]}"
     blue = hex(blue)[2:] if len(hex(blue)[2:]) > 1 else f"0{hex(blue)[2:]}"
-    return [blue.lower(), red.lower()]
+    return [blue.upper(), red.upper()]
 def generateHealthIDs(map = 'bakisi_isle', nodes = True, base = True):
     res = []
     if map == 'bakisi_isle': #done
@@ -173,5 +173,7 @@ def generateHealthIDs(map = 'bakisi_isle', nodes = True, base = True):
         res = [node for node in range(red, red+boxes)]
 
         
-    res = [hex(node)[2:] for node in res]
+    res = [hex(node)[2:] if len(hex(node)[2:]) > 1 else f"0{hex(node)[2:]}".upper() for node in res]
     return res
+
+# print(generateHealthIDs(map = "blackwater_dox"))

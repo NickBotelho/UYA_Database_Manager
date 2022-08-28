@@ -18,7 +18,7 @@ class tcp_0003_broadcast_lobby_state:
 
     def serialize(self, data: deque):
         packet = {}
-        packet['unk1'] = data.popleft() # 01
+        packet['base_type'] = data.popleft() # 01
 
         packet['num_messages'] = bytes_to_int_little(hex_to_bytes(data.popleft()))
         messages = []
@@ -45,11 +45,14 @@ class tcp_0003_broadcast_lobby_state:
                     data.popleft()
                     sub_message[f'p{player_id}'] = TEAM_MAP[val] if val in TEAM_MAP else "???"
             elif broadcast_type == '02': # Skins
-                sub_message['type'] = 'skins'
-                for player_id in range(8):
-                    val = data.popleft()
-                    data.popleft()
-                    sub_message[f'p{player_id}'] = SKIN_MAP[val] if val in SKIN_MAP else "???"
+                try:
+                    sub_message['type'] = 'skins'
+                    for player_id in range(8):
+                        val = data.popleft()
+                        data.popleft()
+                        sub_message[f'p{player_id}'] = SKIN_MAP[val] if val in SKIN_MAP else "???"
+                except:
+                    sub_message['type'] = 'skins'
             elif broadcast_type == '07':
                 sub_message['type'] = 'health'
                 hp = hex_to_int_little(''.join([data.popleft() for i in range(4)]))
