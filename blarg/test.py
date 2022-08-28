@@ -33,13 +33,21 @@ async def read020C():
             # packet_id = data.popleft() + data.popleft()
             # print(packet_id)
             await asyncio.sleep(0)
+async def readRaw():
+    url = "ws://107.155.81.113:8765"
+    async with websockets.connect(url) as websocket:
+        while True:
+            packet = await websocket.recv()
+            packet = json.loads(packet)
+            print(packet)
+            await asyncio.sleep(0)
 def process020C(data):
     data = deque(data[i:i+2] for i in range(0,len(data),2))
 
 
 
 def run():
-    asyncio.get_event_loop().run_until_complete(read020C())
+    asyncio.get_event_loop().run_until_complete(readRaw())
 
 if __name__ == "__main__":
     run()

@@ -73,6 +73,7 @@ class tcp_020C_in_game_info:
                     packet['item_picked_up_id'] = object_id
                     packet['event'] = 4
                 elif subtype == 'object_update':
+                    packet['event'] = 2
                     packet['object_update_unk'] =  ''.join([data.popleft() for i in range(4)])    
                     packet['object_id'] = object_id
                 elif subtype == 'flag_drop':

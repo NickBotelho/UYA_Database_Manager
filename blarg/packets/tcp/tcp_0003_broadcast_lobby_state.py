@@ -43,16 +43,15 @@ class tcp_0003_broadcast_lobby_state:
                 for player_id in range(8):
                     val = data.popleft()
                     data.popleft()
-                    sub_message[f'p{player_id}'] = TEAM_MAP[val]
+                    sub_message[f'p{player_id}'] = TEAM_MAP[val] if val in TEAM_MAP else "???"
             elif broadcast_type == '02': # Skins
                 sub_message['type'] = 'skins'
                 for player_id in range(8):
                     val = data.popleft()
                     data.popleft()
-                    sub_message[f'p{player_id}'] = SKIN_MAP[val]
+                    sub_message[f'p{player_id}'] = SKIN_MAP[val] if val in SKIN_MAP else "???"
             elif broadcast_type == '07':
                 sub_message['type'] = 'health'
-
                 hp = hex_to_int_little(''.join([data.popleft() for i in range(4)]))
                 hp = HP_MAP[hp] if hp in HP_MAP else 100
                 
@@ -86,7 +85,7 @@ class tcp_0003_broadcast_lobby_state:
                 if weap_changed_to not in WEAPON_MAP:
                     sub_message['weapon_changed_to'] = 'NA'
                 else:
-                    sub_message['weapon_changed_to'] = WEAPON_MAP[weap_changed_to]
+                    sub_message['weapon_changed_to'] = WEAPON_MAP[weap_changed_to] if weap_changed_to in WEAPON_MAP else "???"
 
                 sub_message['unk1'] = ''.join([data.popleft() for i in range(3)])
             else:

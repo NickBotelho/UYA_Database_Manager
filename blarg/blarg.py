@@ -53,12 +53,12 @@ class Blarg:
         So we have to read the current message, and see if there's any leftover
         data which would be another message
         '''
-        avoid = ['0209',  '0001']
+        avoid = ['0018']
         # Keep reading until data is empty
         while len(data) != 0:
             if len(data) < 2: break
             packet_id = data.popleft() + data.popleft() # E.g. '0201'
-            # if packet_id in avoid: break
+            if packet_id in avoid: break
             if self._config['filter'] == packet_id:
                 self._logger.info(f"{packet['type']} | {packet_id + ''.join(list(data))}") 
 

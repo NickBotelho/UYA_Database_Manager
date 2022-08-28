@@ -52,7 +52,8 @@ def hex_to_str(data: str):
 
 def generateFlagIDs(map = 'bakisi_isles', nodes = True, base = True):
     '''returns red flag, blue flag ids'''
-    if map == 'bakisi_isle':
+    map = map.lower()
+    if map == 'bakisi_isles':
         red = int('66', 16)
         if not nodes: #4,5,4,5,4,4,4
             red -= 30
@@ -98,7 +99,9 @@ def generateFlagIDs(map = 'bakisi_isles', nodes = True, base = True):
         red = int('14', 16)
         
     blue = red - 1
-    return hex(red)[2:], hex(blue)[2:]
+    red = hex(red)[2:] if len(hex(red)[2:]) > 1 else f"0{hex(red)[2:]}"
+    blue = hex(blue)[2:] if len(hex(blue)[2:]) > 1 else f"0{hex(blue)[2:]}"
+    return [blue.lower(), red.lower()]
 def generateHealthIDs(map = 'bakisi_isle', nodes = True, base = True):
     res = []
     if map == 'bakisi_isle': #done

@@ -12,6 +12,7 @@ from mongodb import Database
 import datetime
 from blarg.constants.constants import TIMES
 from blarg.utils.utils import generateFlagIDs, generateHealthIDs
+from Parsers.GamestateGameSettingsParser import hasNodes
 logs = Database("UYA", "Logger")
 GAMES = 'http://107.155.81.113:8281/robo/games'
 GAME_EVENTS = {'020C', '020A', '0200', '020E', '0204', '0003'}
@@ -70,9 +71,10 @@ class LiveGame():
         self.players = {} #holds player objs
         self.liveMap = True
         self.startTime = None
-        self.flags = {}
-        # level = 'DEBUG'
-        level = "INFO"
+        self.flags = []
+        self.hasNodes = None
+        level = 'DEBUG'
+        # level = "INFO"
         # level = "CRITICAL"
         self.logger = BatchLogger(level, self.dme_id)
         self.createTime = datetime.datetime.now()
@@ -118,6 +120,7 @@ class LiveGame():
             self._initPlayers()
             self.startGame(serialized, packet)
         elif packet['type'] == 'tcp' and packet_id == '0004' and self.state == 0:
+            self.hasNodes = hasNodes(serialized['game_settings']) if self.hasNodes == None else self.hasNodes
             self.lobby = serialized
             # self.parseLobby()
         elif packet_id in GAME_EVENTS and self.state == 1:
@@ -150,8 +153,10 @@ class LiveGame():
         self.limit = game['frag'] if 'frag' in game else self.limit #dm
         self.time_limit = TIMES[game['game_length']] if TIMES[game['game_length']] != None else None
         self.scores = {team:0 for team in self.ntt.values()}
-        self.hp_boxes = generateHealthIDs(self.map.lower(), nodes = False, base = game['advanced_rules']['baseDefenses'])
-
+        self.hasNodes = self.hasNodes if self.hasNodes == None else False
+        self.hp_boxes = generateHealthIDs(self.map.lower(), nodes = self.hasNodes, base = game['advanced_rules']['baseDefenses'])
+        self.flags = generateFlagIDs(self.map, nodes = self.hasNodes, base=game['advanced_rules']['baseDefenses'])
+        print(self.flags)
         self.logger.critical(f"LIMIT = {self.limit}")
         self.logger.setScores(self.scores)
         # if len(self.scores) <= 1: print("Invalid Game Not Enough Teams")
@@ -166,38 +171,45 @@ class LiveGame():
         if packet_id == '020C' and packet['type'] == 'tcp':
             if 'event' in serialized:
                 event = serialized['event']
+                update = None
+                username = self.itos[int(packet['src'])]
                 if event == 0:
                     self.logger.debug(f"Serialized Idx = {serialized['player_idx']}, Packet Idx = {int(packet['src'])}")
-                    username = self.itos[int(packet['src'])]
                     self.players[int(packet['src'])].cap()
                     team = self.ntt[username]
-                    self.logger.info(f"{EVENTS[event]} by {username}")
+                    update = f"{username} capped the flag"
+                    self.logger.info(update)
                     self.scores[team] += 1
-                    update = "SCORE UPDATE: "
-                    for team in self.scores:
-                        update+=f"{team.upper()}: {self.scores[team]}\t"
                     self.logger.setScores(self.scores)
-                if event == 1:
+                elif event == 1:
                     player_idx = serialized['player_idx']
                     self.logger.debug(f"Serialized Idx = {serialized['player_idx']}, Packet Idx = {int(packet['src'])}")
                     if player_idx != "FF":
-                        update = f"FLAG SAVED BY {self.itos[int(serialized['player_idx'])]}"
+                        update = f"{username} saved the flag"
                     else:
-                        update = f"FLAG SAVED BY TIMER"
-                if event == 5:
-                    update = f"FLAG DROPPED"
-                if event == 4:
+                        update = f"Flag returned to base due to inactivityy"
+                elif event == 2:
+                    item = serialized['object_id'][:2]
+                    if item in self.flags:
+                        update = f"{username} has picked up the flag"
+                        self.players[int(packet['src'])].pickupFlag()
+                elif event == 5:
+                    update = f"{username} has dropped the flag"
+                    self.players[int(packet['src'])].dropFlag()
+                elif event == 4:
                     item = serialized['item_picked_up_id'][0:2]
                     if item in self.hp_boxes:
                         update = f"{self.itos[int(packet['src'])]} grabbed health"
                         self.players[int(packet['src'])].heal()
-
-                self.logger.info(update)             
+                if update != None:
+                    print(update)
+                    self.logger.info(update)             
         elif packet_id == '020A' and packet['type'] == 'tcp':
             self.logger.info(f"{self.itos[int(serialized['player'])]} {EVENTS[serialized['event']]}")
             self.players[int(serialized['player'])].respawn()
 
         elif packet_id == '020E' and packet['type'] == 'udp':
+            self.players[int(packet['src'])].fire(serialized)
             self.logger.debug(f"{self.itos[int(serialized['src'])]} is {EVENTS[serialized['event']]} a {serialized['weapon']}")
         elif packet_id == '0204' and packet['type'] == 'tcp': #KILLS
             if serialized['killer_id'] > 7:
@@ -215,7 +227,6 @@ class LiveGame():
                     self.scores[team] +=1
             self.players[int(serialized['killed_id'])].death()
         elif packet_id == '0003' and packet['type'] == 'tcp':
-            # assert int(serialized['src']) == int(packet['src'])
             messages = serialized['messages']
             for message in messages:
                 if message['type'] == 'health':
