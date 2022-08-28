@@ -205,7 +205,7 @@ class LiveGame():
                         update = f"{self.itos[int(packet['src'])]} grabbed health"
                         self.players[int(packet['src'])].heal()
                 if update != None:
-                    # print(update)
+                    print(update)
                     self.logger.info(update)             
         elif packet_id == '020A' and packet['type'] == 'tcp':
             self.logger.info(f"{self.itos[int(serialized['player'])]} {EVENTS[serialized['event']]}")
@@ -250,7 +250,7 @@ class LiveGame():
             player.place(point)
             self.numPlaced+=1
         else: # a player quit because the packets have looped a quit player
-            self.removeQuitPlayer()
+            pass
 
         display = True if self.numPlaced == len(self.players) else False
         if display:
@@ -268,6 +268,7 @@ class LiveGame():
         # return self.map in READY_MAPS and self.mode in READY_MODES
         return True
     def removeQuitPlayer(self):
+        '''needs work'''
         quitter = None
         for player in self.players.values():
             if player.isPlaced == False:
