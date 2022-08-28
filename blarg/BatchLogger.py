@@ -21,7 +21,7 @@ class BatchLogger():
         self.cache = []
         self.id = id
         self.map = None
-        self.mongo = Database("UYA", "Logger-Test")
+        self.mongo = Database("UYA", "Logger")
         self.exists = False
         self.coords = {}
         self.players = {}
