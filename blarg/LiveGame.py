@@ -73,9 +73,10 @@ class LiveGame():
         self.liveMap = True
         self.startTime = None
         self.flags = []
+        self.quitPlayers = []
         self.hasNodes = None
-        level = 'DEBUG'
-        # level = "INFO"
+        # level = 'DEBUG'
+        level = "INFO"
         # level = "CRITICAL"
         self.logger = BatchLogger(level, self.dme_id)
         self.createTime = datetime.datetime.now()
@@ -273,6 +274,9 @@ class LiveGame():
                 self.logger.info(f"{player.username} has left the game")
                 quitter = player
         del self.players[quitter.lobby_idx]
+        self.quitPlayers.append(quitter)
+        for player in self.players.values():
+            player.isPlaced = False
     def getState(self):
         return STATE[self.state]
     def isLoaded(self):
