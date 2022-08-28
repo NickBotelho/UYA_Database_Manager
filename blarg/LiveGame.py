@@ -134,7 +134,7 @@ class LiveGame():
         return self.state != 2
     def startGame(self, serialized, packet):
         '''triggers on game start'''
-        self.logger.info(f"| STARTING GAME! |")
+        self.logger.info(f"Game Starting...")
         self.state = 1
         self.startTime = datetime.datetime.now()
         self.logger.startTime = self.startTime
@@ -204,7 +204,7 @@ class LiveGame():
                         update = f"{self.itos[int(packet['src'])]} grabbed health"
                         self.players[int(packet['src'])].heal()
                 if update != None:
-                    print(update)
+                    # print(update)
                     self.logger.info(update)             
         elif packet_id == '020A' and packet['type'] == 'tcp':
             self.logger.info(f"{self.itos[int(serialized['player'])]} {EVENTS[serialized['event']]}")
@@ -212,7 +212,7 @@ class LiveGame():
 
         elif packet_id == '020E' and packet['type'] == 'udp':
             self.players[int(packet['src'])].fire(serialized)
-            print(serialized)
+            # print(serialized)
             if serialized['player_hit'] != "FF" and serialized['weapon'].lower() == 'flux':
                 self.players[int(serialized['player_hit'])].stageNick(self.players[int(packet['src'])])
             self.logger.debug(f"{self.itos[int(serialized['src'])]} is {EVENTS[serialized['event']]} a {serialized['weapon']}")
@@ -270,7 +270,7 @@ class LiveGame():
         quitter = None
         for player in self.players.values():
             if player.isPlaced == False:
-                print(f"quitter detected {player}")
+                self.logger.info(f"{player.username} has left the game")
                 quitter = player
         del self.players[quitter.lobby_idx]
     def getState(self):

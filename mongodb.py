@@ -39,7 +39,7 @@ class Database():
     def clear(self):
         '''Wipe a collection'''
         if self.collection.count_documents({}) == 0: return None
-        if self.collection.name == 'Players_Online' or self.collection.name == 'Games_Active': #Protection to not whipe stats or game history
+        if self.collection.name != 'Player_Stats' or self.collection.name != 'Game_History': #Protection to not whipe stats or game history
             self.collection.delete_many({})
     def addToDB(self, name, player_info, elo):      
         player = self.collection.find_one({"name":name})
@@ -950,9 +950,6 @@ def updateElo(username, player_elo, teams, e, K=64, type = 'overall'):
         player_elo[type] = getAdjusted(player_elo[type], e[1], K, 0)
 
     return player_elo
-def isBot(username):
-    '''bot names have prefixes of cpu so return false if the prefix is not cpu'''
-    if len(username) <3: return False
 
 def isBot(username):
     '''bot names have prefixes of cpu so return false if the prefix is not cpu'''

@@ -1,8 +1,8 @@
 {
 	"robo_ip": "107.155.81.113",
-	"logger": "INFO",
+	"logger": "WARNING",
     "filter": "",
     "warn_on_unknown": "False",
     "delay":"True",
-    "delayTime": "0"
+    "delayTime": "5"
 }

@@ -22,10 +22,12 @@ async def update():
     games_active = Database("UYA","Games_Active")
     clans = Database("UYA", "Clans")
     elo=Database("UYA", 'Elo')
+    live = Database("UYA", "Logger")
     players = {}
     games = {}
     players_online.clear()
     games_active.clear()
+    live.clear()
     while True:
         logger.debug("Getting Players...")
         players, offline_players = Server.getOnlinePlayers(players, clans, player_stats) #dict of {player id --> Player obj}
@@ -75,6 +77,7 @@ if __name__ == "__main__":
     sh.setLevel(logging.getLevelName(level))
     logger.addHandler(sh)
     ######
+
 
     logger.info("Running")
     loop = asyncio.get_event_loop()
