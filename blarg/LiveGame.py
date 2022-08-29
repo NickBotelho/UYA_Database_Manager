@@ -113,7 +113,6 @@ class LiveGame():
     def manage(self, packet_id, serialized, packet):
         '''Accepts a packet and its info
         it will manage the packet and direct it to the propper destination based on its info'''
-
         if packet_id == '0209' and packet['type'] == 'udp' and serialized['packet_num'] % self.refreshRate == 0 and self.liveMap:
             self.placeOnMap(serialized, packet)
         # elif packet['type'] == 'tcp' and (packet_id == '0211' or packet_id == '0210' or packet_id == '0003'):
@@ -135,6 +134,7 @@ class LiveGame():
         return self.state != 2
     def startGame(self, serialized, packet):
         '''triggers on game start'''
+        print(f"{self.dme_id}: GAME STARTING")
         self.logger.info(f"Game Starting...")
         self.state = 1
         self.startTime = datetime.datetime.now()
@@ -161,6 +161,7 @@ class LiveGame():
         self.hp_boxes = generateHealthIDs(self.map.lower(), nodes = self.hasNodes, base = game['advanced_rules']['baseDefenses'])
         self.flags = generateFlagIDs(self.map, nodes = self.hasNodes, base=game['advanced_rules']['baseDefenses']) if self.mode == "CTF" else []
         print(self.hp_boxes, self.flags)
+        print(self.teams)
         self.logger.critical(f"LIMIT = {self.limit}")
         self.logger.setScores(self.scores)
         # if len(self.scores) <= 1: print("Invalid Game Not Enough Teams")
@@ -206,7 +207,6 @@ class LiveGame():
                         update = f"{self.itos[int(packet['src'])]} grabbed health"
                         self.players[int(packet['src'])].heal()
                 if update != None:
-                    print(update)
                     self.logger.info(update)             
         elif packet_id == '020A' and packet['type'] == 'tcp':
             self.logger.info(f"{self.itos[int(serialized['player'])]} {EVENTS[serialized['event']]}")

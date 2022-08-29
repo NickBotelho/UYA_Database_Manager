@@ -41,6 +41,15 @@ async def readRaw():
             packet = json.loads(packet)
             print(packet)
             await asyncio.sleep(0)
+async def readStart()):
+    url = "ws://107.155.81.113:8765"
+    async with websockets.connect(url) as websocket:
+        while True:
+            packet = await websocket.recv()
+            packet = json.loads(packet)
+            if packet['packet_id'] == '0004':
+                print(packet)
+            await asyncio.sleep(0)
 def process020C(data):
     data = deque(data[i:i+2] for i in range(0,len(data),2))
 
