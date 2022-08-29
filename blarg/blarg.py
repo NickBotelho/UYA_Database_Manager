@@ -53,7 +53,7 @@ class Blarg:
         So we have to read the current message, and see if there's any leftover
         data which would be another message
         '''
-        avoid = ['0018']
+        avoid = ['0018', '0009']
         # Keep reading until data is empty
         while len(data) != 0:
             if len(data) < 2: break
