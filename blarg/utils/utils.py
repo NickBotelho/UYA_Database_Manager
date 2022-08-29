@@ -53,6 +53,7 @@ def hex_to_str(data: str):
 def generateFlagIDs(map = 'bakisi_isles', nodes = True, base = True):
     '''returns red flag, blue flag ids'''
     map = map.lower()
+    red, blue = 0, 0
     if map == 'bakisi_isles':
         red = int('66', 16)
         if not nodes: #4,5,4,5,4,4,4

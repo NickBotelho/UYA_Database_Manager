@@ -75,8 +75,8 @@ class LiveGame():
         self.flags = []
         self.quitPlayers = []
         self.hasNodes = None
-        # level = 'DEBUG'
-        level = "INFO"
+        level = 'DEBUG'
+        # level = "INFO"
         # level = "CRITICAL"
         self.logger = BatchLogger(level, self.dme_id)
         self.createTime = datetime.datetime.now()
@@ -160,6 +160,7 @@ class LiveGame():
         self.hasNodes = self.hasNodes if self.hasNodes == None else False
         self.hp_boxes = generateHealthIDs(self.map.lower(), nodes = self.hasNodes, base = game['advanced_rules']['baseDefenses'])
         self.flags = generateFlagIDs(self.map, nodes = self.hasNodes, base=game['advanced_rules']['baseDefenses']) if self.mode == "CTF" else []
+        print(self.hp_boxes, self.flags)
         self.logger.critical(f"LIMIT = {self.limit}")
         self.logger.setScores(self.scores)
         # if len(self.scores) <= 1: print("Invalid Game Not Enough Teams")
