@@ -23,6 +23,7 @@ class BatchLogger():
         self.map = None
         self.mongo = Database("UYA", "Logger")
         self.liveHistory = Database("UYA", "LiveGame_History")
+        # self.player_stats = Database("UYA", "Player_Stats_Backup")
         self.exists = False
         self.coords = {}
         self.players = {}
@@ -142,11 +143,16 @@ class BatchLogger():
                 'results':self.players,
                 'duration': "{}:{}".format(duration.seconds//60, duration.seconds%60),
                 'number_of_batches':self.currentMessage,
-
-
             })
         except Exception as e:
             print("Problem closing")
             print(e)
+    # def updatePlayersStore(self, active, quits):
+    #     '''merge with stats in the store'''
+    #     for player in active:
+    #         player = self.player_stats.collection.find_one({"username_lowercase":player.username.lower()})
+    #         if not player: continue
+
+
 
 

@@ -174,7 +174,7 @@ def generateHealthIDs(map = 'bakisi_isle', nodes = True, base = True):
         res = [node for node in range(red, red+boxes)]
 
         
-    res = [hex(node)[2:] if len(hex(node)[2:]) > 1 else f"0{hex(node)[2:]}".upper() for node in res]
+    res = [hex(node)[2:].upper() if len(hex(node)[2:]) > 1 else f"0{hex(node)[2:]}".upper() for node in res]
     return res
 
 # print(generateHealthIDs(map = "blackwater_dox"))

@@ -22,7 +22,7 @@ class Player():
         self.nicker = None
         self.nicksReceived, self.nicksGiven = 0, 0
     def __str__(self):
-        return "{} HP = {}, Kills = {}, Deaths = {}, Caps = {}".format(self.username, self.hp, self.kills, self.deaths, self.caps)
+        return "{} HP = {}, Kills = {}, Deaths = {}, Caps = {} (isPlaced = {})".format(self.username, self.hp, self.kills, self.deaths, self.caps, self.isPlaced)
     def adjustHP(self, hp):
         self.hp = hp
     def kill(self):

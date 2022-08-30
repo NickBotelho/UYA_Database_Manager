@@ -84,6 +84,8 @@ class LiveGame():
         self.delay = delay
         self.numPlaced = 0
         self.uyaTrackerId = None
+        self.clogger = 0
+        self.isBotGame = False
         if delay:
             self.delayTime = delayTime #in seconds
             self.pipe = []
@@ -157,10 +159,10 @@ class LiveGame():
         self.limit = game['frag'] if 'frag' in game else self.limit #dm
         self.time_limit = TIMES[game['game_length']] if TIMES[game['game_length']] != None else None
         self.scores = {team:0 for team in self.ntt.values()}
-        self.hasNodes = self.hasNodes if self.hasNodes == None else False
+        self.hasNodes = self.hasNodes if self.hasNodes != None else False
         self.hp_boxes = generateHealthIDs(self.map.lower(), nodes = self.hasNodes, base = game['advanced_rules']['baseDefenses'])
         self.flags = generateFlagIDs(self.map, nodes = self.hasNodes, base=game['advanced_rules']['baseDefenses']) if self.mode == "CTF" else []
-        print(self.hp_boxes, self.flags)
+        print(self.hasNodes, self.hp_boxes, self.flags)
         print(self.teams)
         self.logger.critical(f"LIMIT = {self.limit}")
         self.logger.setScores(self.scores)
@@ -202,6 +204,7 @@ class LiveGame():
                     update = f"{username} has dropped the flag"
                     self.players[int(packet['src'])].dropFlag()
                 elif event == 4:
+                    print(serialized)
                     item = serialized['item_picked_up_id'][0:2]
                     if item in self.hp_boxes:
                         update = f"{self.itos[int(packet['src'])]} grabbed health"
@@ -246,16 +249,18 @@ class LiveGame():
         point = serialized['coord']
         player_idx = int(packet['src'])
         player = self.players[player_idx]
-        print(f"Placing on map...{self.numPlaced}")
         if player.isPlaced == False:
             player.place(point)
             self.numPlaced+=1
-        else: # a player quit because the packets have looped a quit player
-            pass
+        # print(f"Placing on map...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
 
+        if self.clogger >= 20:
+            print(f"unclogging...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
+            self.removeQuitPlayer()
+        self.clogger +=1
+        
         display = True if self.numPlaced >= len(self.players) else False
         if display:
-            print("sending to batch logger...")
             colors = [self.players[i].team for i in self.players]
             x = [self.players[i].x for i in self.players]
             y = [self.players[i].y for i in self.players]
@@ -265,7 +270,8 @@ class LiveGame():
             self.logger.setStates(self.players)
             self.logger.log()
             self.logger.flush(self.players)
-            self.numPlaced = 0
+            self.numPlaced, self.clogger = 0, 0
+
     def isImplemented(self):
         # return self.map in READY_MAPS and self.mode in READY_MODES
         return True
@@ -280,6 +286,7 @@ class LiveGame():
         self.quitPlayers.append(quitter)
         for player in self.players.values():
             player.isPlaced = False
+        self.clogger = 0
     def getState(self):
         return STATE[self.state]
     def isLoaded(self):
@@ -296,9 +303,16 @@ class LiveGame():
 
                 field = f"p{i}_skin"
                 self.nts[self.itos[i]] = self.lobby[field]
+        self.isBotGame = self.checkForBots()
         self.logger.debug(str(self.itos))
         self.logger.debug(str(self.ntt))
         self.logger.debug(str(self.nts))
+    def checkForBots(self):
+        for username in self.itos.values():
+            if len(username) >= 3:
+                if username[:3].lower() == "cpu":
+                    return True
+        return False
     def _initPlayers(self):
         for player_idx in self.itos:
             username = self.itos[player_idx]
