@@ -246,15 +246,16 @@ class LiveGame():
         point = serialized['coord']
         player_idx = int(packet['src'])
         player = self.players[player_idx]
-
+        print(f"Placing on map...{self.numPlaced}")
         if player.isPlaced == False:
             player.place(point)
             self.numPlaced+=1
         else: # a player quit because the packets have looped a quit player
             pass
 
-        display = True if self.numPlaced == len(self.players) else False
+        display = True if self.numPlaced >= len(self.players) else False
         if display:
+            print("sending to batch logger...")
             colors = [self.players[i].team for i in self.players]
             x = [self.players[i].x for i in self.players]
             y = [self.players[i].y for i in self.players]

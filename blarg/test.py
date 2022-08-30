@@ -2,6 +2,7 @@ import asyncio
 import websockets
 from collections import deque
 import json
+from packets.tcp.tcp_0004_game_state import tcp_0004_game_state
 async def read020C():
     url = "ws://107.155.81.113:8765"
     avoid = ['0209',  '0003', '0207']
@@ -41,14 +42,18 @@ async def readRaw():
             packet = json.loads(packet)
             print(packet)
             await asyncio.sleep(0)
-async def readStart()):
-    url = "ws://107.155.81.113:8765"
-    async with websockets.connect(url) as websocket:
-        while True:
-            packet = await websocket.recv()
-            packet = json.loads(packet)
-            if packet['packet_id'] == '0004':
-                print(packet)
+# async def readStart():
+#     url = "ws://107.155.81.113:8765"
+#     async with websockets.connect(url) as websocket:
+#         while True:
+#             packet = await websocket.recv()
+#             packet = json.loads(packet)
+#             data = deque([packet['data'][i:i+2] for i in range(0,len(packet['data']),2)])
+#             packet_id = data.popleft() + data.popleft() # E.g. '0201'
+#             if packet_id == '0004':
+#                 pass
+
+
             await asyncio.sleep(0)
 def process020C(data):
     data = deque(data[i:i+2] for i in range(0,len(data),2))
