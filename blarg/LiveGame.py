@@ -14,7 +14,6 @@ from blarg.constants.constants import TIMES
 from blarg.utils.utils import generateFlagIDs, generateHealthIDs
 from Parsers.GamestateGameSettingsParser import hasNodes
 from HashId import hash_id
-logs = Database("UYA", "Logger")
 GAMES = 'http://107.155.81.113:8281/robo/games'
 GAME_EVENTS = {'020C', '020A', '0200', '020E', '0204', '0003'}
 EVENTS = {
@@ -86,6 +85,7 @@ class LiveGame():
         self.uyaTrackerId = None
         self.clogger = 0
         self.isBotGame = False
+        self.weapons = []
         if delay:
             self.delayTime = delayTime #in seconds
             self.pipe = []
@@ -153,6 +153,7 @@ class LiveGame():
             self.teams[team] = [player for player in self.ntt if self.ntt[player] == team]
         self.logger.debug(self.teams)
         self.map = game['map']
+        self.registerGuns(game['weapons'])
         self.logger.setMap(self.map)
         self.mode = game['game_mode']
         self.limit = game['cap_limit'] if 'cap_limit' in game else None #ctf
@@ -204,7 +205,7 @@ class LiveGame():
                     update = f"{username} has dropped the flag"
                     self.players[int(packet['src'])].dropFlag()
                 elif event == 4:
-                    print(serialized)
+                    # print(serialized)
                     item = serialized['item_picked_up_id'][0:2]
                     if item in self.hp_boxes:
                         update = f"{self.itos[int(packet['src'])]} grabbed health"
@@ -215,8 +216,8 @@ class LiveGame():
             self.logger.info(f"{self.itos[int(serialized['player'])]} {EVENTS[serialized['event']]}")
             self.players[int(serialized['player'])].respawn()
 
-        elif packet_id == '020E' and packet['type'] == 'udp':
-            self.players[int(packet['src'])].fire(serialized)
+        elif packet_id == '020E' and packet['type'] == 'udp': #FIRING
+            self.players[int(packet['src'])].fire(serialized['weapon'], serialized['player_hit'])
             # print(serialized)
             if serialized['player_hit'] != "FF" and serialized['weapon'].lower() == 'flux':
                 self.players[int(serialized['player_hit'])].stageNick(self.players[int(packet['src'])])
@@ -230,7 +231,7 @@ class LiveGame():
                     self.scores[team] -=1
             else:
                 self.logger.info(f"{self.itos[int(serialized['killer_id'])]} {EVENTS[serialized['event']]} {self.itos[int(serialized['killed_id'])]} with {serialized['weapon']}")
-                self.players[int(serialized['killer_id'])].kill()
+                self.players[int(serialized['killer_id'])].kill(enemy = self.players[self.itos[int(serialized['killed_id'])]], weapon = serialized['weapon'])
                 if self.mode == 'Deathmatch':
                     username = self.itos[int(serialized['killer_id'])]
                     team = self.ntt[username]
@@ -253,7 +254,8 @@ class LiveGame():
             player.place(point)
             self.numPlaced+=1
         # print(f"Placing on map...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
-
+        if self.logger.currentMessage == 7:
+            print(f"Placing on map...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
         if self.clogger >= 20:
             print(f"unclogging...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
             self.removeQuitPlayer()
@@ -324,6 +326,8 @@ class LiveGame():
         self.state = 2
         self.logger.log()
         self.logger.close(self.uyaTrackerId, self.players)
+        self.logger.updatePlayersStore(self.players.values(), self.quitPlayers)
+
     def isComplete(self):
         '''returns true if the game is complete'''
         for team in self.scores:
@@ -345,6 +349,10 @@ class LiveGame():
             return True
 
         return False
+    def registerGuns(self, weapons):
+        for player in self.players.values():
+            for weapon in weapons:
+                player.addWeapon(weapon)
 
 
 #So when a player G's up it sends a 0211 packet with their name, color, skin

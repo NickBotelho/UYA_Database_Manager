@@ -1,0 +1,29 @@
+class DMEWeapon():
+    def __init__(self, gun):
+        self.weapon = gun
+        self.isV2 = False
+        self.kills = 0
+        self.shots = 0
+        self.hits = 0
+        self.streak = 0
+    def kill(self):
+        self.streak+=1
+        self.isV2 = True if self.streak >= 3 else False
+    def isUpgrade(self):
+        return self.isV2
+    def die(self):
+        self.streak=0
+        self.isV2 = False
+    def fire(self, player_hit):
+        self.shots+=1
+        self.hits = self.hits + 1 if player_hit != "FF" else self.hits
+    def toJson(self):
+        return {
+            "weapon":self.weapon,
+            'kills':self.kills,
+            'isV2':self.isV2,
+            'shots':self.shots//3 if self.weapon != "Flux" else self.shots,
+            'hits':self.hits,
+            'accuracy':round((self.hits/self.shots)*100, 1) if self.shots > 0 else 0,
+            'killstreak':self.streak
+        }

@@ -1,3 +1,4 @@
+from blarg.DMEWeapon import DMEWeapon
 X12_UNIT = 35162
 class Player():
     def __init__(self, username, lobby_idx, team):
@@ -8,9 +9,14 @@ class Player():
         self.hp = 100
         self.deaths = 0
         self.caps = 0
+        self.weapons = { #weaponNameToObject
+            'Wrench':DMEWeapon('Wrench'),
+            'Hypershot':DMEWeapon("Hypershot")
+        }
+        self.enemyNameToKills = {}
         self.x, self.y = -1, -1
         self.isPlaced = False
-        self.lastX = -1
+        self.lastX, self.lastY = -1, -1
         self.distanceTravelled = 0
         self.fluxShots,self.fluxHits, self.fluxAccuracy = 0,0,0
         self.blitzShots,self.gravityBombShots= 0,0
@@ -21,15 +27,23 @@ class Player():
         self.stagedNick = False
         self.nicker = None
         self.nicksReceived, self.nicksGiven = 0, 0
+
+        self.killHeatMap = [] #list of coords where player kill
+        self.deathHeatMap = [] #list of coords where player kill
+
     def __str__(self):
         return "{} HP = {}, Kills = {}, Deaths = {}, Caps = {} (isPlaced = {})".format(self.username, self.hp, self.kills, self.deaths, self.caps, self.isPlaced)
     def adjustHP(self, hp):
         self.hp = hp
-    def kill(self):
+    def kill(self, enemy = None, weapon = "Wrench"):
         self.kills+=1
+        self.enemyNameToKills[enemy.username] = 1 if enemy.username not in self.enemyNameToKills else self.enemyNameToKills[enemy.username] + 1
+        self.weapons[weapon].kill()
+        self.killHeatMap.append((self.lastX, self.lastY))
     def death(self):
         self.deaths+=1
         self.hp = 0
+        self.deathHeatMap.append((self.lastX, self.lastY))
     def cap(self):
         self.caps+=1
         self.hasFlag=False
@@ -38,6 +52,8 @@ class Player():
     def heal(self):
         self.hp = 100
         self.healthBoxesGrabbed+=1
+    def addWeapon(self, weapon):
+        self.weapons[weapon] = DMEWeapon(weapon)
     def getState(self):
         state = {
             'name':self.username,
@@ -50,14 +66,13 @@ class Player():
             'hasFlag':self.hasFlag,
             'flag_pickups':self.flagPickups,
             'flag_drops':self.flagDrops,
-            'flux_shots':self.fluxShots,
-            'flux_hits':self.fluxHits,
-            'flux_accuracy':self.fluxAccuracy,
-            'blitz_shots':self.blitzShots//3,
-            'gravity_bomb_shots':self.gravityBombShots//3,
             'health_boxes':self.healthBoxesGrabbed,
             'nicks_given':self.nicksGiven,
-            'nicks_received':self.nicksReceived
+            'nicks_received':self.nicksReceived,
+            'weapons':{w.weapon:w.toJson() for w in self.weapons.values()},
+            'killHeatMap':self.killHeatMap,
+            'deathHeatMap':self.deathHeatMap
+
         }
         return state
     def place(self, coords):
@@ -66,7 +81,7 @@ class Player():
         self.y = coords[1]
         self.isPlaced = True
     def unPlace(self):
-        self.lastX = self.x
+        self.lastX, self.lastY = self.x, self.y
         self.x, self.y = -1, -1
         self.isPlaced = False
     def pickupFlag(self):
@@ -75,17 +90,8 @@ class Player():
     def dropFlag(self):
         self.hasFlag = False
         self.flagDrops+=1
-    def fire(self, serialized):
-        weapon = serialized['weapon'].lower()
-        if weapon == "flux":
-            self.fluxShots+=1
-            self.fluxHits = self.fluxHits + 1 if serialized['player_hit'] != "FF" else self.fluxHits
-            self.fluxAccuracy = round((self.fluxHits/self.fluxShots)*100, 1)
-        if weapon == "blitz":
-            self.blitzShots+=1
-        if weapon == "gravity bomb":
-            self.gravityBombShots+=1
-
+    def fire(self, weapon, player_hit):
+        self.weapons[weapon].fire(player_hit)
     def stageNick(self, nicker):
         '''Nicker is the player object that shot the nickee'''
         self.stagedNick = True

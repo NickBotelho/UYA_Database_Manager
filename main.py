@@ -25,8 +25,8 @@ async def update():
     live = Database("UYA", "Logger")
     players = {}
     games = {}
-    players_online.clear()
-    games_active.clear()
+    # players_online.clear()
+    # games_active.clear()
     live.clear()
     while True:
         logger.debug("Getting Players...")

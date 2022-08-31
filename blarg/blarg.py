@@ -94,7 +94,7 @@ class Blarg:
                         if not running:
                             del self.games[packet['dme_world_id']]
             except Exception as e:
-                self._logger.info("Problem with live game")
+                self._logger.info(f"{packet['dme_world_id']}: Problem with live game")
                 self._logger.info(traceback.format_exc())
 
 

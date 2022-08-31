@@ -22,7 +22,7 @@ class BatchLogger():
         self.id = id
         self.map = None
         self.mongo = Database("UYA", "Logger")
-        self.liveHistory = Database("UYA", "LiveGame_History")
+        
         # self.player_stats = Database("UYA", "Player_Stats_Backup")
         self.exists = False
         self.coords = {}
@@ -133,12 +133,13 @@ class BatchLogger():
         '''close the game and save the states'''
         self.setStates(players)
         now = datetime.datetime.now()
+        liveHistory = Database("UYA", "LiveGame_History")
         duration = now - self.startTime if self.startTime != None else now - now
         try:
             self.mongo.collection.find_one_and_delete({
                 'dme_id':self.id
             })
-            self.liveHistory.collection.insert_one({
+            liveHistory.collection.insert_one({
                 'game_id':uyaTrackerId,
                 'results':self.players,
                 'duration': "{}:{}".format(duration.seconds//60, duration.seconds%60),
@@ -147,12 +148,41 @@ class BatchLogger():
         except Exception as e:
             print("Problem closing")
             print(e)
-    # def updatePlayersStore(self, active, quits):
-    #     '''merge with stats in the store'''
-    #     for player in active:
-    #         player = self.player_stats.collection.find_one({"username_lowercase":player.username.lower()})
-    #         if not player: continue
+        self.mongo.client.close()
+        liveHistory.client.close()
+    def updatePlayersStore(self, active, quits):
+        '''merge with stats in the store'''
+        stats = Database("UYA", "Player_Stats_Backup")
+        mergeSet(stats, active)
+        mergeSet(stats, quits)
+        stats.client.close()
 
-
-
-
+def mergeDicts (existing, new):
+    '''merge a new dict onto the existing dict, summing matching keys and merging non existing ones from new'''
+    pass
+    for key in new:
+        if key not in existing:
+            existing[key] = new[key]
+        else:
+            if type(existing[key]) == dict:
+                mergeDicts(existing[key], new[key])
+            elif type(existing[key]) == int or type(existing[key]) == float:
+                existing[key] += new[key]
+def mergeSet(stats, players):
+    for player in players:
+        playerStore = stats.collection.find_one({"username_lowercase":player.username.lower()})
+        if not playerStore: continue
+        advancedStats = playerStore['advanced_stats']
+        if "live" not in advancedStats:
+            advancedStats['live'] = {}
+        mergeDicts(advancedStats['live'], player.getState())
+        stats.collection.find_one_and_update(
+        {
+            "_id":playerStore["_id"]
+        },
+        {
+            "$set":{
+                "advanced_stats":advancedStats
+            }
+        }
+    )
