@@ -120,7 +120,7 @@ class LiveGame():
         # elif packet['type'] == 'tcp' and (packet_id == '0211' or packet_id == '0210' or packet_id == '0003'):
         #     self.staging(packet_id, serialized, packet)
         elif packet['type'] == 'tcp' and packet_id == '000D':
-            self.parseLobby()
+            self.parseLobby(packet_id)
             self._initPlayers()
             self.startGame(serialized, packet)
         elif packet['type'] == 'tcp' and packet_id == '0004' and self.state == 0:
@@ -130,7 +130,7 @@ class LiveGame():
         elif packet_id in GAME_EVENTS and self.state == 1:
             self.processEvent(packet_id, serialized, packet)
         elif self.state == 0 and packet_id == '0209' and packet['type'] == 'udp':
-            self.parseLobby()
+            self.parseLobby(packet_id)
             self._initPlayers()
             self.startGame(serialized, packet)
         return self.state != 2
@@ -205,7 +205,7 @@ class LiveGame():
                     update = f"{username} has dropped the flag"
                     self.players[int(packet['src'])].dropFlag()
                 elif event == 4:
-                    # print(serialized)
+                    print(serialized)
                     item = serialized['item_picked_up_id'][0:2]
                     if item in self.hp_boxes:
                         update = f"{self.itos[int(packet['src'])]} grabbed health"
@@ -293,18 +293,23 @@ class LiveGame():
         return STATE[self.state]
     def isLoaded(self):
         return self.delay and len(self.pipe) > 0
-    def parseLobby(self):
+    def parseLobby(self, packet_id):
         #go through lobby:
         for i in range(8):
             field = f"p{i}_username"
-            if self.lobby[field] != '':
-                self.itos[i] = self.lobby[field]
+            if field in self.lobby:
+                if self.lobby[field] != '':
+                    self.itos[i] = self.lobby[field]
 
-                field = f"p{i}_team"
-                self.ntt[self.itos[i]] = self.lobby[field]
+                    field = f"p{i}_team"
+                    self.ntt[self.itos[i]] = self.lobby[field]
 
-                field = f"p{i}_skin"
-                self.nts[self.itos[i]] = self.lobby[field]
+                    field = f"p{i}_skin"
+                    self.nts[self.itos[i]] = self.lobby[field]
+            else:
+                print(f'Error parsing game lobby for {self.dme_id}.\n\
+                    The lobby is as follows = {self.lobby}\n\
+                        as a result trying to parse from packet {packet_id}')
         self.isBotGame = self.checkForBots()
         self.logger.debug(str(self.itos))
         self.logger.debug(str(self.ntt))
