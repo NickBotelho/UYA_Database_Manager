@@ -163,7 +163,7 @@ class LiveGame():
         self.hasNodes = self.hasNodes if self.hasNodes != None else False
         self.hp_boxes = generateHealthIDs(self.map.lower(), nodes = self.hasNodes, base = game['advanced_rules']['baseDefenses'])
         self.flags = generateFlagIDs(self.map, nodes = self.hasNodes, base=game['advanced_rules']['baseDefenses']) if self.mode == "CTF" else []
-        print(self.hasNodes, self.hp_boxes, self.flags)
+        print(self.hasNodes,game['advanced_rules']['baseDefenses'], self.hp_boxes, self.flags)
         print(self.teams)
         self.logger.critical(f"LIMIT = {self.limit}")
         self.logger.setScores(self.scores)
@@ -231,7 +231,7 @@ class LiveGame():
                     self.scores[team] -=1
             else:
                 self.logger.info(f"{self.itos[int(serialized['killer_id'])]} {EVENTS[serialized['event']]} {self.itos[int(serialized['killed_id'])]} with {serialized['weapon']}")
-                self.players[int(serialized['killer_id'])].kill(enemy = self.players[self.itos[int(serialized['killed_id'])]], weapon = serialized['weapon'])
+                self.players[int(serialized['killer_id'])].kill(enemy = self.players[int(serialized['killed_id'])], weapon = serialized['weapon'])
                 if self.mode == 'Deathmatch':
                     username = self.itos[int(serialized['killer_id'])]
                     team = self.ntt[username]
