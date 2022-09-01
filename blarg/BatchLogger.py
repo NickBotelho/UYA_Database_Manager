@@ -131,26 +131,29 @@ class BatchLogger():
             print("Problem logging")
             print(traceback.format_exc())
 
-    def close(self, uyaTrackerId, players, winningTeamColor):
+    def close(self, uyaTrackerId, players, quits, winningTeamColor):
         '''close the game and save the states'''
+        for quitter in quits:
+            players[quitter.username] = quitter
         self.setResults(players)
         now = datetime.datetime.now()
         liveHistory = Database("UYA", "LiveGame_History")
         duration = now - self.startTime if self.startTime != None else now - now
-        try:
-            self.mongo.collection.find_one_and_delete({
-                'dme_id':self.id
-            })
-            liveHistory.collection.insert_one({
-                'game_id':uyaTrackerId,
-                'winning_team':winningTeamColor,
-                'results':self.players,
-                'duration': "{}:{}".format(duration.seconds//60, duration.seconds%60),
-                'number_of_batches':self.currentMessage,
-            })
-        except Exception as e:
-            print("Problem closing")
-            print(e)
+        if uyaTrackerId != None and len(self.players) > 2:
+            try:
+                self.mongo.collection.find_one_and_delete({
+                    'dme_id':self.id
+                })
+                liveHistory.collection.insert_one({
+                    'game_id':uyaTrackerId,
+                    'winning_team':winningTeamColor,
+                    'results':self.players,
+                    'duration': "{}:{}".format(duration.seconds//60, duration.seconds%60),
+                    'number_of_batches':self.currentMessage,
+                })
+            except Exception as e:
+                print("Problem closing")
+                print(e)
         self.mongo.client.close()
         liveHistory.client.close()
     def updatePlayersStore(self, active, quits):

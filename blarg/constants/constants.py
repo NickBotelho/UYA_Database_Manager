@@ -63,7 +63,7 @@ WEAPON_MAP = {
     '05': "Gravity Bomb",
     '06':"Mines",
     '07':"Lava Gun",
-    '09':"Morph",
+    '09':"Morph O' Ray",
     '0A':'Wrench',
     '0C':"Holo Shield",
     '0B':"Hypershot",

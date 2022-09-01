@@ -14,6 +14,7 @@ from blarg.constants.constants import TIMES
 from blarg.utils.utils import generateFlagIDs, generateHealthIDs
 from Parsers.GamestateGameSettingsParser import hasNodes
 from HashId import hash_id
+from sys import maxsize
 GAMES = 'http://107.155.81.113:8281/robo/games'
 GAME_EVENTS = {'020C', '020A', '0200', '020E', '0204', '0003'}
 EVENTS = {
@@ -158,12 +159,13 @@ class LiveGame():
         self.mode = game['game_mode']
         self.limit = game['cap_limit'] if 'cap_limit' in game else None #ctf
         self.limit = game['frag'] if 'frag' in game else self.limit #dm
+        self.limit = maxsize if self.limit == 0 else self.limit
         self.time_limit = TIMES[game['game_length']] if TIMES[game['game_length']] != None else None
         self.scores = {team:0 for team in self.ntt.values()}
         self.hasNodes = self.hasNodes if self.hasNodes != None else False
         self.hp_boxes = generateHealthIDs(self.map.lower(), nodes = self.hasNodes, base = game['advanced_rules']['baseDefenses'])
         self.flags = generateFlagIDs(self.map, nodes = self.hasNodes, base=game['advanced_rules']['baseDefenses']) if self.mode == "CTF" else []
-        print(self.hasNodes,game['advanced_rules']['baseDefenses'], self.hp_boxes, self.flags)
+        # print(self.hasNodes,game['advanced_rules']['baseDefenses'], self.hp_boxes, self.flags)
         print(self.teams)
         self.logger.critical(f"LIMIT = {self.limit}")
         self.logger.setScores(self.scores)
@@ -204,7 +206,6 @@ class LiveGame():
                     update = f"{username} has dropped the flag"
                     self.players[int(packet['src'])].dropFlag()
                 elif event == 4:
-                    print(serialized)
                     item = serialized['item_picked_up_id'][0:2]
                     if item in self.hp_boxes:
                         update = f"{self.itos[int(packet['src'])]} grabbed health"
@@ -252,8 +253,6 @@ class LiveGame():
             if player.isPlaced == False:
                 player.place(point)
                 self.numPlaced+=1
-            # print(f"Placing on map...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
-
             if self.clogger >= 20:
                 print(f"unclogging...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
                 self.removeQuitPlayer()
@@ -297,6 +296,8 @@ class LiveGame():
         for player in self.players.values():
             if player.isBot == False:
                 self.state = 1
+        if self.state == 2:
+            self.endGame()
     def getState(self):
         return STATE[self.state]
     def isLoaded(self):
@@ -339,8 +340,10 @@ class LiveGame():
         self.state = 2
         winningTeamColor = self.getWinningTeam()
         self.logger.log()
-        self.logger.close(self.uyaTrackerId, self.players, winningTeamColor)
+        self.logger.close(self.uyaTrackerId, self.players, self.quitPlayers, winningTeamColor)
         self.logger.updatePlayersStore(self.players.values(), self.quitPlayers)
+        print(f"Closing ID: {self.dme_id}")
+        print(f"{self.dme_id} Results: {[str(self.players[p]) for p in self.players]} | DCs: {[str(p) for p in self.quitPlayers]}")
     def getWinningTeam(self):
         '''Return a string of the team with the highest score'''
         winningTeam = sorted(self.scores.items(), key=lambda x: x[1], reverse=True)[0]
