@@ -22,11 +22,9 @@ class BatchLogger():
         self.id = id
         self.map = None
         self.mongo = Database("UYA", "Logger")
-        
-        # self.player_stats = Database("UYA", "Player_Stats_Backup")
         self.exists = False
         self.coords = {}
-        self.players = {}
+        self.players = {} #username to state/result dict
         self.scores = {}
         self.currentMessage = 0
         self.cacheMessage = 0
@@ -82,6 +80,10 @@ class BatchLogger():
         self.players = {}
         for i in players:
             self.players[players[i].username] = players[i].getState()
+    def setResults(self, players):
+        self.players = {}
+        for i in players:
+            self.players[players[i].username] = players[i].getResult()
     def setBatch(self,batch):
         self.batch = []
         self.batch = batch
@@ -129,11 +131,11 @@ class BatchLogger():
             print("Problem logging")
             print(traceback.format_exc())
 
-    def close(self, uyaTrackerId, players):
+    def close(self, uyaTrackerId, players, winningTeamColor):
         '''close the game and save the states'''
-        self.setStates(players)
+        self.setResults(players)
         now = datetime.datetime.now()
-        liveHistory = Database("UYA", "LiveGame_History")
+        liveHistory = Database("UYA", "LiveGame_History-Test")
         duration = now - self.startTime if self.startTime != None else now - now
         try:
             self.mongo.collection.find_one_and_delete({
@@ -141,6 +143,7 @@ class BatchLogger():
             })
             liveHistory.collection.insert_one({
                 'game_id':uyaTrackerId,
+                'winning_team':winningTeamColor,
                 'results':self.players,
                 'duration': "{}:{}".format(duration.seconds//60, duration.seconds%60),
                 'number_of_batches':self.currentMessage,
@@ -175,7 +178,7 @@ def mergeSet(stats, players):
         advancedStats = playerStore['advanced_stats']
         if "live" not in advancedStats:
             advancedStats['live'] = {}
-        mergeDicts(advancedStats['live'], player.getState())
+        mergeDicts(advancedStats['live'], player.getResult())
         stats.collection.find_one_and_update(
         {
             "_id":playerStore["_id"]

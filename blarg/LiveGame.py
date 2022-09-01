@@ -68,14 +68,14 @@ class LiveGame():
         self.scores = {}
         self.state = 0
         self.lobby = {}
-        self.players = {} #holds player objs
+        self.players = {} #lobby idx to player objs
         self.liveMap = True
         self.startTime = None
         self.flags = []
         self.quitPlayers = []
         self.hasNodes = None
-        level = 'DEBUG'
-        # level = "INFO"
+        # level = 'DEBUG'
+        level = "INFO"
         # level = "CRITICAL"
         self.logger = BatchLogger(level, self.dme_id)
         self.createTime = datetime.datetime.now()
@@ -167,7 +167,6 @@ class LiveGame():
         print(self.teams)
         self.logger.critical(f"LIMIT = {self.limit}")
         self.logger.setScores(self.scores)
-        # if len(self.scores) <= 1: print("Invalid Game Not Enough Teams")
         if not self.isImplemented():
             self.logger.critical("GAME TYPE NOT IMPLEMENTED")
             self.liveMap = False
@@ -218,7 +217,6 @@ class LiveGame():
 
         elif packet_id == '020E' and packet['type'] == 'udp': #FIRING
             self.players[int(packet['src'])].fire(serialized['weapon'], serialized['player_hit'])
-            # print(serialized)
             if serialized['player_hit'] != "FF" and serialized['weapon'].lower() == 'flux':
                 self.players[int(serialized['player_hit'])].stageNick(self.players[int(packet['src'])])
             self.logger.debug(f"{self.itos[int(serialized['src'])]} is {EVENTS[serialized['event']]} a {serialized['weapon']}")
@@ -249,30 +247,35 @@ class LiveGame():
         serialized['coord'].pop()
         point = serialized['coord']
         player_idx = int(packet['src'])
-        player = self.players[player_idx]
-        if player.isPlaced == False:
-            player.place(point)
-            self.numPlaced+=1
-        # print(f"Placing on map...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
-        if self.logger.currentMessage == 7:
-            print(f"Placing on map...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
-        if self.clogger >= 20:
-            print(f"unclogging...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
-            self.removeQuitPlayer()
-        self.clogger +=1
-        
-        display = True if self.numPlaced >= len(self.players) else False
-        if display:
-            colors = [self.players[i].team for i in self.players]
-            x = [self.players[i].x for i in self.players]
-            y = [self.players[i].y for i in self.players]
-            hp = [self.players[i].hp for i in self.players]
-            names = [self.players[i].username for i in self.players]
-            self.logger.setCoords((x, y, names, colors, hp))
-            self.logger.setStates(self.players)
-            self.logger.log()
-            self.logger.flush(self.players)
-            self.numPlaced, self.clogger = 0, 0
+        try:
+            player = self.players[player_idx]
+            if player.isPlaced == False:
+                player.place(point)
+                self.numPlaced+=1
+            # print(f"Placing on map...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
+            if self.logger.currentMessage == 7:
+                print(f"Placing on map...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
+            if self.clogger >= 20:
+                print(f"unclogging...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
+                self.removeQuitPlayer()
+            self.clogger +=1
+            
+            display = True if self.numPlaced >= len(self.players) else False
+            if display:
+                colors = [self.players[i].team for i in self.players]
+                x = [self.players[i].x for i in self.players]
+                y = [self.players[i].y for i in self.players]
+                hp = [self.players[i].hp for i in self.players]
+                names = [self.players[i].username for i in self.players]
+                self.logger.setCoords((x, y, names, colors, hp))
+                self.logger.setStates(self.players)
+                self.logger.log()
+                self.logger.flush(self.players)
+                self.numPlaced, self.clogger = 0, 0
+        except:
+            print(f"{self.dme_id} Problem in placeOnMap with {player_idx} not being in self.players possibly.\n \
+                self.players: {self.players}")
+
 
     def isImplemented(self):
         # return self.map in READY_MAPS and self.mode in READY_MODES
@@ -283,12 +286,18 @@ class LiveGame():
         for player in self.players.values():
             if player.isPlaced == False:
                 self.logger.info(f"{player.username} has left the game")
+                player.quit()
                 quitter = player
         del self.players[quitter.lobby_idx]
         self.quitPlayers.append(quitter)
         for player in self.players.values():
             player.isPlaced = False
         self.clogger = 0
+
+        self.state = 2
+        for player in self.players.values():
+            if player.isBot == False:
+                self.state = 1
     def getState(self):
         return STATE[self.state]
     def isLoaded(self):
@@ -329,10 +338,14 @@ class LiveGame():
             self.logger.info(str(self.players[idx]))
     def endGame(self):
         self.state = 2
+        winningTeamColor = self.getWinningTeam()
         self.logger.log()
-        self.logger.close(self.uyaTrackerId, self.players)
+        self.logger.close(self.uyaTrackerId, self.players, winningTeamColor)
         self.logger.updatePlayersStore(self.players.values(), self.quitPlayers)
-
+    def getWinningTeam(self):
+        '''Return a string of the team with the highest score'''
+        winningTeam = sorted(self.scores.items(), key=lambda x: x[1], reverse=True)[0]
+        return winningTeam[0]
     def isComplete(self):
         '''returns true if the game is complete'''
         for team in self.scores:

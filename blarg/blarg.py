@@ -1,8 +1,7 @@
 import asyncio
-from typing import final
 import websockets
 import json
-
+import requests
 import logging
 import traceback
 from collections import deque
@@ -11,6 +10,8 @@ from blarg.packets.udp_map import udp_map
 
 from blarg.LiveGame import LiveGame
 import datetime
+GAMES = 'http://107.155.81.113:8281/robo/games'
+
 class Blarg:
     def __init__(self, config: dict):
         self._config = config
@@ -127,19 +128,27 @@ class Blarg:
                         await asyncio.sleep(60)
 
     async def garbageCollect(self):
-        minutes = 25
+        minutes = 10
         self._logger.error("INITIALIZING GARBAGE COLLECTOR")
+
         while True:
+            self._logger.info("RUNNING GARBAGE COLLECTOR")
+            self._logger.info("Calling server games api")
+            res = requests.get(GAMES).json()
+            activeGames = {game['dme_world_id'] for game in res}
+           
             try:
-                self._logger.info("RUNNING GARBAGE COLLECTOR")
                 before = len(self.games)
                 self._logger.info(f"before cleanup {before}")
                 currentTime = datetime.datetime.now()
                 stale = []
-                for dme_id in self.games:
+                for dme_id in self.games:                        
                     game = self.games[dme_id]
                     totalTime = currentTime - game.createTime
-                    if game.state != 0: 
+                    if dme_id not in activeGames:
+                        game.endGame()
+                        stale.append(dme_id)
+                    elif game.state != 0: 
                         timeUp = currentTime - game.startTime
                         if (timeUp.total_seconds()//60) > 120:
                             game.endGame()

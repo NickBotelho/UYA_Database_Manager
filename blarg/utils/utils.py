@@ -140,9 +140,8 @@ def generateHealthIDs(map = 'bakisi_isle', nodes = True, base = True):
             red -= 4
         res = [node for node in range(red, red+boxes)]
     elif map == 'metropolis': #done
-        red = int('49', 16)
+        red = int('43', 16)
         boxes = 3
-
         if not nodes: #4,4,3,3,4,4
             red -= 22
         if not base:
@@ -178,5 +177,5 @@ def generateHealthIDs(map = 'bakisi_isle', nodes = True, base = True):
     res = [hex(node)[2:].upper() if len(hex(node)[2:]) > 1 else f"0{hex(node)[2:]}".upper() for node in res]
     return res
 
-# print(generateHealthIDs(map = "blackwater_dox"))
-print(generateFlagIDs(nodes=False, base=True))
+print(generateHealthIDs(map = "metropolis", nodes = False, base=False))
+# print(generateFlagIDs(nodes=False, base=True))

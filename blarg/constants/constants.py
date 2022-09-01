@@ -59,7 +59,7 @@ WEAPON_MAP = {
     '01':"N60",
     '02': "Blitz",
     '03': "Flux",
-    '04':"Rocket",
+    '04':"Rockets",
     '05': "Gravity Bomb",
     '06':"Mines",
     '07':"Lava Gun",

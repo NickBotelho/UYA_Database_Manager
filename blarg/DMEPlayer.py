@@ -5,6 +5,7 @@ class Player():
         self.username = username
         self.lobby_idx = lobby_idx
         self.team = team
+        self.isBot = self.checkBotStatus(username)
         self.kills = 0
         self.hp = 100
         self.deaths = 0
@@ -18,6 +19,7 @@ class Player():
         self.isPlaced = False
         self.lastX, self.lastY = -1, -1
         self.distanceTravelled = 0
+        self.disconnected = False
         self.fluxShots,self.fluxHits, self.fluxAccuracy = 0,0,0
         self.blitzShots,self.gravityBombShots= 0,0
         self.hasFlag = False
@@ -69,9 +71,9 @@ class Player():
             'health_boxes':self.healthBoxesGrabbed,
             'nicks_given':self.nicksGiven,
             'nicks_received':self.nicksReceived,
-            'weapons':{w.weapon:w.toJson() for w in self.weapons.values()},
-            'killHeatMap':self.killHeatMap,
-            'deathHeatMap':self.deathHeatMap
+            'weapons':{w.weapon:w.getState() for w in self.weapons.values()},
+            # 'killHeatMap':self.killHeatMap,
+            # 'deathHeatMap':self.deathHeatMap,
 
         }
         return state
@@ -92,6 +94,8 @@ class Player():
         self.flagDrops+=1
     def fire(self, weapon, player_hit):
         self.weapons[weapon].fire(player_hit)
+    def quit(self):
+        self.disconnected = True
     def stageNick(self, nicker):
         '''Nicker is the player object that shot the nickee'''
         self.stagedNick = True
@@ -105,3 +109,25 @@ class Player():
             self.stagedNick = False
     def addNick(self):
         self.nicksGiven+=1
+    def checkBotStatus(self, username):
+        if len(username) > 3:
+            if username[:3].lower() == "cpu":
+                return True
+        return False
+    def getResult(self, score):
+        return {
+            'kills':self.kills,
+            'deaths':self.deaths,
+            'caps':self.caps,
+            'team':self.team,
+            'distance_travelled':round(self.distanceTravelled/X12_UNIT, 2),
+            'flag_pickups':self.flagPickups,
+            'flag_drops':self.flagDrops,
+            'health_boxes':self.healthBoxesGrabbed,
+            'nicks_given':self.nicksGiven,
+            'nicks_received':self.nicksReceived,
+            'weapons':{w.weapon:w.getResult() for w in self.weapons.values()},
+            'killHeatMap':self.killHeatMap,
+            'deathHeatMap':self.deathHeatMap,
+            'disconncted':self.disconnected
+        }
