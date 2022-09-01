@@ -114,7 +114,7 @@ class Player():
             if username[:3].lower() == "cpu":
                 return True
         return False
-    def getResult(self, score):
+    def getResult(self):
         return {
             'kills':self.kills,
             'deaths':self.deaths,
@@ -129,5 +129,5 @@ class Player():
             'weapons':{w.weapon:w.getResult() for w in self.weapons.values()},
             'killHeatMap':self.killHeatMap,
             'deathHeatMap':self.deathHeatMap,
-            'disconncted':self.disconnected
+            'disconnected':self.disconnected,
         }

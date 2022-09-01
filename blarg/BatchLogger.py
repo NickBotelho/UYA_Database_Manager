@@ -135,7 +135,7 @@ class BatchLogger():
         '''close the game and save the states'''
         self.setResults(players)
         now = datetime.datetime.now()
-        liveHistory = Database("UYA", "LiveGame_History-Test")
+        liveHistory = Database("UYA", "LiveGame_History")
         duration = now - self.startTime if self.startTime != None else now - now
         try:
             self.mongo.collection.find_one_and_delete({

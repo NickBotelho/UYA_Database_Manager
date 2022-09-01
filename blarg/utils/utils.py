@@ -177,5 +177,5 @@ def generateHealthIDs(map = 'bakisi_isle', nodes = True, base = True):
     res = [hex(node)[2:].upper() if len(hex(node)[2:]) > 1 else f"0{hex(node)[2:]}".upper() for node in res]
     return res
 
-print(generateHealthIDs(map = "metropolis", nodes = False, base=False))
+# print(generateHealthIDs(map = "metropolis", nodes = False, base=False))
 # print(generateFlagIDs(nodes=False, base=True))
