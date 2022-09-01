@@ -9,6 +9,7 @@ class DMEWeapon():
         self.bestStreak = 0
     def kill(self):
         self.streak+=1
+        self.kills+=1
         self.isV2 = True if self.streak >= 3 else False
     def isUpgrade(self):
         return self.isV2
