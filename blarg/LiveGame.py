@@ -253,8 +253,7 @@ class LiveGame():
                 player.place(point)
                 self.numPlaced+=1
             # print(f"Placing on map...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
-            if self.logger.currentMessage == 7:
-                print(f"Placing on map...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
+
             if self.clogger >= 20:
                 print(f"unclogging...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
                 self.removeQuitPlayer()
