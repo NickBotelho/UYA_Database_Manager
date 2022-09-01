@@ -265,7 +265,8 @@ class LiveGame():
                 y = [self.players[i].y for i in self.players]
                 hp = [self.players[i].hp for i in self.players]
                 names = [self.players[i].username for i in self.players]
-                self.logger.setCoords((x, y, names, colors, hp))
+                hasFlag = [self.players[i].hasFlag for i in self.players]
+                self.logger.setCoords((x, y, names, colors, hp, hasFlag))
                 self.logger.setStates(self.players)
                 self.logger.log()
                 self.logger.flush(self.players)
