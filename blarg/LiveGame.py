@@ -63,7 +63,7 @@ class LiveGame():
         teams = teams
         '''
         self.dme_id = dme_id
-        self.refreshRate = 5
+        self.refreshRate = 1
         self.x, self.y, self.names = [], [] ,[] #Used for graphing
         self.current_time = 0
         self.itos, self.ntt, self.nts, self.teams = {}, {}, {}, {}
@@ -118,7 +118,7 @@ class LiveGame():
     def manage(self, packet_id, serialized, packet):
         '''Accepts a packet and its info
         it will manage the packet and direct it to the propper destination based on its info'''
-        if packet_id == '0209' and packet['type'] == 'udp' and self.liveMap:
+        if packet_id == '0209' and packet['type'] == 'udp' and serialized['packet_num'] % self.refreshRate == 0 and self.liveMap:
             self.placeOnMap(serialized, packet)
         # elif packet['type'] == 'tcp' and (packet_id == '0211' or packet_id == '0210' or packet_id == '0003'):
         #     self.staging(packet_id, serialized, packet)
@@ -251,9 +251,8 @@ class LiveGame():
         serialized['coord'].pop()
         point = serialized['coord']
         player_idx = int(packet['src'])
-        clog_limit = 100 if not self.isBotGame else 500
+        clog_limit = 250 if not self.isBotGame else 500
         self.locationList[player_idx] = 1 if player_idx not in self.locationList else self.locationList[player_idx]+1
-        self.players[player_idx].locationPacketsReceived+=1
         try:
             player = self.players[player_idx]
             if player.isPlaced == False:

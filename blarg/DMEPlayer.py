@@ -37,10 +37,9 @@ class Player():
         self.killHeatMap = [] #list of coords where player kill
         self.deathHeatMap = [] #list of coords where player kill
 
-        self.locationPacketsReceived = 0
 
     def __str__(self):
-        return "{} HP = {}, Kills = {}, Deaths = {}, Caps = {} (isPlaced = {})(placed {}x)".format(self.username, self.hp, self.kills, self.deaths, self.caps, self.isPlaced, self.locationPacketsReceived)
+        return "{} HP = {}, Kills = {}, Deaths = {}, Caps = {} (isPlaced = {})".format(self.username, self.hp, self.kills, self.deaths, self.caps, self.isPlaced)
     def adjustHP(self, hp):
         self.damageTaken += abs(self.hp - hp)
         self.hp = hp
