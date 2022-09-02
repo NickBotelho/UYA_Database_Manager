@@ -118,7 +118,7 @@ class LiveGame():
     def manage(self, packet_id, serialized, packet):
         '''Accepts a packet and its info
         it will manage the packet and direct it to the propper destination based on its info'''
-        if packet_id == '0209' and packet['type'] == 'udp' and serialized['packet_num'] % self.refreshRate == 0 and self.liveMap:
+        if packet_id == '0209' and packet['type'] == 'udp' and self.liveMap:
             self.placeOnMap(serialized, packet)
         # elif packet['type'] == 'tcp' and (packet_id == '0211' or packet_id == '0210' or packet_id == '0003'):
         #     self.staging(packet_id, serialized, packet)
