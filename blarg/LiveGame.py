@@ -255,6 +255,7 @@ class LiveGame():
             if player.isPlaced == False:
                 player.place(point)
                 self.numPlaced+=1
+
             if self.clogger >= 20:
                 print(f"unclogging...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
                 self.removeQuitPlayer()
