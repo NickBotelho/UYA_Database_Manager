@@ -37,7 +37,8 @@ EVENTS = {
 STATE = {
     0:'Staging',
     1:'In Progress',
-    2:"Game Complete"
+    2:"Game Complete",
+    3:"Game Logged"
 }
 # READY_MAPS = {
 #     'Bakisi_Isle',
@@ -339,13 +340,14 @@ class LiveGame():
         for idx in self.players:
             self.logger.info(str(self.players[idx]))
     def endGame(self):
-        self.state = 2
-        winningTeamColor = self.getWinningTeam()
-        self.logger.log()
-        self.logger.close(self.uyaTrackerId, self.players, self.quitPlayers, winningTeamColor)
-        self.logger.updatePlayersStore(self.players.values(), self.quitPlayers)
-        print(f"Closing ID: {self.dme_id}")
-        print(f"{self.dme_id} Results: {[str(self.players[p]) for p in self.players]} | DCs: {[str(p) for p in self.quitPlayers]}")
+        if self.state < 3:
+            winningTeamColor = self.getWinningTeam()
+            self.logger.log()
+            self.logger.close(self.uyaTrackerId, self.players, self.quitPlayers, winningTeamColor)
+            self.logger.updatePlayersStore(self.players.values(), self.quitPlayers)
+            self.state = 3
+            print(f"Closing ID: {self.dme_id}")
+            print(f"{self.dme_id} Results: {[str(self.players[p]) for p in self.players]} | DCs: {[str(p) for p in self.quitPlayers]}")
     def getWinningTeam(self):
         '''Return a string of the team with the highest score'''
         winningTeam = sorted(self.scores.items(), key=lambda x: x[1], reverse=True)[0]

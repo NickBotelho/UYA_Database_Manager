@@ -29,6 +29,7 @@ class BatchLogger():
         self.currentMessage = 0
         self.cacheMessage = 0
         self.startTime = None
+        self.status = 1
     def debug(self, message):
         if type(message) != str:
             message = str(message)
@@ -91,56 +92,57 @@ class BatchLogger():
     def setScores(self, scores):
         self.scores = scores
     def log(self):
-        try:
-            now = datetime.datetime.now()
-            duration = now - self.startTime if self.startTime != None else now - now
-            if not self.exists:
-                existing = self.mongo.collection.find_one({'dme_id':self.id})
-                if existing != None:
-                    self.mongo.collection.find_one_and_delete({'dme_id':self.id})
-                self.mongo.collection.insert_one({
-                    'dme_id':self.id,
-                    'map':self.map,
-                    'start_time':self.startTime,
-                    'logger':self.batch,
-                    'graph': self.coords,
-                    'player_states': self.players,
-                    'scores':self.scores,
-                    'batch_num':self.currentMessage,
-                })
-                self.exists = True
-            else:
-                self.mongo.collection.find_one_and_update({
-                    'dme_id':self.id
-                },
-                {
-                    '$set':{
-                        'logger':self.batch[self.currentMessage:] if len(self.cache) != len(self.batch) else self.cache[self.cacheMessage:],
+        if self.status == 1:
+            try:
+                now = datetime.datetime.now()
+                duration = now - self.startTime if self.startTime != None else now - now
+                if not self.exists:
+                    existing = self.mongo.collection.find_one({'dme_id':self.id})
+                    if existing != None:
+                        self.mongo.collection.find_one_and_delete({'dme_id':self.id})
+                    self.mongo.collection.insert_one({
+                        'dme_id':self.id,
+                        'map':self.map,
+                        'start_time':self.startTime,
+                        'logger':self.batch,
                         'graph': self.coords,
                         'player_states': self.players,
                         'scores':self.scores,
                         'batch_num':self.currentMessage,
-                        'duration': "{}:{}".format(duration.seconds//60, duration.seconds%60),
+                    })
+                    self.exists = True
+                else:
+                    self.mongo.collection.find_one_and_update({
+                        'dme_id':self.id
+                    },
+                    {
+                        '$set':{
+                            'logger':self.batch[self.currentMessage:] if len(self.cache) != len(self.batch) else self.cache[self.cacheMessage:],
+                            'graph': self.coords,
+                            'player_states': self.players,
+                            'scores':self.scores,
+                            'batch_num':self.currentMessage,
+                            'duration': "{}:{}".format(duration.seconds//60, duration.seconds%60),
 
-                    }
-                })
-            if len(self.cache) != len(self.batch):
-                self.cacheMessage = self.currentMessage
-                self.cache = list(self.batch)
-                self.currentMessage = len(self.batch)
-        except Exception as e:
-            print("Problem logging")
-            print(traceback.format_exc())
-
+                        }
+                    })
+                if len(self.cache) != len(self.batch):
+                    self.cacheMessage = self.currentMessage
+                    self.cache = list(self.batch)
+                    self.currentMessage = len(self.batch)
+            except Exception as e:
+                print("Problem logging")
+                print(traceback.format_exc())
     def close(self, uyaTrackerId, players, quits, winningTeamColor):
         '''close the game and save the states'''
+        self.status = 2
         for quitter in quits:
             players[quitter.username] = quitter
         self.setResults(players)
         now = datetime.datetime.now()
         liveHistory = Database("UYA", "LiveGame_History")
         duration = now - self.startTime if self.startTime != None else now - now
-        try:
+        try:           
             self.mongo.collection.find_one_and_delete({
                     'dme_id':self.id
                 })
