@@ -165,7 +165,7 @@ class LiveGame():
         self.hasNodes = self.hasNodes if self.hasNodes != None else False
         self.hp_boxes = generateHealthIDs(self.map.lower(), nodes = self.hasNodes, base = game['advanced_rules']['baseDefenses'])
         self.flags = generateFlagIDs(self.map, nodes = self.hasNodes, base=game['advanced_rules']['baseDefenses']) if self.mode == "CTF" else []
-        # print(self.hasNodes,game['advanced_rules']['baseDefenses'], self.hp_boxes, self.flags)
+        print(self.hasNodes,game['advanced_rules']['baseDefenses'], self.hp_boxes, self.flags)
         print(self.teams)
         self.logger.critical(f"LIMIT = {self.limit}")
         self.logger.setScores(self.scores)
@@ -183,7 +183,6 @@ class LiveGame():
                 update = None
                 username = self.itos[int(packet['src'])]
                 if event == 0:
-                    self.logger.debug(f"Serialized Idx = {serialized['player_idx']}, Packet Idx = {int(packet['src'])}")
                     self.players[int(packet['src'])].cap()
                     team = self.ntt[username]
                     update = f"{username} capped the flag"
@@ -191,21 +190,24 @@ class LiveGame():
                     self.scores[team] += 1
                     self.logger.setScores(self.scores)
                 elif event == 1:
-                    player_idx = serialized['player_idx']
-                    self.logger.debug(f"Serialized Idx = {serialized['player_idx']}, Packet Idx = {int(packet['src'])}")
-                    if player_idx != "FF":
+                    if serialized['flag_update_type'] != "flag_return":
                         update = f"{username} saved the flag"
                     else:
                         update = f"Flag returned to base due to inactivity"
                 elif event == 2:
+                    print(serialized)
                     item = serialized['object_id'][:2]
                     if item in self.flags:
                         update = f"{username} has picked up the flag"
                         self.players[int(packet['src'])].pickupFlag()
                 elif event == 5:
+                    print(serialized)
+
                     update = f"{username} has dropped the flag"
                     self.players[int(packet['src'])].dropFlag()
                 elif event == 4:
+                    print(serialized)
+
                     item = serialized['item_picked_up_id'][0:2]
                     if item in self.hp_boxes:
                         update = f"{self.itos[int(packet['src'])]} grabbed health"
