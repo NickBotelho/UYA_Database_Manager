@@ -195,18 +195,17 @@ class LiveGame():
                     else:
                         update = f"Flag returned to base due to inactivity"
                 elif event == 2:
-                    print(serialized)
+                    print(int(packet['src']), serialized)
                     item = serialized['object_id'][:2]
                     if item in self.flags:
                         update = f"{username} has picked up the flag"
                         self.players[int(packet['src'])].pickupFlag()
                 elif event == 5:
-                    print(serialized)
-
+                    print(int(packet['src']), serialized)
                     update = f"{username} has dropped the flag"
                     self.players[int(packet['src'])].dropFlag()
                 elif event == 4:
-                    print(serialized)
+                    print(int(packet['src']), serialized)
 
                     item = serialized['item_picked_up_id'][0:2]
                     if item in self.hp_boxes:
