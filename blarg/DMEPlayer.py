@@ -12,7 +12,8 @@ class Player():
         self.caps = 0
         self.weapons = { #weaponNameToObject
             'Wrench':DMEWeapon('Wrench'),
-            'Hypershot':DMEWeapon("Hypershot")
+            'Hypershot':DMEWeapon("Hypershot"),
+            'Hypershot':DMEWeapon("Holo Shield"),
         }
         self.enemyNameToKills = {}
         self.x, self.y = -1, -1

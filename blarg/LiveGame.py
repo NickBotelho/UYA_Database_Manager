@@ -76,6 +76,7 @@ class LiveGame():
         self.flags = []
         self.quitPlayers = []
         self.hasNodes = None
+        self.locationList = {}
         # level = 'DEBUG'
         level = "INFO"
         # level = "CRITICAL"
@@ -250,6 +251,7 @@ class LiveGame():
         serialized['coord'].pop()
         point = serialized['coord']
         player_idx = int(packet['src'])
+        self.locationList[player_idx] = 1 if player_idx not in self.locationList else self.locationList[player_idx]+1
         try:
             player = self.players[player_idx]
             if player.isPlaced == False:
@@ -257,6 +259,7 @@ class LiveGame():
                 self.numPlaced+=1
 
             if self.clogger >= 20:
+                print(self.locationList)
                 print(f"unclogging...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
                 self.removeQuitPlayer()
             self.clogger +=1
