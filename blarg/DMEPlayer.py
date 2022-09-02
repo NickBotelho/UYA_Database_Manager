@@ -44,13 +44,13 @@ class Player():
     def kill(self, enemy = None, weapon = "Wrench"):
         self.kills+=1
         self.killstreak+=1
-        self.bestStreak = self.killstreak if self.killstreak > self.bestStreak else self.bestStreak
+        self.bestKillstreak = self.killstreak if self.killstreak > self.bestKillstreak else self.bestKillstreak
         self.enemyNameToKills[enemy.username] = 1 if enemy.username not in self.enemyNameToKills else self.enemyNameToKills[enemy.username] + 1
         self.weapons[weapon].kill()
         self.killHeatMap.append((self.lastX, self.lastY))
     def death(self):
         self.deaths+=1
-        self.bestStreak = self.killstreak if self.killstreak > self.bestStreak else self.bestStreak
+        self.bestKillstreak = self.killstreak if self.killstreak > self.bestKillstreak else self.bestKillstreak
         self.killstreak=0
         self.hp = 0
         self.deathHeatMap.append((self.lastX, self.lastY))
