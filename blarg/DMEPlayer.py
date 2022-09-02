@@ -43,15 +43,15 @@ class Player():
         self.hp = hp
     def kill(self, enemy = None, weapon = "Wrench"):
         self.kills+=1
-        self.streak+=1
-        self.bestStreak = self.streak if self.streak > self.bestStreak else self.bestStreak
+        self.killstreak+=1
+        self.bestStreak = self.killstreak if self.killstreak > self.bestStreak else self.bestStreak
         self.enemyNameToKills[enemy.username] = 1 if enemy.username not in self.enemyNameToKills else self.enemyNameToKills[enemy.username] + 1
         self.weapons[weapon].kill()
         self.killHeatMap.append((self.lastX, self.lastY))
     def death(self):
         self.deaths+=1
-        self.bestStreak = self.streak if self.streak > self.bestStreak else self.bestStreak
-        self.streak=0
+        self.bestStreak = self.killstreak if self.killstreak > self.bestStreak else self.bestStreak
+        self.killstreak=0
         self.hp = 0
         self.deathHeatMap.append((self.lastX, self.lastY))
         for weapon in self.weapons.values():
@@ -85,6 +85,8 @@ class Player():
             'damage_taken':self.damageTaken,
             'killHeatMap':self.killHeatMap,
             'deathHeatMap':self.deathHeatMap,
+            'killstreak':self.killstreak,
+            'bestKillstreak':self.bestKillstreak,
 
         }
         return state
@@ -141,4 +143,5 @@ class Player():
             'killHeatMap':self.killHeatMap,
             'deathHeatMap':self.deathHeatMap,
             'disconnected':self.disconnected,
+            'bestKillstreak':self.bestKillstreak,
         }

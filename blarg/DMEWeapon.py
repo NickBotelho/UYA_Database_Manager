@@ -39,6 +39,5 @@ class DMEWeapon():
             'shots':self.shots//3 if self.weapon != "Flux" else self.shots,
             'hits':self.hits,
             'accuracy':round((self.hits/self.shots)*100, 1) if self.shots > 0 else 0,
-            'killstreak':self.streak,
             'bestStreak': self.bestStreak
         }
