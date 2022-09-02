@@ -251,16 +251,18 @@ class LiveGame():
         serialized['coord'].pop()
         point = serialized['coord']
         player_idx = int(packet['src'])
+        clog_limit = 100 if not self.isBotGame else 500
         self.locationList[player_idx] = 1 if player_idx not in self.locationList else self.locationList[player_idx]+1
+        self.players[player_idx].locationPacketsReceived+=1
         try:
             player = self.players[player_idx]
             if player.isPlaced == False:
                 player.place(point)
                 self.numPlaced+=1
 
-            if self.clogger >= 20 if not self.isBotGame else 100:
-                print(self.locationList)
-                print(f"unclogging...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
+            if self.clogger >= clog_limit:
+                # print(self.locationList)
+                print(f"unclogging{self.clogger}...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
                 self.removeQuitPlayer()
             self.clogger +=1
             
@@ -290,8 +292,10 @@ class LiveGame():
         for player in self.players.values():
             if player.isPlaced == False:
                 self.logger.info(f"{player.username} has left the game")
+                print(f"{player.username} has left the game")
                 player.quit()
                 quitter = player
+                break
         del self.players[quitter.lobby_idx]
         self.quitPlayers.append(quitter)
         for player in self.players.values():

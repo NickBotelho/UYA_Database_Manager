@@ -13,7 +13,7 @@ class Player():
         self.weapons = { #weaponNameToObject
             'Wrench':DMEWeapon('Wrench'),
             'Hypershot':DMEWeapon("Hypershot"),
-            'Hypershot':DMEWeapon("Holo Shield"),
+            'Holo Shield':DMEWeapon("Holo Shield"),
         }
         self.enemyNameToKills = {}
         self.x, self.y = -1, -1
@@ -37,8 +37,10 @@ class Player():
         self.killHeatMap = [] #list of coords where player kill
         self.deathHeatMap = [] #list of coords where player kill
 
+        self.locationPacketsReceived = 0
+
     def __str__(self):
-        return "{} HP = {}, Kills = {}, Deaths = {}, Caps = {} (isPlaced = {})".format(self.username, self.hp, self.kills, self.deaths, self.caps, self.isPlaced)
+        return "{} HP = {}, Kills = {}, Deaths = {}, Caps = {} (isPlaced = {})(placed {}x)".format(self.username, self.hp, self.kills, self.deaths, self.caps, self.isPlaced, self.locationPacketsReceived)
     def adjustHP(self, hp):
         self.damageTaken += abs(self.hp - hp)
         self.hp = hp
