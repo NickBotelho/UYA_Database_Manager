@@ -258,7 +258,7 @@ class LiveGame():
                 player.place(point)
                 self.numPlaced+=1
 
-            if self.clogger >= 20:
+            if self.clogger >= 20 if not self.isBotGame else 100:
                 print(self.locationList)
                 print(f"unclogging...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
                 self.removeQuitPlayer()
