@@ -30,6 +30,8 @@ class Player():
         self.nicker = None
         self.nicksReceived, self.nicksGiven = 0, 0
         self.damageTaken = 0
+        self.killstreak = 0
+        self.bestKillstreak = 0
 
         self.killHeatMap = [] #list of coords where player kill
         self.deathHeatMap = [] #list of coords where player kill
@@ -41,13 +43,19 @@ class Player():
         self.hp = hp
     def kill(self, enemy = None, weapon = "Wrench"):
         self.kills+=1
+        self.streak+=1
+        self.bestStreak = self.streak if self.streak > self.bestStreak else self.bestStreak
         self.enemyNameToKills[enemy.username] = 1 if enemy.username not in self.enemyNameToKills else self.enemyNameToKills[enemy.username] + 1
         self.weapons[weapon].kill()
         self.killHeatMap.append((self.lastX, self.lastY))
     def death(self):
         self.deaths+=1
+        self.bestStreak = self.streak if self.streak > self.bestStreak else self.bestStreak
+        self.streak=0
         self.hp = 0
         self.deathHeatMap.append((self.lastX, self.lastY))
+        for weapon in self.weapons.values():
+            weapon.die()
     def cap(self):
         self.caps+=1
         self.hasFlag=False

@@ -282,7 +282,6 @@ class LiveGame():
         # return self.map in READY_MAPS and self.mode in READY_MODES
         return True
     def removeQuitPlayer(self):
-        '''needs work'''
         quitter = None
         for player in self.players.values():
             if player.isPlaced == False:
