@@ -29,6 +29,7 @@ class Player():
         self.stagedNick = False
         self.nicker = None
         self.nicksReceived, self.nicksGiven = 0, 0
+        self.damageTaken = 0
 
         self.killHeatMap = [] #list of coords where player kill
         self.deathHeatMap = [] #list of coords where player kill
@@ -36,6 +37,7 @@ class Player():
     def __str__(self):
         return "{} HP = {}, Kills = {}, Deaths = {}, Caps = {} (isPlaced = {})".format(self.username, self.hp, self.kills, self.deaths, self.caps, self.isPlaced)
     def adjustHP(self, hp):
+        self.damageTaken += abs(self.hp - hp)
         self.hp = hp
     def kill(self, enemy = None, weapon = "Wrench"):
         self.kills+=1
@@ -72,8 +74,9 @@ class Player():
             'nicks_given':self.nicksGiven,
             'nicks_received':self.nicksReceived,
             'weapons':{w.weapon:w.getState() for w in self.weapons.values()},
-            # 'killHeatMap':self.killHeatMap,
-            # 'deathHeatMap':self.deathHeatMap,
+            'damage_taken':self.damageTaken,
+            'killHeatMap':self.killHeatMap,
+            'deathHeatMap':self.deathHeatMap,
 
         }
         return state

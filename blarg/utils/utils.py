@@ -178,4 +178,4 @@ def generateHealthIDs(map = 'bakisi_isle', nodes = True, base = True):
     return res
 
 # print(generateHealthIDs(map = "metropolis", nodes = False, base=False))
-# print(generateFlagIDs(nodes=False, base=True))
+# print(generateFlagIDs(map = "blackwater_dox", nodes=False, base=True))
