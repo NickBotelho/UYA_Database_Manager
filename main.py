@@ -53,8 +53,8 @@ async def main():
     stats = loop.create_task(update())
     garbageCollection = loop.create_task(blarg.garbageCollect())
 
-    # await asyncio.wait([stats, socket, garbageCollection])
-    await asyncio.wait([socket, garbageCollection])
+    await asyncio.wait([stats, socket, garbageCollection])
+    # await asyncio.wait([socket, garbageCollection])
 
 
 
