@@ -86,7 +86,7 @@ class LiveGame():
         self.delay = delay
         self.numPlaced = 0
         self.uyaTrackerId = None
-        self.clogger = 0
+        self.clogger, self.clog_limit = 0, 1000
         self.isBotGame = False
         self.weapons = []
         if delay:
@@ -252,7 +252,6 @@ class LiveGame():
         point = serialized['coord']
         rotation = serialized['cam1_x']
         player_idx = int(packet['src'])
-        clog_limit = 250 if not self.isBotGame else 500
         self.locationList[player_idx] = 1 if player_idx not in self.locationList else self.locationList[player_idx]+1
         try:
             player = self.players[player_idx]
@@ -260,7 +259,7 @@ class LiveGame():
                 player.place(point, rotation)
                 self.numPlaced+=1
 
-            if self.clogger >= clog_limit:
+            if self.clogger >= self.clog_limit:
                 # print(self.locationList)
                 print(f"unclogging{self.clogger}...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
                 self.removeQuitPlayer()
@@ -330,20 +329,29 @@ class LiveGame():
                 print(f'Error parsing game lobby for {self.dme_id}.\n\
                     The lobby is as follows = {self.lobby}\n\
                         as a result trying to parse from packet {packet_id}')
-        self.isBotGame = self.checkForBots()
         self.logger.debug(str(self.itos))
         self.logger.debug(str(self.ntt))
         self.logger.debug(str(self.nts))
     def checkForBots(self):
-        for username in self.itos.values():
+        for player in self.player.values():
+            username = player.username
             if len(username) >= 3:
                 if username[:3].lower() == "cpu":
                     return True
         return False
+    def createClogger(self):
+        '''15 packets/second for 1 player
+        Give ~10 seconds before clog goes off. assume bot send 2x as fast'''
+        TIMEOUT = 10 #seconds
+        self.clog_limit = (15 * TIMEOUT) * len(self.players)
+        self.clog_limit = self.clog_limit * 2 if self.isBotGame else self.clog_limit
+
     def _initPlayers(self):
         for player_idx in self.itos:
             username = self.itos[player_idx]
             self.players[player_idx] = Player(username, player_idx, self.ntt[username])
+        self.isBotGame = self.checkForBots()
+        self.defineClog()
     def displayPlayers(self):
         for idx in self.players:
             self.logger.info(str(self.players[idx]))
@@ -361,8 +369,8 @@ class LiveGame():
         print("calculating winning team")
         print(self.scores)
         winningTeam = sorted(self.scores.items(), key=lambda x: x[1], reverse=True)
-        print(f"winning team {winningTeam}")
-        return winningTeam[0]
+        print(f"winning team {winningTeam[0][0]}")
+        return winningTeam[0][0]
     def isComplete(self):
         '''returns true if the game is complete'''
         for team in self.scores:
