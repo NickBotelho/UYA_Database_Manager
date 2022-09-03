@@ -78,6 +78,7 @@ class BatchLogger():
         self.coords['color'] = info[3]
         self.coords['hp'] = info[4]
         self.coords['hasFlag'] = info[5]
+        self.coords['rotations'] = info[6]
     def setStates(self, players):
         self.players = {}
         for i in players:

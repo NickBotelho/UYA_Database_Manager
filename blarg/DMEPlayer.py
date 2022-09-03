@@ -16,7 +16,7 @@ class Player():
             'Holo Shield':DMEWeapon("Holo Shield"),
         }
         self.enemyNameToKills = {}
-        self.x, self.y = -1, -1
+        self.x, self.y, self.rotation = -1, -1, -1
         self.isPlaced = False
         self.lastX, self.lastY = -1, -1
         self.distanceTravelled = 0
@@ -92,14 +92,15 @@ class Player():
 
         }
         return state
-    def place(self, coords):
+    def place(self, coords, rotation):
         self.distanceTravelled = self.distanceTravelled + abs(self.lastX - coords[0]) if self.lastX != -1 else self.distanceTravelled
         self.x = coords[0]
         self.y = coords[1]
+        self.rotation = rotation
         self.isPlaced = True
     def unPlace(self):
         self.lastX, self.lastY = self.x, self.y
-        self.x, self.y = -1, -1
+        self.x, self.y, self.rotation = -1, -1, -1
         self.isPlaced = False
     def pickupFlag(self):
         self.hasFlag = True

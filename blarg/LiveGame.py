@@ -250,13 +250,14 @@ class LiveGame():
     def placeOnMap(self, serialized, packet):
         serialized['coord'].pop()
         point = serialized['coord']
+        rotation = serialized['cam1_x']
         player_idx = int(packet['src'])
         clog_limit = 250 if not self.isBotGame else 500
         self.locationList[player_idx] = 1 if player_idx not in self.locationList else self.locationList[player_idx]+1
         try:
             player = self.players[player_idx]
             if player.isPlaced == False:
-                player.place(point)
+                player.place(point, rotation)
                 self.numPlaced+=1
 
             if self.clogger >= clog_limit:
@@ -273,7 +274,8 @@ class LiveGame():
                 hp = [self.players[i].hp for i in self.players]
                 names = [self.players[i].username for i in self.players]
                 hasFlag = [self.players[i].hasFlag for i in self.players]
-                self.logger.setCoords((x, y, names, colors, hp, hasFlag))
+                rotations = [self.players[i].rotation for i in self.players]
+                self.logger.setCoords((x, y, names, colors, hp, hasFlag, rotations))
                 self.logger.setStates(self.players)
                 self.logger.log()
                 self.logger.flush(self.players)
