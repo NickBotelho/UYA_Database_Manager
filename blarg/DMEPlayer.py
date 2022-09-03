@@ -39,7 +39,7 @@ class Player():
 
 
     def __str__(self):
-        return "{} HP = {}, Kills = {}, Deaths = {}, Caps = {} (isPlaced = {})".format(self.username, self.hp, self.kills, self.deaths, self.caps, self.isPlaced)
+        return "{} HP = {}, Kills = {}, Deaths = {}, Caps = {}".format(self.username, self.hp, self.kills, self.deaths, self.caps)
     def adjustHP(self, hp):
         self.damageTaken += abs(self.hp - hp)
         self.hp = hp
@@ -147,4 +147,17 @@ class Player():
             'deathHeatMap':self.deathHeatMap,
             'disconnected':self.disconnected,
             'bestKillstreak':self.bestKillstreak,
+        }
+    def getStore(self):
+        return {
+            'kills':self.kills,
+            'deaths':self.deaths,
+            'caps':self.caps,
+            'distance_travelled':round(self.distanceTravelled/X12_UNIT, 2),
+            'flag_pickups':self.flagPickups,
+            'flag_drops':self.flagDrops,
+            'health_boxes':self.healthBoxesGrabbed,
+            'nicks_given':self.nicksGiven,
+            'nicks_received':self.nicksReceived,
+            'weapons':{w.weapon:w.getStore() for w in self.weapons.values()},
         }

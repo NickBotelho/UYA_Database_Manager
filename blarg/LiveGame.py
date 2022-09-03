@@ -136,7 +136,7 @@ class LiveGame():
             self.parseLobby(packet_id)
             self._initPlayers()
             self.startGame(serialized, packet)
-        return self.state != 2
+        return self.state < 2
     def startGame(self, serialized, packet):
         '''triggers on game start'''
         print(f"{self.dme_id}: GAME STARTING")
@@ -359,7 +359,7 @@ class LiveGame():
         if self.state < 3:
             winningTeamColor = self.getWinningTeam()
             self.logger.log()
-            self.logger.close(self.uyaTrackerId, self.players, self.quitPlayers, winningTeamColor)
+            self.logger.close(self.uyaTrackerId, self.players, self.quitPlayers, self.scores, winningTeamColor)
             self.logger.updatePlayersStore(self.players.values(), self.quitPlayers)
             self.state = 3
             print(f"Closing ID: {self.dme_id}")

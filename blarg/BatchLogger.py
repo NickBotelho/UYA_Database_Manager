@@ -87,6 +87,10 @@ class BatchLogger():
         self.players = {}
         for i in players:
             self.players[players[i].username] = players[i].getResult()
+    def setPlayerStore(self, players):
+        self.players = {}
+        for i in players:
+            self.players[players[i].username] = players[i].getStore()
     def setBatch(self,batch):
         self.batch = []
         self.batch = batch
@@ -124,7 +128,6 @@ class BatchLogger():
                             'scores':self.scores,
                             'batch_num':self.currentMessage,
                             'duration': "{}:{}".format(duration.seconds//60, duration.seconds%60),
-
                         }
                     })
                 if len(self.cache) != len(self.batch):
@@ -134,9 +137,9 @@ class BatchLogger():
             except Exception as e:
                 print("Problem logging")
                 print(traceback.format_exc())
-    def close(self, uyaTrackerId, players, quits, winningTeamColor):
+    def close(self, uyaTrackerId, players, quits, scores, winningTeamColor):
         '''close the game and save the states'''
-        self.status = 2
+        self.status = 2 #not the same as LiveGame Status
         for quitter in quits:
             players[quitter.username] = quitter
         self.setResults(players)
@@ -156,6 +159,7 @@ class BatchLogger():
                     liveHistory.collection.insert_one({
                         'game_id':uyaTrackerId,
                         'winning_team':winningTeamColor,
+                        'scores':scores, 
                         'results':self.players,
                         'duration': "{}:{}".format(duration.seconds//60, duration.seconds%60),
                         'number_of_batches':self.currentMessage,
@@ -190,7 +194,7 @@ def mergeSet(stats, players):
         advancedStats = playerStore['advanced_stats']
         if "live" not in advancedStats:
             advancedStats['live'] = {}
-        mergeDicts(advancedStats['live'], player.getResult())
+        mergeDicts(advancedStats['live'], player.getStore())
         stats.collection.find_one_and_update(
         {
             "_id":playerStore["_id"]

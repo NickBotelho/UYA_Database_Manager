@@ -41,3 +41,9 @@ class DMEWeapon():
             'accuracy':round((self.hits/self.shots)*100, 1) if self.shots > 0 else 0,
             'bestStreak': self.bestStreak
         }
+    def getStore(self):
+        return {
+            'kills':self.kills,
+            'shots':self.shots//3 if self.weapon != "Flux" else self.shots,
+            'hits':self.hits,
+        }

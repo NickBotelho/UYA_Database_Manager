@@ -176,6 +176,59 @@ def generateHealthIDs(map = 'bakisi_isle', nodes = True, base = True):
         
     res = [hex(node)[2:].upper() if len(hex(node)[2:]) > 1 else f"0{hex(node)[2:]}".upper() for node in res]
     return res
+def generateBaseIDs(map = 'bakisi_isle', nodes = True, base = True):
+    '''returns red flag, blue flag ids'''
+    if base == False: return []
 
-# print(generateHealthIDs(map = "metropolis", nodes = False, base=False))
-# print(generateFlagIDs(map = "blackwater_dox", nodes=False, base=True))
+    map = map.lower()
+    red, blue = 0, 0
+    if map == 'bakisi_isle':
+        red = int('53', 16)
+        if not nodes: #4,5,4,5,4,4,4
+            red -= 30
+        if not base:
+            red -= 4
+    elif map == 'hoven_gorge':
+        red = int('56', 16)
+        if not nodes: #5,3,4,1,4,2,5
+            red -= 24
+        if not base:
+            red -= 4
+    elif map == 'outpost_x12':
+        red = int('4F', 16)
+        if not nodes: #3,3,3,3,3,3
+            red -= 18
+        if not base:
+            red -= 4
+    elif map == 'korgon_outpost':
+        red = int('45', 16)
+        if not nodes: #4,4,4,4,4
+            red -= 20
+        if not base:
+            red -= 4
+    elif map == 'metropolis':
+        red = int('42', 16)
+        if not nodes: #4,4,3,3,4,4
+            red -= 22
+        if not base:
+            red -= 4
+    elif map == 'blackwater_city':
+        red = int('42', 16)
+        if not nodes: #5,5,5,5
+            red -= 20
+        if not base:
+            red -= 4
+    elif map == 'command_center':
+        return []
+    elif map == 'blackwater_dox':
+        return []
+    elif map == 'aquatos_sewers':
+        return []
+    elif map == 'marcadia_palace':
+        return []
+        
+    blue = red - 1
+    red = hex(red)[2:] if len(hex(red)[2:]) > 1 else f"0{hex(red)[2:]}"
+    blue = hex(blue)[2:] if len(hex(blue)[2:]) > 1 else f"0{hex(blue)[2:]}"
+    return [blue.upper(), red.upper()]
+# print(generateFlagIDs(map = "outpost_x12", nodes=True, base=True))
