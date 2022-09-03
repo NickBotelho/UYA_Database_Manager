@@ -157,14 +157,17 @@ class Blarg:
                         game.endGame()
                         stale.append(dme_id)
                 for dme_id in stale:
-                    del self.games[dme_id]
+                    if dme_id in self.games:
+                        del self.games[dme_id]
                 after = len(self.games)
                 self._logger.info(f"after cleanup {after}")
                 self._logger.error(f"GARBAGE COLLECTOR REMOVED {before -after} GAMES")
                 await asyncio.sleep(60*minutes)
             except Exception as e:
                 self._logger.critical("Problem collection garbage")
-                self._logger.critical(e)
+                self._logger.critical(traceback.format_exc())
+                await asyncio.sleep(60*minutes)
+
             
 
             
