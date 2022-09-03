@@ -333,7 +333,7 @@ class LiveGame():
         self.logger.debug(str(self.ntt))
         self.logger.debug(str(self.nts))
     def checkForBots(self):
-        for player in self.player.values():
+        for player in self.players.values():
             username = player.username
             if len(username) >= 3:
                 if username[:3].lower() == "cpu":
