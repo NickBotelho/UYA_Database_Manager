@@ -358,7 +358,10 @@ class LiveGame():
             print(f"{self.dme_id} Results: {[str(self.players[p]) for p in self.players]} | DCs: {[str(p) for p in self.quitPlayers]}")
     def getWinningTeam(self):
         '''Return a string of the team with the highest score'''
-        winningTeam = sorted(self.scores.items(), key=lambda x: x[1], reverse=True)[0]
+        print("calculating winning team")
+        print(self.scores)
+        winningTeam = sorted(self.scores.items(), key=lambda x: x[1], reverse=True)
+        print(f"winning team {winningTeam}")
         return winningTeam[0]
     def isComplete(self):
         '''returns true if the game is complete'''
