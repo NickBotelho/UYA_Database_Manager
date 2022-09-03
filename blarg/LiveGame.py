@@ -339,7 +339,7 @@ class LiveGame():
                 if username[:3].lower() == "cpu":
                     return True
         return False
-    def createClogger(self):
+    def defineClog(self):
         '''15 packets/second for 1 player
         Give ~10 seconds before clog goes off. assume bot send 2x as fast'''
         TIMEOUT = 10 #seconds
