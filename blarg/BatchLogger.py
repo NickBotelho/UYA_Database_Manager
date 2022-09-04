@@ -101,6 +101,8 @@ class BatchLogger():
             try:
                 now = datetime.datetime.now()
                 duration = now - self.startTime if self.startTime != None else now - now
+                seconds = str(duration.seconds%60)
+                seconds = seconds if len(seconds) > 1 else f"0{seconds}"
                 if not self.exists:
                     existing = self.mongo.collection.find_one({'dme_id':self.id})
                     if existing != None:
@@ -128,7 +130,7 @@ class BatchLogger():
                             'player_states': self.players,
                             'scores':self.scores,
                             'batch_num':self.currentMessage,
-                            'duration': "{}:{}".format(duration.seconds//60, duration.seconds%60),
+                            'duration': "{}:{}".format(duration.seconds//60, seconds),
                         }
                     })
                 if len(self.cache) != len(self.batch):
