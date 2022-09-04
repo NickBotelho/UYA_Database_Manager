@@ -1,4 +1,4 @@
-from mongodb import Database
+from mongodb import Database, isBot
 import traceback
 import datetime
 # logs = Database("UYA", "Logger")
@@ -96,7 +96,7 @@ class BatchLogger():
         self.batch = batch
     def setScores(self, scores):
         self.scores = scores
-    def log(self):
+    def log(self, running = True):
         if self.status == 1:
             try:
                 now = datetime.datetime.now()
@@ -114,6 +114,7 @@ class BatchLogger():
                         'player_states': self.players,
                         'scores':self.scores,
                         'batch_num':self.currentMessage,
+                        'isRunning': running,
                     })
                     self.exists = True
                 else:
@@ -137,7 +138,7 @@ class BatchLogger():
             except Exception as e:
                 print("Problem logging")
                 print(traceback.format_exc())
-    def close(self, uyaTrackerId, players, quits, scores, winningTeamColor):
+    def close(self, uyaTrackerId, players, quits, scores, winningTeamColor, isBotGame):
         '''close the game and save the states'''
         self.status = 2 #not the same as LiveGame Status
         for quitter in quits:
@@ -154,7 +155,7 @@ class BatchLogger():
             print("problem closing")
             print(e)
         finally:
-            if uyaTrackerId != None and len(self.players) > 2:
+            if uyaTrackerId != None and len(self.players) > 2 and isBotGame == False:
                 try:
                     liveHistory.collection.insert_one({
                         'game_id':uyaTrackerId,

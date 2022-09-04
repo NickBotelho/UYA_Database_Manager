@@ -63,13 +63,13 @@ def generateFlagIDs(map = 'bakisi_isle', nodes = True, base = True):
     elif map == 'hoven_gorge':
         red = int('6A', 16)
         if not nodes: #5,3,4,1,4,2,5
-            red -= 24
+            red -= 26
         if not base:
             red -= 4
     elif map == 'outpost_x12':
         red = int('65', 16)
-        if not nodes: #3,3,3,3,3,3
-            red -= 18
+        if not nodes: #3,3,3,3,3,3 2behicle rockets
+            red -= 20
         if not base:
             red -= 4
     elif map == 'korgon_outpost':
@@ -231,4 +231,3 @@ def generateBaseIDs(map = 'bakisi_isle', nodes = True, base = True):
     red = hex(red)[2:] if len(hex(red)[2:]) > 1 else f"0{hex(red)[2:]}"
     blue = hex(blue)[2:] if len(hex(blue)[2:]) > 1 else f"0{hex(blue)[2:]}"
     return [blue.upper(), red.upper()]
-# print(generateFlagIDs(map = "outpost_x12", nodes=True, base=True))

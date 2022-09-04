@@ -76,7 +76,6 @@ class LiveGame():
         self.flags = []
         self.quitPlayers = []
         self.hasNodes = None
-        self.locationList = {}
         # level = 'DEBUG'
         level = "INFO"
         # level = "CRITICAL"
@@ -129,7 +128,6 @@ class LiveGame():
         elif packet['type'] == 'tcp' and packet_id == '0004' and self.state == 0:
             self.hasNodes = hasNodes(serialized['game_settings']) if self.hasNodes == None else self.hasNodes
             self.lobby = serialized
-            # self.parseLobby()
         elif packet_id in GAME_EVENTS and self.state == 1:
             self.processEvent(packet_id, serialized, packet)
         elif self.state == 0 and packet_id == '0209' and packet['type'] == 'udp':
@@ -197,18 +195,14 @@ class LiveGame():
                     else:
                         update = f"Flag returned to base due to inactivity"
                 elif event == 2:
-                    print(int(packet['src']), serialized)
                     item = serialized['object_id'][:2]
                     if item in self.flags:
                         update = f"{username} has picked up the flag"
                         self.players[int(packet['src'])].pickupFlag()
                 elif event == 5:
-                    print(int(packet['src']), serialized)
                     update = f"{username} has dropped the flag"
                     self.players[int(packet['src'])].dropFlag()
                 elif event == 4:
-                    print(int(packet['src']), serialized)
-
                     item = serialized['item_picked_up_id'][0:2]
                     if item in self.hp_boxes:
                         update = f"{self.itos[int(packet['src'])]} grabbed health"
@@ -252,7 +246,6 @@ class LiveGame():
         point = serialized['coord']
         rotation = serialized['cam1_x']
         player_idx = int(packet['src'])
-        self.locationList[player_idx] = 1 if player_idx not in self.locationList else self.locationList[player_idx]+1
         try:
             player = self.players[player_idx]
             if player.isPlaced == False:
@@ -260,8 +253,7 @@ class LiveGame():
                 self.numPlaced+=1
 
             if self.clogger >= self.clog_limit:
-                # print(self.locationList)
-                print(f"unclogging{self.clogger}...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
+                # print(f"unclogging{self.clogger}...{self.numPlaced} {[str(self.players[p]) for p in self.players]}")
                 self.removeQuitPlayer()
             self.clogger +=1
             
@@ -344,7 +336,7 @@ class LiveGame():
         Give ~10 seconds before clog goes off. assume bot send 2x as fast'''
         TIMEOUT = 10 #seconds
         self.clog_limit = (15 * TIMEOUT) * len(self.players)
-        self.clog_limit = self.clog_limit * 2 if self.isBotGame else self.clog_limit
+        self.clog_limit = int(self.clog_limit * 2.5) if self.isBotGame else self.clog_limit
 
     def _initPlayers(self):
         for player_idx in self.itos:
@@ -358,9 +350,10 @@ class LiveGame():
     def endGame(self):
         if self.state < 3:
             winningTeamColor = self.getWinningTeam()
-            self.logger.log()
-            self.logger.close(self.uyaTrackerId, self.players, self.quitPlayers, self.scores, winningTeamColor)
-            self.logger.updatePlayersStore(self.players.values(), self.quitPlayers)
+            self.logger.log(running = False)
+            self.logger.close(self.uyaTrackerId, self.players, self.quitPlayers, self.scores, winningTeamColor, self.isBotGame)
+            if self.isBotGame == False:
+                self.logger.updatePlayersStore(self.players.values(), self.quitPlayers)
             self.state = 3
             print(f"Closing ID: {self.dme_id}")
             print(f"{self.dme_id} Results: {[str(self.players[p]) for p in self.players]} | DCs: {[str(p) for p in self.quitPlayers]}")
@@ -368,9 +361,11 @@ class LiveGame():
         '''Return a string of the team with the highest score'''
         print("calculating winning team")
         print(self.scores)
-        winningTeam = sorted(self.scores.items(), key=lambda x: x[1], reverse=True)
-        print(f"winning team {winningTeam[0][0]}")
-        return winningTeam[0][0]
+        if len(self.scores) > 0:
+            winningTeam = sorted(self.scores.items(), key=lambda x: x[1], reverse=True)
+            print(f"winning team {winningTeam[0][0]}")
+            return winningTeam[0][0]
+        return "None"
     def isComplete(self):
         '''returns true if the game is complete'''
         for team in self.scores:

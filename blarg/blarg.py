@@ -25,8 +25,8 @@ class Blarg:
         self._logger.addHandler(sh)
         self.delay = True if config['delay'] == "True" else False
         self.delayTime = int(config['delayTime'])
-        # self.live = LiveGame(dme_id=115)
         self.games = {}
+        self.gamesIdHistory = set()
         self.live = None
  
     def run(self, loop):
@@ -86,9 +86,10 @@ class Blarg:
 
             # Don't print correctly serialized unless it matches filter or the filter is empty.
             try:
-                if packet_id == '0004' and packet['dme_world_id'] not in self.games:
+                if packet_id == '0004' and packet['dme_world_id'] not in self.games and packet['dme_world_id'] not in self.gamesIdHistory:
                     self._logger.warning(f"Creating Live Game for DME ID = {packet['dme_world_id']}")
                     self.games[packet['dme_world_id']] = LiveGame(dme_id=packet['dme_world_id'], delay=self.delay, delayTime=self.delayTime)
+                    self.gamesIdHistory.add(packet['dme_world_id'])
                 if self._config['filter'] == packet_id or self._config['filter'] == '' :
                     if packet['dme_world_id'] in self.games and len(serialized) > 0:
                         running = self.games[packet['dme_world_id']].load(packet_id, serialized, packet)
@@ -97,14 +98,6 @@ class Blarg:
             except Exception as e:
                 self._logger.info(f"{packet['dme_world_id']}: Problem with live game")
                 self._logger.info(traceback.format_exc())
-
-
-                # if packet_id not in avoid:
-                #     if packet_id == '020C' and len(serialized) > 1:
-                #         # if serialized['subtype'] == '21000000':
-                #             self._logger.info(f"S | {packet_id} | {serialized}") 
-            # self._logger.info(f"S | {packet_id} | {serialized}") 
-                
 
 
     async def read_websocket(self):
