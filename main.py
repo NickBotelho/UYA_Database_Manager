@@ -55,13 +55,13 @@ async def threadCheck():
         await asyncio.sleep(60*minutes)
         
 async def main(logger):
-    config = read_config("blarg/config.json")
-    blarg = Blarg(config)
+    # config = read_config("blarg/config.json")
+    # blarg = Blarg(config)
 
-    socket = loop.create_task(blarg.read_websocket())
+    # socket = loop.create_task(blarg.read_websocket())
     stats = loop.create_task(update(logger))
-    threads = loop.create_task(threadCheck())
-    garbageCollection = loop.create_task(blarg.garbageCollect())
+    # threads = loop.create_task(threadCheck())
+    # garbageCollection = loop.create_task(blarg.garbageCollect())
 
     await asyncio.wait([stats])
     # await asyncio.wait([stats, socket, garbageCollection, threads])
