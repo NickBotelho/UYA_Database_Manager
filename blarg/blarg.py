@@ -171,9 +171,3 @@ class Blarg:
 def read_config(config_file='config.json'):
     with open(config_file, 'r') as f:
         return json.loads(f.read())
-
-# if __name__ == '__main__':
-#     config = read_config()
-
-#     blarg = Blarg(config)
-#     blarg.run()

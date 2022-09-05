@@ -7,7 +7,6 @@ import logging
 from blarg.blarg import Blarg
 
 import asyncio
-import websockets
 from collections import deque
 import json
 import threading
@@ -23,12 +22,16 @@ async def update(logger):
     games_active = Database("UYA","Games_Active")
     clans = Database("UYA", "Clans")
     elo=Database("UYA", 'Elo')
+
     live = Database("UYA", "Logger")
+    live.clear()
+    live.client.close()
+
     players = {}
     games = {}
     players_online.clear()
     games_active.clear()
-    live.clear()
+
     while True:
         logger.debug("Getting Players...")
         players, offline_players = Server.getOnlinePlayers(players, clans, player_stats) #dict of {player id --> Player obj}
@@ -60,7 +63,8 @@ async def main(logger):
     threads = loop.create_task(threadCheck())
     garbageCollection = loop.create_task(blarg.garbageCollect())
 
-    await asyncio.wait([stats, socket, garbageCollection, threads])
+    await asyncio.wait([stats])
+    # await asyncio.wait([stats, socket, garbageCollection, threads])
     # await asyncio.wait([socket, garbageCollection, threads])
 
 
