@@ -98,50 +98,6 @@ class BatchLogger():
         self.batch = batch
     def setScores(self, scores):
         self.scores = scores
-    # def log(self, running = True):
-    #     if self.status == 1:
-    #         try:
-    #             now = datetime.datetime.now()
-    #             duration = now - self.startTime if self.startTime != None else now - now
-    #             seconds = str(duration.seconds%60)
-    #             seconds = seconds if len(seconds) > 1 else f"0{seconds}"
-    #             if not self.exists:
-    #                 existing = self.mongo.collection.find_one({'dme_id':self.id})
-    #                 if existing != None:
-    #                     self.mongo.collection.find_one_and_delete({'dme_id':self.id})
-    #                 self.mongo.collection.insert_one({
-    #                     'dme_id':self.id,
-    #                     'map':self.map,
-    #                     'start_time':self.startTime,
-    #                     'logger':self.batch,
-    #                     'graph': self.coords,
-    #                     'player_states': self.players,
-    #                     'scores':self.scores,
-    #                     'batch_num':self.currentMessage,
-    #                     'isRunning': running,
-    #                 })
-    #                 self.exists = True
-    #             else:
-    #                 self.mongo.collection.find_one_and_update({
-    #                     'dme_id':self.id
-    #                 },
-    #                 {
-    #                     '$set':{
-    #                         'logger':self.batch[self.currentMessage:] if len(self.cache) != len(self.batch) else self.cache[self.cacheMessage:],
-    #                         'graph': self.coords,
-    #                         'player_states': self.players,
-    #                         'scores':self.scores,
-    #                         'batch_num':self.currentMessage,
-    #                         'duration': "{}:{}".format(duration.seconds//60, seconds),
-    #                     }
-    #                 })
-    #             if len(self.cache) != len(self.batch):
-    #                 self.cacheMessage = self.currentMessage
-    #                 self.cache = list(self.batch)
-    #                 self.currentMessage = len(self.batch)
-    #         except Exception as e:
-    #             print("Problem logging")
-    #             print(traceback.format_exc())
     def close(self, uyaTrackerId, players, quits, scores, winningTeamColor, isBotGame):
         '''close the game and save the states'''
         self.status = 2 #not the same as LiveGame Status
@@ -193,7 +149,7 @@ class BatchLogger():
                     'dme_id':self.id,
                     'map':self.map,
                     # 'start_time':str(self.startTime),
-                    'logger':self.batch,
+                    'logger':self.batch if self.currentMessage == 0 else self.batch[self.currentMessage:] if len(self.cache) != len(self.batch) else self.cache[self.cacheMessage:],
                     'graph': self.coords,
                     'player_states': self.players,
                     'scores':self.scores,
