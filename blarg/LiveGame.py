@@ -63,7 +63,7 @@ class LiveGame():
         teams = teams
         '''
         self.dme_id = dme_id
-        self.refreshRate = 1
+        self.refreshRate = 8
         self.x, self.y, self.names = [], [] ,[] #Used for graphing
         self.current_time = 0
         self.itos, self.ntt, self.nts, self.teams = {}, {}, {}, {}
