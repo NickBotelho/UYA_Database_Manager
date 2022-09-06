@@ -22,7 +22,7 @@ class BatchLogger():
         self.cache = []
         self.id = id
         self.map = None
-        self.mongo = Database("UYA", "Logger")
+        # self.mongo = Database("UYA", "Logger")
         self.exists = False
         self.coords = {}
         self.players = {} #username to state/result dict
@@ -98,47 +98,9 @@ class BatchLogger():
         self.batch = batch
     def setScores(self, scores):
         self.scores = scores
-    def close(self, uyaTrackerId, players, quits, scores, winningTeamColor, isBotGame):
-        '''close the game and save the states'''
-        self.status = 2 #not the same as LiveGame Status
-        for quitter in quits:
-            players[quitter.username] = quitter
-        self.setResults(players)
-        now = datetime.datetime.now()
-        liveHistory = Database("UYA", "LiveGame_History")
-        duration = now - self.startTime if self.startTime != None else now - now
-        try:           
-            self.mongo.collection.find_one_and_delete({
-                    'dme_id':self.id
-                })
-        except Exception as e:
-            print("problem closing")
-            print(e)
-        finally:
-            if uyaTrackerId != None and len(self.players) > 2 and isBotGame == False:
-                try:
-                    liveHistory.collection.insert_one({
-                        'game_id':uyaTrackerId,
-                        'winning_team':winningTeamColor,
-                        'scores':scores, 
-                        'results':self.players,
-                        'duration': "{}:{}".format(duration.seconds//60, duration.seconds%60),
-                        'number_of_batches':self.currentMessage,
-                    })
-                except Exception as e:
-                    print("Problem peristing game into LiveGame_History")
-                    print(e)
-            self.mongo.client.close()
-            liveHistory.client.close()
-    def updatePlayersStore(self, active, quits):
-        '''merge with stats in the store'''
-        stats = Database("UYA", "Player_Stats_Backup")
-        mergeSet(stats, active)
-        mergeSet(stats, quits)
-        stats.client.close()
     def log(self, running = True):
-        URL = 'http://127.0.0.1:5000/live/log'
-        # URL = 'http://uyatracker.herokuapp.com/live/log'
+        # URL = 'http://127.0.0.1:5000/live/log'
+        URL = 'http://uyatracker.herokuapp.com/live/log'
         if self.status == 1:
             try:
                 now = datetime.datetime.now()
@@ -168,7 +130,36 @@ class BatchLogger():
                 print(traceback.format_exc())
             finally:
                 self.updateId+=1
+    def close(self, uyaTrackerId, players, quits, scores, winningTeamColor, isBotGame):
+        '''close the game and save the states'''
+        self.status = 2 #not the same as LiveGame Status
+        for quitter in quits:
+            players[quitter.username] = quitter
+        self.setResults(players)
+        now = datetime.datetime.now()
+        liveHistory = Database("UYA", "LiveGame_History")
+        duration = now - self.startTime if self.startTime != None else now - now
 
+        if uyaTrackerId != None and len(scores) > 1 and isBotGame == False:
+            try:
+                liveHistory.collection.insert_one({
+                    'game_id':uyaTrackerId,
+                    'winning_team':winningTeamColor,
+                    'scores':scores, 
+                    'results':self.players,
+                    'duration': "{}:{}".format(duration.seconds//60, duration.seconds%60),
+                    'number_of_batches':self.currentMessage,
+                })
+            except Exception as e:
+                print("Problem peristing game into LiveGame_History")
+                print(e)
+            liveHistory.client.close()
+    def updatePlayersStore(self, active, quits):
+        '''merge with stats in the store'''
+        stats = Database("UYA", "Player_Stats_Backup")
+        mergeSet(stats, active)
+        mergeSet(stats, quits)
+        stats.client.close()
 def mergeDicts (existing, new):
     '''merge a new dict onto the existing dict, summing matching keys and merging non existing ones from new'''
     pass
