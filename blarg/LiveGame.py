@@ -82,6 +82,7 @@ class LiveGame():
         self.logger = BatchLogger(level, self.dme_id)
         self.createTime = datetime.datetime.now()
         self.startTime = datetime.datetime.now()
+        self.mostRecentMessage = datetime.datetime.now()
         self.delay = delay
         self.numPlaced = 0
         self.uyaTrackerId = None
@@ -270,6 +271,7 @@ class LiveGame():
                 self.logger.setStates(self.players)
                 self.logger.log()
                 self.logger.flush(self.players)
+                self.mostRecentMessage = datetime.datetime.now()
                 self.numPlaced, self.clogger = 0, 0
         except:
             print(f"{self.dme_id} Problem in placeOnMap with {player_idx} not being in self.players possibly.\n \
@@ -391,6 +393,14 @@ class LiveGame():
         for player in self.players.values():
             for weapon in weapons:
                 player.addWeapon(weapon)
+    def isStale(self, currentTime):
+        if self.state == 3:
+            return True
+        elif self.state == 2:
+            self.endGame()
+        else:
+            diff = self.mostRecentMessage - currentTime
+            return diff.total_seconds() > 10
 
 
 #So when a player G's up it sends a 0211 packet with their name, color, skin

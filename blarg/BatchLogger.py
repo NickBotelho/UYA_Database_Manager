@@ -158,7 +158,7 @@ class BatchLogger():
             print("problem closing")
             print(e)
         finally:
-            if uyaTrackerId != None and len(self.players) > 2 and isBotGame == False:
+            if uyaTrackerId != None and len(self.scores) > 1 and isBotGame == False:
                 try:
                     liveHistory.collection.insert_one({
                         'game_id':uyaTrackerId,

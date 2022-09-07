@@ -54,6 +54,7 @@ class Player():
         self.deaths+=1
         self.bestKillstreak = self.killstreak if self.killstreak > self.bestKillstreak else self.bestKillstreak
         self.killstreak=0
+        self.hasFlag = False
         self.hp = 0
         self.deathHeatMap.append((self.lastX, self.lastY))
         for weapon in self.weapons.values():
@@ -63,6 +64,7 @@ class Player():
         self.hasFlag=False
     def respawn(self):
         self.hp = 100
+        self.hasFlag = False
     def heal(self):
         self.hp = 100
         self.healthBoxesGrabbed+=1
