@@ -1,5 +1,5 @@
 from blarg.DMEWeapon import DMEWeapon
-X12_UNIT = 35162
+from blarg.Pedometer import Pedometer
 class Player():
     def __init__(self, username, lobby_idx, team):
         self.username = username
@@ -15,6 +15,7 @@ class Player():
             'Hypershot':DMEWeapon("Hypershot"),
             'Holo Shield':DMEWeapon("Holo Shield"),
         }
+        self.pedometer = Pedometer()
         self.enemyNameToKills = {}
         self.x, self.y, self.rotation = -1, -1, -1
         self.isPlaced = False
@@ -78,7 +79,9 @@ class Player():
             'deaths':self.deaths,
             'caps':self.caps,
             'team':self.team,
-            'distance_travelled':round(self.distanceTravelled/X12_UNIT, 2),
+            'distance_travelled':self.pedometer.getTotalDistance(),
+            'flag_distance':self.pedometer.getFlagDistance(),
+            'noFlag_distance':self.pedometer.getNoFlagDistance(),
             'hasFlag':self.hasFlag,
             'flag_pickups':self.flagPickups,
             'flag_drops':self.flagDrops,
@@ -95,7 +98,7 @@ class Player():
         }
         return state
     def place(self, coords, rotation):
-        self.distanceTravelled = self.distanceTravelled + abs(self.lastX - coords[0]) if self.lastX != -1 else self.distanceTravelled
+        self.pedometer.walk(self.lastX, coords[0], self.hasFlag)
         self.x = coords[0]
         self.y = coords[1]
         self.rotation = rotation
@@ -138,7 +141,9 @@ class Player():
             'deaths':self.deaths,
             'caps':self.caps,
             'team':self.team,
-            'distance_travelled':round(self.distanceTravelled/X12_UNIT, 2),
+            'distance_travelled':self.pedometer.getTotalDistance(),
+            'flag_distance':self.pedometer.getFlagDistance(),
+            'noFlag_distance':self.pedometer.getNoFlagDistance(),
             'flag_pickups':self.flagPickups,
             'flag_drops':self.flagDrops,
             'health_boxes':self.healthBoxesGrabbed,
@@ -155,7 +160,9 @@ class Player():
             'kills':self.kills,
             'deaths':self.deaths,
             'caps':self.caps,
-            'distance_travelled':round(self.distanceTravelled/X12_UNIT, 2),
+            'distance_travelled':self.pedometer.getTotalDistance(),
+            'flag_distance':self.pedometer.getFlagDistance(),
+            'noFlag_distance':self.pedometer.getNoFlagDistance(),
             'flag_pickups':self.flagPickups,
             'flag_drops':self.flagDrops,
             'health_boxes':self.healthBoxesGrabbed,
