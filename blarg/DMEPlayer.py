@@ -79,8 +79,8 @@ class Player():
         state = {
             'name':self.username,
             'hp':self.hp,
-            'kills':self.kills,
-            'deaths':self.deaths,
+            'kills':self.killTracker.kills,
+            'deaths':self.deathTracker.deaths,
             'caps':self.caps,
             'team':self.team,
             'distance_travelled':self.pedometer.getTotalDistance(),
@@ -143,8 +143,8 @@ class Player():
         return False
     def getResult(self):
         return {
-            'kills':self.kills,
-            'deaths':self.deaths,
+            'kills':self.killTracker.kills,
+            'deaths':self.deathTracker.deaths,
             'caps':self.caps,
             'team':self.team,
             'distance_travelled':self.pedometer.getTotalDistance(),
