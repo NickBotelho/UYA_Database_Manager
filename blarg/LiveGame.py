@@ -49,7 +49,7 @@ READY_MODES = {
     'CTF'
 }
 AI = {
-    255:'suicide',
+    255:'Suicide',
     246:'Trooper',
     248:'Drones',
     249:"Shock Droids"
@@ -196,7 +196,7 @@ class LiveGame():
                     else:
                         update = f"Flag returned to base due to inactivity"
                 elif event == 2:
-                    item = serialized['object_id'][:2]
+                    item = serialized['object_id']
                     if item in self.flags:
                         update = f"{username} has picked up the flag"
                         self.players[int(packet['src'])].pickupFlag()
@@ -220,20 +220,22 @@ class LiveGame():
                 self.players[int(serialized['player_hit'])].stageNick(self.players[int(packet['src'])])
             self.logger.debug(f"{self.itos[int(serialized['src'])]} is {EVENTS[serialized['event']]} a {serialized['weapon']}")
         elif packet_id == '0204' and packet['type'] == 'tcp': #KILLS
+            killed = int(serialized['killed_id'])
+            killer = int(serialized['killer_id'])
             if serialized['killer_id'] > 7:
-                self.logger.info(f"{self.itos[int(serialized['killed_id'])]} Died")
+                self.logger.info(f"{self.itos[killed]} Died")
+                self.players[killed].death(AI = AI[killer])
                 if self.mode == 'Deathmatch':
-                    username = self.itos[int(serialized['killed_id'])]
+                    username = self.itos[killed]
                     team = self.ntt[username]
                     self.scores[team] -=1
             else:
-                self.logger.info(f"{self.itos[int(serialized['killer_id'])]} {EVENTS[serialized['event']]} {self.itos[int(serialized['killed_id'])]} with {serialized['weapon']}")
-                self.players[int(serialized['killer_id'])].kill(enemy = self.players[int(serialized['killed_id'])], weapon = serialized['weapon'])
+                self.logger.info(f"{self.itos[killer]} {EVENTS[serialized['event']]} {self.itos[killed]} with {serialized['weapon']}")
+                self.players[killer].kill(enemy = self.players[killed], weapon = serialized['weapon']) #enemy death tallied in .kill()
                 if self.mode == 'Deathmatch':
-                    username = self.itos[int(serialized['killer_id'])]
+                    username = self.itos[killer]
                     team = self.ntt[username]
                     self.scores[team] +=1
-            self.players[int(serialized['killed_id'])].death()
         elif packet_id == '0003' and packet['type'] == 'tcp':
             messages = serialized['messages']
             for message in messages:
@@ -343,7 +345,7 @@ class LiveGame():
     def _initPlayers(self):
         for player_idx in self.itos:
             username = self.itos[player_idx]
-            self.players[player_idx] = Player(username, player_idx, self.ntt[username])
+            self.players[player_idx] = Player(username, player_idx, self.ntt[username], self.itos)
         self.isBotGame = self.checkForBots()
         self.defineClog()
     def displayPlayers(self):

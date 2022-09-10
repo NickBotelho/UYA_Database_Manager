@@ -1,7 +1,9 @@
 from blarg.DMEWeapon import DMEWeapon
+from blarg.DeathTracker import DeathTracker
+from blarg.KillTracker import KillTracker
 from blarg.Pedometer import Pedometer
 class Player():
-    def __init__(self, username, lobby_idx, team):
+    def __init__(self, username, lobby_idx, team, lobbyItos):
         self.username = username
         self.lobby_idx = lobby_idx
         self.team = team
@@ -9,6 +11,8 @@ class Player():
         self.kills = 0
         self.hp = 100
         self.deaths = 0
+        self.killTracker = KillTracker(self)
+        self.deathTracker = DeathTracker(self)
         self.caps = 0
         self.weapons = { #weaponNameToObject
             'Wrench':DMEWeapon('Wrench'),
@@ -16,14 +20,12 @@ class Player():
             'Holo Shield':DMEWeapon("Holo Shield"),
         }
         self.pedometer = Pedometer()
-        self.enemyNameToKills = {}
         self.x, self.y, self.rotation = -1, -1, -1
         self.isPlaced = False
         self.lastX, self.lastY = -1, -1
         self.distanceTravelled = 0
         self.disconnected = False
         self.fluxShots,self.fluxHits, self.fluxAccuracy = 0,0,0
-        self.blitzShots,self.gravityBombShots= 0,0
         self.hasFlag = False
         self.flagPickups, self.flagDrops = 0, 0
         self.healthBoxesGrabbed = 0
@@ -37,7 +39,8 @@ class Player():
 
         self.killHeatMap = [] #list of coords where player kill
         self.deathHeatMap = [] #list of coords where player kill
-
+        self.deathTracker.initialize(lobbyItos)
+        self.killTracker.initialize(lobbyItos)
 
     def __str__(self):
         return "{} HP = {}, Kills = {}, Deaths = {}, Caps = {}".format(self.username, self.hp, self.kills, self.deaths, self.caps)
@@ -45,13 +48,14 @@ class Player():
         self.damageTaken += abs(self.hp - hp)
         self.hp = hp
     def kill(self, enemy = None, weapon = "Wrench"):
-        self.kills+=1
+        self.killTracker.kill(enemy)
         self.killstreak+=1
         self.bestKillstreak = self.killstreak if self.killstreak > self.bestKillstreak else self.bestKillstreak
-        self.enemyNameToKills[enemy.username] = 1 if enemy.username not in self.enemyNameToKills else self.enemyNameToKills[enemy.username] + 1
         self.weapons[weapon].kill()
         self.killHeatMap.append((self.lastX, self.lastY))
-    def death(self):
+        enemy.death(self)
+    def death(self, killer = None, AI = None):
+        self.deathTracker.die(killer = killer, AI = AI)
         self.deaths+=1
         self.bestKillstreak = self.killstreak if self.killstreak > self.bestKillstreak else self.bestKillstreak
         self.killstreak=0
@@ -94,6 +98,8 @@ class Player():
             'deathHeatMap':self.deathHeatMap,
             'killstreak':self.killstreak,
             'bestKillstreak':self.bestKillstreak,
+            'death_info':self.deathTracker.getState(),
+            'kill_info':self.killTracker.getState(),
 
         }
         return state
@@ -157,8 +163,8 @@ class Player():
         }
     def getStore(self):
         return {
-            'kills':self.kills,
-            'deaths':self.deaths,
+            'kills':self.killTracker.kills,
+            'deaths':self.deathTracker.deaths,
             'caps':self.caps,
             'distance_travelled':self.pedometer.getTotalDistance(),
             'flag_distance':self.pedometer.getFlagDistance(),
