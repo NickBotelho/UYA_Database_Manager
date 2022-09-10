@@ -142,6 +142,7 @@ class Player():
                 return True
         return False
     def getResult(self):
+        '''Goes into the game history document'''
         return {
             'kills':self.killTracker.kills,
             'deaths':self.deathTracker.deaths,
@@ -160,8 +161,11 @@ class Player():
             'deathHeatMap':self.deathHeatMap,
             'disconnected':self.disconnected,
             'bestKillstreak':self.bestKillstreak,
+            'death_info':self.deathTracker.getState(),
+            'kill_info':self.killTracker.getState(),
         }
     def getStore(self):
+        '''goes into the player stats document for a player'''
         return {
             'kills':self.killTracker.kills,
             'deaths':self.deathTracker.deaths,
