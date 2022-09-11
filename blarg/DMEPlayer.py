@@ -13,7 +13,7 @@ class Player():
         self.deaths = 0
         self.killTracker = KillTracker(self)
         self.deathTracker = DeathTracker(self)
-        self.caps = 0
+        self.caps, self.saves = 0, 0
         self.weapons = { #weaponNameToObject
             'Wrench':DMEWeapon('Wrench'),
             'Hypershot':DMEWeapon("Hypershot"),
@@ -67,6 +67,8 @@ class Player():
     def cap(self):
         self.caps+=1
         self.hasFlag=False
+    def save(self):
+        self.saves+=1
     def respawn(self):
         self.hp = 100
         self.hasFlag = False
@@ -82,6 +84,7 @@ class Player():
             'kills':self.killTracker.kills,
             'deaths':self.deathTracker.deaths,
             'caps':self.caps,
+            'saves':self.saves,
             'team':self.team,
             'distance_travelled':self.pedometer.getTotalDistance(),
             'flag_distance':self.pedometer.getFlagDistance(),
@@ -147,6 +150,7 @@ class Player():
             'kills':self.killTracker.kills,
             'deaths':self.deathTracker.deaths,
             'caps':self.caps,
+            'saves':self.saves,
             'team':self.team,
             'distance_travelled':self.pedometer.getTotalDistance(),
             'flag_distance':self.pedometer.getFlagDistance(),
@@ -169,6 +173,7 @@ class Player():
         return {
             'kills':self.killTracker.kills,
             'deaths':self.deathTracker.deaths,
+            'saves':self.saves,
             'caps':self.caps,
             'distance_travelled':self.pedometer.getTotalDistance(),
             'flag_distance':self.pedometer.getFlagDistance(),

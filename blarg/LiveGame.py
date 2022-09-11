@@ -193,6 +193,7 @@ class LiveGame():
                 elif event == 1:
                     if serialized['flag_update_type'] != "flag_return":
                         update = f"{username} saved the flag"
+                        self.players[int(packet['src'])].save()
                     else:
                         update = f"Flag returned to base due to inactivity"
                 elif event == 2:
