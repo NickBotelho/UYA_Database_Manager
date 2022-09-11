@@ -211,7 +211,6 @@ class BatchLogger():
 
 def mergeDicts (existing, new):
     '''merge a new dict onto the existing dict, summing matching keys and merging non existing ones from new'''
-    pass
     for key in new:
         if key not in existing:
             existing[key] = new[key]
