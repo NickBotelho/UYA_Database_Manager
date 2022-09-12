@@ -167,7 +167,9 @@ class LiveGame():
         self.hp_boxes = generateHealthIDs(self.map.lower(), nodes = self.hasNodes, base = game['advanced_rules']['baseDefenses'])
         self.flags = generateFlagIDs(self.map, nodes = self.hasNodes, base=game['advanced_rules']['baseDefenses']) if self.mode == "CTF" else []
         print(self.hasNodes,game['advanced_rules']['baseDefenses'], self.hp_boxes, self.flags)
-        print(self.teams)
+        print(self.itos)
+        for idx in self.players:
+            print(f"LiveGame's idx = {idx} | Players idx = {str(self.players[idx])}")
         self.logger.critical(f"LIMIT = {self.limit}")
         self.logger.setScores(self.scores)
         if not self.isImplemented():
@@ -199,6 +201,8 @@ class LiveGame():
                 elif event == 2:
                     item = serialized['object_id']
                     if item in self.flags:
+                        print(f"Flag id = {item} | picked up by? {username} with packet src = {int(packet['src'])} & subtype = {serialized['subtype']}\n \
+                            Giving the flag to player: {str(self.players[int(packet['src'])])}")
                         update = f"{username} has picked up the flag"
                         self.players[int(packet['src'])].pickupFlag()
                 elif event == 5:
@@ -357,8 +361,6 @@ class LiveGame():
             winningTeamColor = self.getWinningTeam()
             self.logger.log(running = False)
             self.logger.close(self.uyaTrackerId, self.players, self.quitPlayers, self.scores, winningTeamColor, self.isBotGame)
-            if self.isBotGame == False:
-                self.logger.updatePlayersStore(self.players.values(), self.quitPlayers)
             self.state = 3
             print(f"Closing ID: {self.dme_id}")
             print(f"{self.dme_id} Results: {[str(self.players[p]) for p in self.players]} | DCs: {[str(p) for p in self.quitPlayers]}")

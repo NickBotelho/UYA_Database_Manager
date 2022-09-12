@@ -2,6 +2,7 @@ from mongodb import Database, isBot
 import traceback
 import datetime
 import requests
+from constants.constants import STREAK_CONTRACT
 # logs = Database("UYA", "Logger")
 VALUES = {
 
@@ -171,13 +172,16 @@ class BatchLogger():
                 except Exception as e:
                     print("Problem peristing game into LiveGame_History")
                     print(e)
+                finally:
+                    self.updatePlayersStore(players.values(), quits, winningTeamColor)
+
             self.mongo.client.close()
             liveHistory.client.close()
-    def updatePlayersStore(self, active, quits):
+    def updatePlayersStore(self, active, quits, winningTeam):
         '''merge with stats in the store'''
         stats = Database("UYA", "Player_Stats")
-        mergeSet(stats, active)
-        mergeSet(stats, quits)
+        mergeSet(stats, active, winningTeam)
+        mergeSet(stats, quits, winningTeam)
         stats.client.close()
     # def log(self, running = True):
     #     # URL = 'http://127.0.0.1:5000/live/log'
@@ -219,13 +223,16 @@ def mergeDicts (existing, new):
                 mergeDicts(existing[key], new[key])
             elif type(existing[key]) == int or type(existing[key]) == float:
                 existing[key] += new[key]
-def mergeSet(stats, players):
+def mergeSet(stats, players, winningTeam):
     for player in players:
         playerStore = stats.collection.find_one({"username_lowercase":player.username.lower()})
         if not playerStore: continue
         advancedStats = playerStore['advanced_stats']
         if "live" not in advancedStats:
             advancedStats['live'] = {}
+        if "streaks" not in advancedStats:
+            advancedStats['streaks'] = STREAK_CONTRACT
+        advancedStats['streaks'] = updateStreaks(advancedStats['streaks'], player, winningTeam)
         mergeDicts(advancedStats['live'], player.getStore())
         stats.collection.find_one_and_update(
         {
@@ -237,3 +244,34 @@ def mergeSet(stats, players):
             }
         }
     )
+def updateStreaks(streaks, player, winningTeam):
+    if player.team == winningTeam:
+        streaks['current_winstreak'] += 1
+        streaks['current_losingstreak'] = 0
+    else:
+        streaks['current_winstreak'] = 0 
+        streaks['current_losingstreak'] +=1 
+
+    streaks['best_winstreak'] = max(streaks['best_winstreak'], streaks['current_winstreak']) 
+    streaks['best_losingstreak'] = max(streaks['best_losingstreak'], streaks['current_losingstreak'])
+    streaks['bestKillstreak'] = max(player.killTracker.bestKillStreak,streaks['bestKillstreak'] )
+    streaks['bestDeathstreak'] = max(player.deathTracker.bestDeathStreak,streaks['bestDeathstreak'] )
+    streaks['nukes'] += player.medals.nukes
+    streaks['distributors'] += player.medals.distributors
+    streaks['radioactives'] += player.medals.radioactives
+    streaks['undying'] += player.medals.undying
+    return streaks
+
+
+# STREAK_CONTRACT = {
+#     'current_winstreak':0,
+#     'best_winstreak':0,
+#     'current_losingstreak':0,
+#     'best_losingstreak':0,
+#     'bestKillstreak':0,
+#     'nukes':0, #25 kill streaks
+#     'bestDeathStreak':0,
+#     'distributors':0, #25death streaks
+#     'undying':0,
+#     'radioactives':0,
+# }

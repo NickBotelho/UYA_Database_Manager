@@ -2,6 +2,7 @@ from blarg.DMEWeapon import DMEWeapon
 from blarg.DeathTracker import DeathTracker
 from blarg.KillTracker import KillTracker
 from blarg.Pedometer import Pedometer
+from blarg.Medals import Medal
 class Player():
     def __init__(self, username, lobby_idx, team, lobbyItos):
         self.username = username
@@ -13,6 +14,7 @@ class Player():
         self.deaths = 0
         self.killTracker = KillTracker(self)
         self.deathTracker = DeathTracker(self)
+        self.medals = Medal(self)
         self.caps, self.saves = 0, 0
         self.weapons = { #weaponNameToObject
             'Wrench':DMEWeapon('Wrench'),
@@ -34,34 +36,31 @@ class Player():
         self.nicker = None
         self.nicksReceived, self.nicksGiven = 0, 0
         self.damageTaken = 0
-        self.killstreak = 0
-        self.bestKillstreak = 0
 
-        self.killHeatMap = [] #list of coords where player kill
-        self.deathHeatMap = [] #list of coords where player kill
         self.deathTracker.initialize(lobbyItos)
         self.killTracker.initialize(lobbyItos)
 
     def __str__(self):
-        return "{} HP = {}, Kills = {}, Deaths = {}, Caps = {}".format(self.username, self.hp, self.kills, self.deaths, self.caps)
+        # return "{} HP = {}, Kills = {}, Deaths = {}, Caps = {}".format(self.username, self.hp, self.kills, self.deaths, self.caps)
+        return f"({self.lobby_idx} {self.username} [{self.team}])"
     def adjustHP(self, hp):
         self.damageTaken += abs(self.hp - hp)
         self.hp = hp
     def kill(self, enemy = None, weapon = "Wrench"):
         self.killTracker.kill(enemy)
-        self.killstreak+=1
-        self.bestKillstreak = self.killstreak if self.killstreak > self.bestKillstreak else self.bestKillstreak
-        self.weapons[weapon].kill()
+        if weapon in self.weapons:
+            self.weapons[weapon].kill()
         self.killHeatMap.append((self.lastX, self.lastY))
+        self.deathTracker.resetStreak()
+        self.medals.kill(weapon)
         enemy.death(self)
     def death(self, killer = None, AI = None):
         self.deathTracker.die(killer = killer, AI = AI)
         self.deaths+=1
-        self.bestKillstreak = self.killstreak if self.killstreak > self.bestKillstreak else self.bestKillstreak
-        self.killstreak=0
+        self.killTracker.resetStreak()
         self.hasFlag = False
         self.hp = 0
-        self.deathHeatMap.append((self.lastX, self.lastY))
+        self.medals.death()
         for weapon in self.weapons.values():
             weapon.die()
     def cap(self):
@@ -72,9 +71,15 @@ class Player():
     def respawn(self):
         self.hp = 100
         self.hasFlag = False
+    def getKillstreak(self):
+        return self.killTracker.killStreak
+    def getDeathstreak(self):
+        return self.deathTracker.deathStreak
     def heal(self):
         self.hp = 100
         self.healthBoxesGrabbed+=1
+    def getLastCoords(self):
+        return (self.lastX, self.lastY)
     def addWeapon(self, weapon):
         self.weapons[weapon] = DMEWeapon(weapon)
     def getState(self):
@@ -97,10 +102,11 @@ class Player():
             'nicks_received':self.nicksReceived,
             'weapons':{w.weapon:w.getState() for w in self.weapons.values()},
             'damage_taken':self.damageTaken,
-            'killHeatMap':self.killHeatMap,
-            'deathHeatMap':self.deathHeatMap,
-            'killstreak':self.killstreak,
-            'bestKillstreak':self.bestKillstreak,
+            'killHeatMap':self.killTracker.killHeatMap,
+            'deathHeatMap':self.deathTracker.playerDeathHeatMap,
+            'nonPlayerDeathHeatMap':self.deathTracker.nonPlayerDeathHeatMap,
+            'killstreak':self.killTracker.killStreak,
+            'bestKillstreak':self.killTracker.bestKillStreak,
             'death_info':self.deathTracker.getState(),
             'kill_info':self.killTracker.getState(),
 
@@ -161,12 +167,14 @@ class Player():
             'nicks_given':self.nicksGiven,
             'nicks_received':self.nicksReceived,
             'weapons':{w.weapon:w.getResult() for w in self.weapons.values()},
-            'killHeatMap':self.killHeatMap,
-            'deathHeatMap':self.deathHeatMap,
+            'killHeatMap':self.killTracker.killHeatMap,
+            'deathHeatMap':self.deathTracker.playerDeathHeatMap,
+            'nonPlayerDeathHeatMap':self.deathTracker.nonPlayerDeathHeatMap,
             'disconnected':self.disconnected,
-            'bestKillstreak':self.bestKillstreak,
+            'bestKillstreak':self.killTracker.bestKillStreak,
             'death_info':self.deathTracker.getState(),
             'kill_info':self.killTracker.getState(),
+            'medals':self.medals.getState(),
         }
     def getStore(self):
         '''goes into the player stats document for a player'''

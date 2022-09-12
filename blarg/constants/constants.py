@@ -134,3 +134,16 @@ TIMES = {
     '30_minutes':30,
     '35_minutes':35,
 }
+
+STREAK_CONTRACT = {
+    'current_winstreak':0,
+    'best_winstreak':0,
+    'current_losingstreak':0,
+    'best_losingstreak':0,
+    'bestKillstreak':0,
+    'nukes':0, #25 kill streaks
+    'bestDeathStreak':0,
+    'distributors':0, #25death streaks
+    'undying':0,
+    'radioactives':0,
+}
