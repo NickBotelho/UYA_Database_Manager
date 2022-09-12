@@ -2,7 +2,7 @@ from mongodb import Database, isBot
 import traceback
 import datetime
 import requests
-from constants.constants import STREAK_CONTRACT
+from blarg.constants.constants import STREAK_CONTRACT
 # logs = Database("UYA", "Logger")
 VALUES = {
 
