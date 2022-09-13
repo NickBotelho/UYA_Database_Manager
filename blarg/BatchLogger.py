@@ -255,7 +255,7 @@ def updateStreaks(streaks, player, winningTeam):
     streaks['best_winstreak'] = max(streaks['best_winstreak'], streaks['current_winstreak']) 
     streaks['best_losingstreak'] = max(streaks['best_losingstreak'], streaks['current_losingstreak'])
     streaks['bestKillstreak'] = max(player.killTracker.bestKillStreak,streaks['bestKillstreak'] )
-    streaks['bestDeathstreak'] = max(player.deathTracker.bestDeathStreak,streaks['bestDeathstreak'] )
+    streaks['bestDeathstreak'] = max(player.deathTracker.bestDeathStreak,streaks['bestDeathStreak'] )
     streaks['nukes'] += player.medals.nukes
     streaks['distributors'] += player.medals.distributors
     streaks['radioactives'] += player.medals.radioactives
