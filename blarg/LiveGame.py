@@ -122,7 +122,7 @@ class LiveGame():
             self.placeOnMap(serialized, packet)
         # elif packet['type'] == 'tcp' and (packet_id == '0211' or packet_id == '0210' or packet_id == '0003'):
         #     self.staging(packet_id, serialized, packet)
-        elif packet['type'] == 'tcp' and packet_id == '000D':
+        elif self.state == 0 and packet['type'] == 'tcp' and packet_id == '000D':
             self.parseLobby(packet_id)
             self._initPlayers()
             self.startGame(serialized, packet)
@@ -140,7 +140,6 @@ class LiveGame():
         '''triggers on game start'''
         print(f"{self.dme_id}: GAME STARTING")
         self.logger.info(f"Game Starting...")
-        self.state = 1
         self.startTime = datetime.datetime.now()
         self.logger.startTime = self.startTime
         res = requests.get(GAMES).json()
@@ -176,6 +175,8 @@ class LiveGame():
             self.logger.critical("GAME TYPE NOT IMPLEMENTED")
             self.liveMap = False
             # self.game = None
+
+        self.state = 1  
     def processEvent(self, packet_id, serialized, packet):
         '''process and logs a game event
         Acceptable packets include 020C, 020A (respawn), udp 0200 (death) 
@@ -348,11 +349,12 @@ class LiveGame():
         self.clog_limit = int(self.clog_limit * 2.5) if self.isBotGame else self.clog_limit
 
     def _initPlayers(self):
-        for player_idx in self.itos:
-            username = self.itos[player_idx]
-            self.players[player_idx] = Player(username, player_idx, self.ntt[username], self.itos)
-        self.isBotGame = self.checkForBots()
-        self.defineClog()
+        if self.state == 0:
+            for player_idx in self.itos:
+                username = self.itos[player_idx]
+                self.players[player_idx] = Player(username, player_idx, self.ntt[username], self.itos)
+            self.isBotGame = self.checkForBots()
+            self.defineClog()
     def displayPlayers(self):
         for idx in self.players:
             self.logger.info(str(self.players[idx]))
