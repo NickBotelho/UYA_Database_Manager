@@ -147,3 +147,76 @@ STREAK_CONTRACT = {
     'undying':0,
     'radioactives':0,
 }
+
+LIVE_CONTRACT =  {
+    "live_games":0,
+    "kills": 0,
+    "deaths": 0,
+    "saves": 0,
+    "caps": 0,
+    "distance_travelled": 0,
+    "flag_distance": 0,
+    "noFlag_distance": 0,
+    "flag_pickups": 0,
+    "flag_drops": 0,
+    "health_boxes": 0,
+    "nicks_given": 0,
+    "nicks_received": 0,
+    "weapons": {
+        "Wrench": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Hypershot": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Holo Shield": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Flux": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Blitz": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Gravity Bomb": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Lava Gun": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Rockets": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Morph O' Ray": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Mines": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "N60": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        }
+    }
+}    

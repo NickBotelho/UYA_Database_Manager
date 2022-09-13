@@ -120,7 +120,7 @@ def generateHealthIDs(map = 'bakisi_isle', nodes = True, base = True):
         red = int('57', 16)
         boxes = 8
         if not nodes: #4,4,3,3,4,4
-            red -= 24
+            red -= 26
         if not base:
             red -= 4
         res = [node for node in range(red, red+boxes)]
@@ -128,7 +128,7 @@ def generateHealthIDs(map = 'bakisi_isle', nodes = True, base = True):
         red = int('50', 16)
         boxes = 5
         if not nodes: #4,4,3,3,4,4
-            red -= 18
+            red -= 20
         if not base:
             red -= 4
         res = [node for node in range(red, red+boxes)]
@@ -192,13 +192,13 @@ def generateBaseIDs(map = 'bakisi_isle', nodes = True, base = True):
     elif map == 'hoven_gorge':
         red = int('56', 16)
         if not nodes: #5,3,4,1,4,2,5
-            red -= 24
+            red -= 26
         if not base:
             red -= 4
     elif map == 'outpost_x12':
         red = int('4F', 16)
         if not nodes: #3,3,3,3,3,3
-            red -= 18
+            red -= 20
         if not base:
             red -= 4
     elif map == 'korgon_outpost':
