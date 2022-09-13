@@ -2,7 +2,7 @@
 class DeathTracker():
     def __init__(self, player) -> None:
         self.deaths = 0
-        self.deathStreak = 0,
+        self.deathStreak = 0
         self.bestDeathStreak = 0
         self.nonPlayerDeathMap = {
             'Suicide':0,
