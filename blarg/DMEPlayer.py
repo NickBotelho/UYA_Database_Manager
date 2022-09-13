@@ -50,7 +50,6 @@ class Player():
         self.killTracker.kill(enemy)
         if weapon in self.weapons:
             self.weapons[weapon].kill()
-        self.killHeatMap.append((self.lastX, self.lastY))
         self.deathTracker.resetStreak()
         self.medals.kill(weapon)
         enemy.death(self)
@@ -179,6 +178,7 @@ class Player():
     def getStore(self):
         '''goes into the player stats document for a player'''
         return {
+            'live_games':1,
             'kills':self.killTracker.kills,
             'deaths':self.deathTracker.deaths,
             'saves':self.saves,
