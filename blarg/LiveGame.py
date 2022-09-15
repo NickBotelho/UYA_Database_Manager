@@ -280,7 +280,7 @@ class LiveGame():
             
             display = True if self.numPlaced >= len(self.players) else False
             if display:
-                colors = [self.players[i].team for i in self.players]
+                colors = [self.players[i].teamColor for i in self.players]
                 x = [self.players[i].x for i in self.players]
                 y = [self.players[i].y for i in self.players]
                 hp = [self.players[i].hp for i in self.players]
