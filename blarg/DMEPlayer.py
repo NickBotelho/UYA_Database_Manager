@@ -7,7 +7,8 @@ class Player():
     def __init__(self, username, lobby_idx, team, lobbyItos):
         self.username = username
         self.lobby_idx = lobby_idx
-        self.team = team
+        self.teamColor = team #str
+        self.team = None #will be Team object
         self.isBot = self.checkBotStatus(username)
         self.kills = 0
         self.hp = 100
@@ -42,7 +43,9 @@ class Player():
 
     def __str__(self):
         # return "{} HP = {}, Kills = {}, Deaths = {}, Caps = {}".format(self.username, self.hp, self.kills, self.deaths, self.caps)
-        return f"({self.lobby_idx} {self.username} [{self.team}])"
+        return f"({self.lobby_idx} {self.username} [{self.teamColor}])"
+    def setTeam (self, team):
+        self.team = team
     def adjustHP(self, hp):
         self.damageTaken += abs(self.hp - hp)
         self.hp = hp
@@ -65,8 +68,10 @@ class Player():
     def cap(self):
         self.caps+=1
         self.hasFlag=False
+        self.team.dropFlags()
     def save(self):
         self.saves+=1
+        self.team.saveFlags()
     def respawn(self):
         self.hp = 100
         self.hasFlag = False
@@ -89,7 +94,7 @@ class Player():
             'deaths':self.deathTracker.deaths,
             'caps':self.caps,
             'saves':self.saves,
-            'team':self.team,
+            'team':self.teamColor,
             'distance_travelled':self.pedometer.getTotalDistance(),
             'flag_distance':self.pedometer.getFlagDistance(),
             'noFlag_distance':self.pedometer.getNoFlagDistance(),
@@ -128,6 +133,8 @@ class Player():
         self.hasFlag = False
         self.flagDrops+=1
     def fire(self, weapon, player_hit):
+        if weapon != 'Wrench': self.hasFlag = False
+
         self.weapons[weapon].fire(player_hit)
     def quit(self):
         self.disconnected = True
@@ -156,7 +163,7 @@ class Player():
             'deaths':self.deathTracker.deaths,
             'caps':self.caps,
             'saves':self.saves,
-            'team':self.team,
+            'team':self.teamColor,
             'distance_travelled':self.pedometer.getTotalDistance(),
             'flag_distance':self.pedometer.getFlagDistance(),
             'noFlag_distance':self.pedometer.getNoFlagDistance(),

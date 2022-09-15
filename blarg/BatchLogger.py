@@ -23,7 +23,7 @@ class BatchLogger():
         self.cache = []
         self.id = id
         self.map = None
-        self.mongo = Database("UYA", "Logger")
+        self.mongo = Database("UYA", "Logger2")
         self.exists = False
         self.coords = {}
         self.players = {} #username to state/result dict
@@ -149,7 +149,7 @@ class BatchLogger():
             players[quitter.username] = quitter
         self.setResults(players)
         now = datetime.datetime.now()
-        liveHistory = Database("UYA", "LiveGame_History")
+        liveHistory = Database("UYA", "LiveGame_History2")
         duration = now - self.startTime if self.startTime != None else now - now
         try:           
             self.mongo.collection.find_one_and_delete({

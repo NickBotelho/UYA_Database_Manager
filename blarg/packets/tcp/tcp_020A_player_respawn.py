@@ -10,5 +10,5 @@ class tcp_020A_player_respawn:
         result = {}
         result['event'] = 6
         result['player'] = data.popleft()
-        result['unk'] = ''.join([data.popleft() for i in range(31)])
+        # result['unk'] = ''.join([data.popleft() for i in range(31)])
         return result

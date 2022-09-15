@@ -110,10 +110,11 @@ class tcp_020C_in_game_info:
 
         if subtype in ['?_crate_destroyed_and_pickup', '?_crate_destroyed']:
             packet['object_id'] = object_id
-            packet['weapon_spawned'] = WEAPON_MAP[data.popleft()]
+            packet['event'] = 4
+            # packet['weapon_spawned'] = WEAPON_MAP[data.popleft()]
         elif 'weapon_pickup' in subtype:
             packet['weapon_pickup_unk'] =  ''.join([data.popleft() for i in range(4)])
-            packet['item_picked_up_id'] = object_id
+            packet['object_id'] = object_id
             packet['event'] = 4
         elif 'object_update' in subtype:
             packet['object_update_unk'] =  ''.join([data.popleft() for i in range(4)])
@@ -130,6 +131,9 @@ class tcp_020C_in_game_info:
             packet['flag_drop_unk'] =  ''.join([data.popleft() for i in range(16)])
         elif 'crate_destroyed_and_pickup' in subtype:
             packet['object_id'] = object_id
+            packet['event'] = 4
+        elif 'crate_destroyed' in subtype:
+            packet['object_id'] = object_id
 
         # elif subtype in ['p0_confirm', 'p1_confirm', 'p2_confirm', 'p3_confirm', 'p4_confirm', 'p5_confirm', 'p6_confirm', 'p7_confirm']:
         #     packet['object_id'] = ''.join([data.popleft() for i in range(4)])
@@ -138,8 +142,9 @@ class tcp_020C_in_game_info:
         #     packet['object_id'] = ''.join([data.popleft() for i in range(4)])
         #     packet['buf'] = ''.join([data.popleft() for i in range(1)])
         #     packet['unk'] = ''.join([data.popleft() for i in range(2)])
-        # elif subtype == 'crate_respawn_p1?':
-        #     pass
+        elif subtype == 'crate_respawn?':
+            packet['object_id'] = object_id
+            
         # elif subtype == 'weapon_pickup_unk?_p1':
         #     packet['unk'] =  ''.join([data.popleft() for i in range(4)])
         return packet

@@ -12,6 +12,7 @@ from mongodb import Database
 import datetime
 from blarg.constants.constants import TIMES
 from blarg.utils.utils import generateFlagIDs, generateHealthIDs
+from blarg.DMETeam import Team
 from Parsers.GamestateGameSettingsParser import hasNodes
 from HashId import hash_id
 from sys import maxsize
@@ -67,6 +68,7 @@ class LiveGame():
         self.x, self.y, self.names = [], [] ,[] #Used for graphing
         self.current_time = 0
         self.itos, self.ntt, self.nts, self.teams = {}, {}, {}, {}
+        self.colorToTeam = {}
         self.scores = {}
         self.state = 0
         self.lobby = {}
@@ -151,6 +153,7 @@ class LiveGame():
                 break
         self.uyaTrackerId = hash_id(self.game)
         for team in set(self.ntt.values()):
+            self.colorToTeam[team] = Team(team, self.players)
             self.teams[team] = [player for player in self.ntt if self.ntt[player] == team]
         self.logger.debug(self.teams)
         self.map = game['map']
@@ -163,8 +166,14 @@ class LiveGame():
         self.time_limit = TIMES[game['game_length']] if TIMES[game['game_length']] != None else None
         self.scores = {team:0 for team in self.ntt.values()}
         self.hasNodes = self.hasNodes if self.hasNodes != None else False
-        self.hp_boxes = generateHealthIDs(self.map.lower(), nodes = self.hasNodes, base = game['advanced_rules']['baseDefenses'])
+        self.hp_boxes = generateHealthIDs(self.map.lower(), nodes = self.hasNodes, base = game['advanced_rules']['baseDefenses'], mode = self.mode)
         self.flags = generateFlagIDs(self.map, nodes = self.hasNodes, base=game['advanced_rules']['baseDefenses']) if self.mode == "CTF" else []
+        for team in self.colorToTeam.values():
+            for enemies in self.colorToTeam.values():
+                if team.color != enemies.color:
+                    team.addOpponentTeam(enemies)
+
+        print(self.hp_boxes, self.flags)
         print(self.hasNodes,game['advanced_rules']['baseDefenses'], self.hp_boxes, self.flags)
         print(self.itos)
         for idx in self.players:
@@ -175,6 +184,7 @@ class LiveGame():
             self.logger.critical("GAME TYPE NOT IMPLEMENTED")
             self.liveMap = False
             # self.game = None
+            
 
         self.state = 1  
     def processEvent(self, packet_id, serialized, packet):
@@ -200,7 +210,7 @@ class LiveGame():
                     else:
                         update = f"Flag returned to base due to inactivity"
                 elif event == 2:
-                    item = serialized['object_id']
+                    item = serialized['object_id'][0:2]
                     if item in self.flags:
                         print(f"Flag id = {item} | picked up by? {username} with packet src = {int(packet['src'])} & subtype = {serialized['subtype']}\n \
                             Giving the flag to player: {str(self.players[int(packet['src'])])}")
@@ -210,9 +220,11 @@ class LiveGame():
                     update = f"{username} has dropped the flag"
                     self.players[int(packet['src'])].dropFlag()
                 elif event == 4:
-                    item = serialized['item_picked_up_id'][0:2]
+                    item = serialized['object_id'][0:2]
+                    print(serialized)
                     if item in self.hp_boxes:
                         update = f"{self.itos[int(packet['src'])]} grabbed health"
+                        print(update, self.players[int(packet['src'])].healthBoxesGrabbed)
                         self.players[int(packet['src'])].heal()
                 if update != None:
                     self.logger.info(update)             
@@ -353,6 +365,7 @@ class LiveGame():
             for player_idx in self.itos:
                 username = self.itos[player_idx]
                 self.players[player_idx] = Player(username, player_idx, self.ntt[username], self.itos)
+
             self.isBotGame = self.checkForBots()
             self.defineClog()
     def displayPlayers(self):
