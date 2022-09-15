@@ -5,11 +5,11 @@ class Team():
         '''str: color = team color
         dict: players = lobby idx --> player obj'''
         self.color = color
-        self.players = [player for player in players.values() if player.team == color]
+        self.players = [player for player in players.values() if player.teamColor == color]
         self.opponentTeams = []
 
         for player in self.players:
-            player.team = self
+            player.setTeam(self)
     def dropFlags(self):
         for player in self.players:
             player.hasFlag = False
