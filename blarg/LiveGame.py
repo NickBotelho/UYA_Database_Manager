@@ -213,7 +213,7 @@ class LiveGame():
                     item = serialized['object_id'][0:2]
                     if item in self.flags:
                         print(f"Flag id = {item} | picked up by? {username} with packet src = {int(packet['src'])} & subtype = {serialized['subtype']}\n \
-                            Giving the flag to player: {str(self.players[int(packet['src'])])}")
+                            Giving the flag to player: {str(self.players[int(packet['src'])])} \n Whole message = {serialized}")
                         update = f"{username} has picked up the flag"
                         self.players[int(packet['src'])].pickupFlag()
                 elif event == 5:
