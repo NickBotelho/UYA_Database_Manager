@@ -28,8 +28,11 @@ PLAYER_STATUS={
     3:"In Game"
 }
 class Database():
-    def __init__(self,db,collection):
-        self.client = pymongo.MongoClient("mongodb+srv://{}:{}@cluster0.jydx7.mongodb.net/myFirstDatabase?retryWrites=true&w=majority".format(MongoUser, MongoPW))
+    def __init__(self,db,collection, live = False):
+        if live:
+            self.client = pymongo.MongoClient("mongodb+srv://{}:{}@cluster0.xipwxkq.mongodb.net/?retryWrites=true&w=majority".format(MongoUser, MongoPW))
+        else:
+            self.client = pymongo.MongoClient("mongodb+srv://{}:{}@cluster0.jydx7.mongodb.net/myFirstDatabase?retryWrites=true&w=majority".format(MongoUser, MongoPW))
         self.db = self.client[db]
         self.collection = self.db[collection]
     def getDB(self):
