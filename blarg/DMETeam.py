@@ -11,11 +11,13 @@ class Team():
         for player in self.players:
             player.setTeam(self)
     def dropFlags(self):
-        for player in self.players:
-            player.hasFlag = False
+        pass
+        # for player in self.players:
+        #     player.hasFlag = False
     def addOpponentTeam(self, enemy):
         self.opponentTeams.append(enemy)
     def saveFlags(self):
-        for team in self.opponentTeams:
-            team.dropFlags()
+        pass
+        # for team in self.opponentTeams:
+        #     team.dropFlags()
 

@@ -197,35 +197,41 @@ class LiveGame():
                 update = None
                 username = self.itos[int(packet['src'])]
                 if event == 0:
-                    self.players[int(packet['src'])].cap()
-                    team = self.ntt[username]
-                    update = f"{username} capped the flag"
+                    idx = int(serialized['flag_update_type'][1]) #ex p0_capture
+                    player = self.players[self.players[idx]]
+                    player.cap()
+                    team = player.teamColor
+                    update = f"{player.username} capped the flag"
                     self.logger.info(update)
                     self.scores[team] += 1
                     self.logger.setScores(self.scores)
                 elif event == 1:
                     if serialized['flag_update_type'] != "flag_return":
-                        update = f"{username} saved the flag"
-                        self.players[int(packet['src'])].save()
+                        idx = int(serialized['flag_update_type'][1]) #p1_save
+                        player = self.players[idx]
+                        update = f"{player.username} saved the flag"
+                        player.save()
                     else:
                         update = f"Flag returned to base due to inactivity"
                 elif event == 2:
                     item = serialized['object_id'][0:2]
                     if item in self.flags:
-                        print(f"Flag id = {item} | picked up by? {username} with packet src = {int(packet['src'])} & subtype = {serialized['subtype']}\n \
-                            Giving the flag to player: {str(self.players[int(packet['src'])])} \n Whole message = {serialized}")
-                        update = f"{username} has picked up the flag"
-                        self.players[int(packet['src'])].pickupFlag()
+                        idx = int(serialized['object_taken_by'][0:2]) #06000000 is how it looks
+                        # print(f"Flag id = {item} | picked up by? {username} with packet src = {int(packet['src'])} & subtype = {serialized['subtype']}\n \
+                        #     Giving the flag to player: {str(self.players[int(packet['src'])])} \n Whole message = {serialized}")
+                        player = self.player[idx]
+                        update = f"{player.username} has picked up the flag"
+                        player.pickupFlag()
                 elif event == 5:
                     update = f"{username} has dropped the flag"
                     self.players[int(packet['src'])].dropFlag()
                 elif event == 4:
                     item = serialized['object_id'][0:2]
-                    print(serialized)
                     if item in self.hp_boxes:
-                        update = f"{self.itos[int(packet['src'])]} grabbed health"
-                        print(update, self.players[int(packet['src'])].healthBoxesGrabbed)
-                        self.players[int(packet['src'])].heal()
+                        player = self.players[int(packet['src'])]
+                        update = f"{player.username} grabbed health"
+                        print(f"hp box update: src = {player} | subtype = {packet['subtype']}")
+                        player.heal()
                 if update != None:
                     self.logger.info(update)             
         elif packet_id == '020A' and packet['type'] == 'tcp':

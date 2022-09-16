@@ -5,14 +5,14 @@ from blarg.constants.constants import WEAPON_MAP
 subtype_map = {
     '10401F00': '?_crate_destroyed',
     # '41401F00': 'weapon_pickup',
-    '41401F00': 'weapon_pickup_unk?_p0',
-    '41441F00': 'weapon_pickup_unk?_p1',
-    '41481F00': 'weapon_pickup_unk?_p2',
-    '414C1F00': 'weapon_pickup_unk?_p3',
-    '41501F00': 'weapon_pickup_unk?_p4',
-    '41541F00': 'weapon_pickup_unk?_p5',
-    '41581F00': 'weapon_pickup_unk?_p6',
-    '415C1F00': 'weapon_pickup_unk?_p7',
+    '41401F00': 'p0_item_pickup',
+    '41441F00': 'p1_item_pickup',
+    '41481F00': 'p2_item_pickup',
+    '414C1F00': 'p3_item_pickup',
+    '41501F00': 'p4_item_pickup',
+    '41541F00': 'p5_item_pickup',
+    '41581F00': 'p6_item_pickup',
+    '415C1F00': 'p7_item_pickup',
     '00401F00': 'crate_destroyed',
     '02401F00': 'crate_respawn',
     '02441F00': 'crate_respawn_p1?',
@@ -80,6 +80,14 @@ flag_drop_map = {
     '0106': 'p6_capture',
     '0107': 'p7_capture',
     '00FF': 'flag_return',
+    '0000': 'p0_save',
+    '0001': 'p1_save',
+    '0002': 'p2_save',
+    '0003': 'p3_save',
+    '0004': 'p4_save',
+    '0005': 'p5_save',
+    '0006': 'p6_save',
+    '0007': 'p7_save',
 }
 player_map = {
     '00' : 0,
@@ -119,19 +127,24 @@ class tcp_020C_in_game_info:
             packet['object_id'] = object_id
             packet['event'] = 4
             # packet['weapon_spawned'] = WEAPON_MAP[data.popleft()]
-        elif 'weapon_pickup' in subtype:
+        elif 'item_pickup' in subtype:
             packet['weapon_pickup_unk'] =  ''.join([data.popleft() for i in range(4)])
             packet['object_id'] = object_id
             packet['event'] = 4
         elif 'object_update' in subtype:
-            packet['object_update_unk'] =  ''.join([data.popleft() for i in range(4)])
+            packet['object_taken_by'] =  ''.join([data.popleft() for i in range(4)]) #02000000 example
             packet['object_id'] = object_id
             packet['event'] = 2
         elif 'flag_update' in subtype:
             packet['object_id'] = object_id
             flagDropKey = ''.join([data.popleft() for i in range(2)])
             packet['flag_update_type'] =  flag_drop_map[flagDropKey] if flagDropKey in flag_drop_map else flagDropKey
-            packet['event'] = 1 if flagDropKey not in flag_drop_map or packet['flag_update_type'] == 'flag_return' else 0
+            if "save" in packet['flag_update_type']:
+                packet['event'] = 1
+            elif "capture" in packet['flag_update_type']:
+                packet['event'] = 0
+            else:
+                packet['event'] = -1
         elif 'flag_drop' in subtype:
             packet['object_id'] = object_id
             packet['event'] = 5
