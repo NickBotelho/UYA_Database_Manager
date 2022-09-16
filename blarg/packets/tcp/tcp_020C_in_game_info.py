@@ -4,8 +4,15 @@ from blarg.constants.constants import WEAPON_MAP
 
 subtype_map = {
     '10401F00': '?_crate_destroyed',
-    '41401F00': 'weapon_pickup',
+    # '41401F00': 'weapon_pickup',
+    '41401F00': 'weapon_pickup_unk?_p0',
     '41441F00': 'weapon_pickup_unk?_p1',
+    '41481F00': 'weapon_pickup_unk?_p2',
+    '414C1F00': 'weapon_pickup_unk?_p3',
+    '41501F00': 'weapon_pickup_unk?_p4',
+    '41541F00': 'weapon_pickup_unk?_p5',
+    '41581F00': 'weapon_pickup_unk?_p6',
+    '415C1F00': 'weapon_pickup_unk?_p7',
     '00401F00': 'crate_destroyed',
     '02401F00': 'crate_respawn',
     '02441F00': 'crate_respawn_p1?',
