@@ -2,7 +2,7 @@ from blarg.DMEWeapon import DMEWeapon
 from blarg.DeathTracker import DeathTracker
 from blarg.KillTracker import KillTracker
 from blarg.Pedometer import Pedometer
-from blarg.Medals import Medal
+from blarg.Medals import MedalTracker
 class Player():
     def __init__(self, username, lobby_idx, team, lobbyItos):
         self.username = username
@@ -15,7 +15,7 @@ class Player():
         self.deaths = 0
         self.killTracker = KillTracker(self)
         self.deathTracker = DeathTracker(self)
-        self.medals = Medal(self)
+        self.medals = MedalTracker(self)
         self.caps, self.saves = 0, 0
         self.weapons = { #weaponNameToObject
             'Wrench':DMEWeapon('Wrench'),
@@ -69,6 +69,7 @@ class Player():
         self.caps+=1
         self.hasFlag=False
         self.team.dropFlags()
+        self.medals.cap()
     def save(self):
         self.saves+=1
         self.team.saveFlags()
