@@ -26,8 +26,9 @@ DESCRIPTIONS = {
 
     'radioactive':"A single kill after dropping a nuke on the same life",
     'shifty':"Getting back to back caps without dying",
-    'lockon':"Hit 5 flux shots on players in a row without missing"
-
+    'lockon':"Hit 5 flux shots on players in a row without missing",
+    'juggernaut':'Make a jug in a single life',
+    'olympiad':"Travel 5 miles in a single life",
 }
 class Medal():
     def __init__(self, name, threshold = None) -> None:
@@ -86,16 +87,30 @@ class Bloodthirsty(Medal):
 class LockOn(Medal):
     def __init__(self) -> None:
         super().__init__("lockon", 5)
-        self.shots = 0 #shots in a row
+        self.hits = 0 #shots in a row
     def track(self, player_hit):
         self.hits = self.hits + 1 if player_hit != "FF" else 0
         if self.hits == self.threshold:
             self.numAchieved+=1
+            self.hits = 0
 
 class HealthRunner(Medal):
     def __init__(self) -> None:
         super().__init__("healthrunner", 5)
-        
+
+class Juggernaut(Medal):
+    def __init__(self) -> None:
+        super().__init__("juggernaut", 1)
+        self.madeJug = False
+    def track(self, hasJug):
+        if not self.madeJug:
+            if hasJug:
+                self.numAchieved+=1
+                self.madeJug = True
+
+class Olympiad(Medal):
+    def __init__(self) -> None:
+        super().__init__("olympiad", 5)
 
 
 
@@ -104,6 +119,8 @@ class MedalTracker():
     def __init__(self, player):
         self.player = player
         self.onCapStreak = False
+        self.hpStreak = 0
+        self.distance = 0
         self.nuke = Nuke()
         self.brutal = Brutal()
         self.relentless = Relentless()
@@ -119,6 +136,10 @@ class MedalTracker():
         self.radioactive = Radioactive()
 
         self.shifty=Shifty()
+        self.healthrunner = HealthRunner()
+        self.lockon = LockOn()
+        self.juggernaut = Juggernaut()
+        self.olympiad = Olympiad()
 
 
     def kill(self, weapon = "Wrench"):
@@ -131,6 +152,8 @@ class MedalTracker():
         self.bloodthirsty.track(streak)
         self.radioactive.track(streak)
 
+        self.juggernaut.track(self.player.hasJug())
+
     def death(self):
         streak = self.player.getDeathstreak()
         self.distributor.track(streak)
@@ -138,14 +161,27 @@ class MedalTracker():
         self.thickskull.track(streak)
         self.bloodfilled.track(streak)
 
+
         self.onCapStreak = False
-    
+        self.hpStreak = 0
+        self.juggernaut.madeJug = False
+        self.distance=0
     def cap(self):
         self.shifty.track(self.onCapStreak)
         self.onCapStreak = True
 
-    def fire(self):
-        pass
+    def fire(self, weapon, player_hit):
+        if weapon == "Flux":
+            self.lockon(player_hit)
+
+    def heal(self):
+        self.hpStreak+=1
+        self.healthrunner(self.hpStreak)
+
+    def move(self, distance):
+        self.distance+=distance
+        self.olympiad.track(self.distance)
+
 
     def getState(self):
         return {
@@ -160,5 +196,8 @@ class MedalTracker():
             self.brutalized.name:self.brutalized.numAchieved,
             self.thickskull.name:self.thickskull.numAchieved,
             self.shifty.name:self.shifty.numAchieved,
+            self.juggernaut.name:self.juggernaut.numAchieved,
+            self.olympiad.name:self.olympiad.numAchieved,
         }
+    
 

@@ -23,7 +23,7 @@ class BatchLogger():
         self.cache = []
         self.id = id
         self.map = None
-        self.mongo = Database("UYA", "Logger", live = True)
+        self.mongo = Database("UYA", "Logger2", live = True)
         self.exists = False
         self.coords = {}
         self.players = {} #username to state/result dict

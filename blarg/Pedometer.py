@@ -1,13 +1,15 @@
 X12_UNIT = 35162
 class Pedometer():
     '''Tracks travelling metrics for a DMEPlayer in live game'''
-    def __init__(self):
+    def __init__(self, player):
+        self.player = player
         self.totalDistance = 0
         self.flagDistance = 0
         self.noFlagDistance = 0
     def walk(self, oldPoint, newPoint, hasFlag):
         if oldPoint != -1:
             distance = abs(oldPoint - newPoint)
+            self.player.medals.move(distance)
             self.totalDistance = self.totalDistance + distance
             if hasFlag:
                 self.flagDistance+= distance

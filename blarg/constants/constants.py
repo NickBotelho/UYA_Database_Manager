@@ -157,6 +157,8 @@ STREAK_CONTRACT = {
         'radioactive':0,
         'shifty':0,
         'lockon':0,
+        'juggernaut':0,
+        'olympiad':0,
     }
 }
 

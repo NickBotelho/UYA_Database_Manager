@@ -22,7 +22,7 @@ class Player():
             'Hypershot':DMEWeapon("Hypershot"),
             'Holo Shield':DMEWeapon("Holo Shield"),
         }
-        self.pedometer = Pedometer()
+        self.pedometer = Pedometer(self)
         self.x, self.y, self.rotation = -1, -1, -1
         self.isPlaced = False
         self.lastX, self.lastY = -1, -1
@@ -83,6 +83,8 @@ class Player():
     def heal(self):
         self.hp = 100
         self.healthBoxesGrabbed+=1
+        self.medals.heal()
+
     def getLastCoords(self):
         return (self.lastX, self.lastY)
     def addWeapon(self, weapon):
@@ -137,6 +139,7 @@ class Player():
         if weapon != 'Wrench' or weapon != "Hypershot": self.hasFlag = False
 
         self.weapons[weapon].fire(player_hit)
+        self.medals.fire(weapon, player_hit)
     def quit(self):
         self.disconnected = True
     def stageNick(self, nicker):
@@ -202,3 +205,9 @@ class Player():
             'weapons':{w.weapon:w.getStore() for w in self.weapons.values()},
             'medals':self.medals.getState(),
         }
+    def hasJug(self):
+        if "Flux" in self.weapons \
+            and "Blitz" in self.weapons \
+                and "Gravity Bomb" in self.weapons:
+                return self.weapons['Flux'].isV2 == True and self.weapons['Blitz'].isV2 == True and self.weapons['Gravity Bomb'] == True
+
