@@ -47,29 +47,17 @@ class tcp_0211_player_lobby_state_change:
             '14': 'constructobot',
             '15': 'dan'
         }
+        ready_map = {
+            '06': 'ready',
+            '01': 'not ready',
+            '00': 'no change',
+            '02': 'broadcast not ready',
+            '04': 'change team request',
+            '08': 'unk, player in-game ready(?)'
+        }
         packet_data['skin'] = skin_map[data.popleft()]
         player_ready = data.popleft()
-        if player_ready == '06':
-            packet_data['ready'] = 'ready'
-
-            account_name = ''.join([data.popleft() for i in range(14)])
-            packet_data['username'] = bytes_to_str(bytes_from_hex(account_name))
-            assert ''.join([data.popleft() for i in range(11)]) == '0000000000000000000000'
-
-        elif player_ready == '01':
-            packet_data = {'ready': 'not ready'}
-            leftovers = ''.join([data.popleft() for i in range(25)])
-            assert leftovers == '00000000000000000000000000000000000000000000000000'
-        elif player_ready == '00':
-            packet_data['ready'] = 'no change'
-        elif player_ready == '02':
-            packet_data = {'ready': 'broadcast not ready'}
-            leftovers = ''.join([data.popleft() for i in range(25)])
-            #assert leftovers == '00290000003100000044641A00000000000100000000000000'
-        elif player_ready == '04':
-            # Team change request
-            packet_data = {'ready': 'change team request'}
-        else:
-            raise Exception(f"Unknown player ready type: {player_ready}")
+        packet_data['player_ready'] = ready_map[player_ready]
+        packet_data['username'] = hex_to_str(''.join([data.popleft() for i in range(14)]))
 
         return packet_data

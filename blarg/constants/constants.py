@@ -59,11 +59,11 @@ WEAPON_MAP = {
     '01':"N60",
     '02': "Blitz",
     '03': "Flux",
-    '04':"Rocket",
+    '04':"Rockets",
     '05': "Gravity Bomb",
     '06':"Mines",
     '07':"Lava Gun",
-    '09':"Morph",
+    '09':"Morph O' Ray",
     '0A':'Wrench',
     '0C':"Holo Shield",
     '0B':"Hypershot",
@@ -82,7 +82,10 @@ ANIMATION_MAP = {
     'backward-left': '63DE',
     'backward-right': '535A',
     'jump': 'EF',
-    'crouch': '9C'  # side flip: use flush = 148, spam crouch: 32
+    'crouch': '9C', # side flip: use flush = 148, spam crouch: 32
+    'shoot': 'BD',
+    'forward-shoot': '45D2',
+    'jump-shoot': 'B77B'
 }
 
 HP_MAP ={
@@ -131,3 +134,103 @@ TIMES = {
     '30_minutes':30,
     '35_minutes':35,
 }
+
+STREAK_CONTRACT = {
+    'current_winstreak':0,
+    'best_winstreak':0,
+    'current_losingstreak':0,
+    'best_losingstreak':0,
+    'bestKillstreak':0,
+    'bestDeathStreak':0,
+}
+
+LIVE_CONTRACT =  {
+    "live_games":0,
+    "kills": 0,
+    "deaths": 0,
+    "saves": 0,
+    "caps": 0,
+    "distance_travelled": 0,
+    "flag_distance": 0,
+    "noFlag_distance": 0,
+    "flag_pickups": 0,
+    "flag_drops": 0,
+    "health_boxes": 0,
+    "nicks_given": 0,
+    "nicks_received": 0,
+    "weapons": {
+        "Wrench": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Hypershot": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Holo Shield": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Flux": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Blitz": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Gravity Bomb": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Lava Gun": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Rockets": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Morph O' Ray": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Mines": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "N60": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        }
+    },
+    'medals':{
+        "nuke":0,
+        "brutal":0,
+        "relentless":0,
+        "bloodthirsty":0,
+        "merciless":0,
+        'undying': 0,
+        'distributor':0,
+        'thickskull': 0,
+        'bloodfilled':0,
+        'brutalized':0,
+        'radioactive':0,
+        'shifty':0,
+        'lockon':0,
+        'juggernaut':0,
+        'olympiad':0,
+        'dropper':0,
+        }
+}    

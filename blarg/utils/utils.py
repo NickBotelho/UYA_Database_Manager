@@ -50,8 +50,10 @@ def hex_to_str(data: str):
     return bytes_to_str(hex_to_bytes(data))
 
 
-def generateFlagIDs(map = 'bakisi_isles', nodes = True, base = True):
+def generateFlagIDs(map = 'bakisi_isle', nodes = True, base = True):
     '''returns red flag, blue flag ids'''
+    map = map.lower()
+    red, blue = 0, 0
     if map == 'bakisi_isle':
         red = int('66', 16)
         if not nodes: #4,5,4,5,4,4,4
@@ -61,19 +63,19 @@ def generateFlagIDs(map = 'bakisi_isles', nodes = True, base = True):
     elif map == 'hoven_gorge':
         red = int('6A', 16)
         if not nodes: #5,3,4,1,4,2,5
-            red -= 24
+            red -= 26
         if not base:
             red -= 4
     elif map == 'outpost_x12':
         red = int('65', 16)
-        if not nodes: #3,3,3,3,3,3
-            red -= 18
+        if not nodes: #3,3,3,3,3,3 2behicle rockets
+            red -= 20
         if not base:
             red -= 4
     elif map == 'korgon_outpost':
         red = int('54', 16)
         if not nodes: #4,4,4,4,4
-            red -= 20
+            red -= 19
         if not base:
             red -= 4
     elif map == 'metropolis':
@@ -98,59 +100,90 @@ def generateFlagIDs(map = 'bakisi_isles', nodes = True, base = True):
         red = int('14', 16)
         
     blue = red - 1
-    return hex(red)[2:], hex(blue)[2:]
-def generateHealthIDs(map = 'bakisi_isle', nodes = True, base = True):
+    red = hex(red)[2:] if len(hex(red)[2:]) > 1 else f"0{hex(red)[2:]}"
+    blue = hex(blue)[2:] if len(hex(blue)[2:]) > 1 else f"0{hex(blue)[2:]}"
+    flags = [blue.upper(), red.upper()]
+    return flags
+def generateHealthIDs(map = 'bakisi_isle', mode = "CTF", nodes = True, base = True):
+    #TDM no troopers?
+    #tdm troopers = false, base = true
     res = []
+    map = map.lower()
     if map == 'bakisi_isle': #done
+        #10 troopers
         red = int('54', 16)
         boxes = 5
+        if mode != "Deathmatch":
+            if not nodes: #4,4,3,3,4,4
+                red -= 30
+            if not base:
+                red -= 4
+        else:
+            red-=40
 
-        if not nodes: #4,4,3,3,4,4
-            red -= 30
-        if not base:
-            red -= 4
         res = [node for node in range(red, red+boxes)]
     elif map == 'hoven_gorge': #done
-        red = int('57', 16)
+        #4 troopers
+        red = int('58', 16)
         boxes = 8
-        if not nodes: #4,4,3,3,4,4
-            red -= 24
-        if not base:
-            red -= 4
+        if mode != "Deathmatch":
+            if not nodes: #4,4,3,3,4,4
+                red -= 26
+            if not base:
+                red -= 4
+        else:
+            red-=36
+
         res = [node for node in range(red, red+boxes)]
     elif map == 'outpost_x12': #done
-        red = int('50', 16)
+        #10 troopers 
+        red = int('52', 16)
         boxes = 5
-        if not nodes: #4,4,3,3,4,4
-            red -= 18
-        if not base:
-            red -= 4
+        if mode != "Deathmatch":
+            if not nodes: #4,4,3,3,4,4
+                red -= 20
+            if not base:
+                red -= 4
+        else:
+            red-=30
+
         res = [node for node in range(red, red+boxes)]
     elif map == 'korgon_outpost':
-        red = int('46', 16) #done
+        #10 troopers (actually 9 + mystery trooper)
+        red = int('45', 16) #done
         boxes = 6
-        if not nodes: #4,4,3,3,4,4
-            red -= 20
-        if not base:
-            red -= 4
+        if mode != "Deathmatch":
+            if not nodes: #4,4,3,3,4,4
+                red -= 19
+            if not base:
+                red -= 4
+        else:
+            red-=29
         res = [node for node in range(red, red+boxes)]
     elif map == 'metropolis': #done
+        #4 troopers + 5mystery = 9
         red = int('49', 16)
         boxes = 3
+        if mode != "Deathmatch":
+            if not nodes:
+                red -= 22
+            if not base:
+                red -= 4
+        else:
+            red-=32
 
-        if not nodes: #4,4,3,3,4,4
-            red -= 22
-        if not base:
-            red -= 4
         res = [node for node in range(red, red+boxes)]
-
     elif map == 'blackwater_city': #done
+        #8 troopers
         red = int('43', 16)
         boxes = 4
-        if not nodes: #5,5,5,5
-            red -= 20
-        if not base:
-            red -= 4
+        if mode != "Deathmatch":
+            if not nodes: #5,5,5,5
+                red -= 20
+            if not base:
+                red -= 4
+        else:
+            red-=30
         res = [node for node in range(red, red+boxes)]
     elif map == 'command_center':
         red = int('10', 16)
@@ -170,5 +203,65 @@ def generateHealthIDs(map = 'bakisi_isle', nodes = True, base = True):
         res = [node for node in range(red, red+boxes)]
 
         
-    res = [hex(node)[2:] for node in res]
+    res = [hex(node)[2:].upper() if len(hex(node)[2:]) > 1 else f"0{hex(node)[2:]}".upper() for node in res]
     return res
+def generateBaseIDs(map = 'bakisi_isle', nodes = True, base = True):
+    '''returns red flag, blue flag ids'''
+    if base == False: return []
+
+    map = map.lower()
+    red, blue = 0, 0
+    if map == 'bakisi_isle':
+        red = int('53', 16)
+        if not nodes: #4,5,4,5,4,4,4
+            red -= 30
+        if not base:
+            red -= 4
+    elif map == 'hoven_gorge':
+        red = int('56', 16)
+        if not nodes: #5,3,4,1,4,2,5
+            red -= 26
+        if not base:
+            red -= 4
+    elif map == 'outpost_x12':
+        red = int('4F', 16)
+        if not nodes: #3,3,3,3,3,3
+            red -= 20
+        if not base:
+            red -= 4
+    elif map == 'korgon_outpost':
+        red = int('45', 16)
+        if not nodes: #4,4,4,4,4
+            red -= 19
+        if not base:
+            red -= 4
+    elif map == 'metropolis':
+        red = int('42', 16)
+        if not nodes: #4,4,3,3,4,4
+            red -= 22
+        if not base:
+            red -= 4
+    elif map == 'blackwater_city':
+        red = int('42', 16)
+        if not nodes: #5,5,5,5
+            red -= 20
+        if not base:
+            red -= 4
+    elif map == 'command_center':
+        return []
+    elif map == 'blackwater_dox':
+        return []
+    elif map == 'aquatos_sewers':
+        return []
+    elif map == 'marcadia_palace':
+        return []
+        
+    blue = red - 1
+    red = hex(red)[2:] if len(hex(red)[2:]) > 1 else f"0{hex(red)[2:]}"
+    blue = hex(blue)[2:] if len(hex(blue)[2:]) > 1 else f"0{hex(blue)[2:]}"
+    return [blue.upper(), red.upper()]
+
+# print(generateHealthIDs("hoven_gorge",nodes = False,  base = True))
+# print(generateHealthIDs("blackwater_city",nodes = False,base = True))
+# print(generateFlagIDs("blackwater_city",nodes = False,base = True))
+# print(generateHealthIDs("bakisi_isle"))

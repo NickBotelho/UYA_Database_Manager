@@ -1,8 +1,7 @@
 import asyncio
-from typing import final
 import websockets
 import json
-
+import requests
 import logging
 import traceback
 from collections import deque
@@ -11,6 +10,8 @@ from blarg.packets.udp_map import udp_map
 
 from blarg.LiveGame import LiveGame
 import datetime
+GAMES = 'http://107.155.81.113:8281/robo/games'
+
 class Blarg:
     def __init__(self, config: dict):
         self._config = config
@@ -24,8 +25,8 @@ class Blarg:
         self._logger.addHandler(sh)
         self.delay = True if config['delay'] == "True" else False
         self.delayTime = int(config['delayTime'])
-        # self.live = LiveGame(dme_id=115)
         self.games = {}
+        self.gamesIdHistory = set()
         self.live = None
  
     def run(self, loop):
@@ -53,12 +54,12 @@ class Blarg:
         So we have to read the current message, and see if there's any leftover
         data which would be another message
         '''
-        avoid = ['0209',  '0001']
+        avoid = ['0018', '0009']
         # Keep reading until data is empty
         while len(data) != 0:
             if len(data) < 2: break
             packet_id = data.popleft() + data.popleft() # E.g. '0201'
-            # if packet_id in avoid: break
+            if packet_id in avoid: break
             if self._config['filter'] == packet_id:
                 self._logger.info(f"{packet['type']} | {packet_id + ''.join(list(data))}") 
 
@@ -80,30 +81,23 @@ class Blarg:
                 self._logger.info(packet['dme_world_id'])
                 self._logger.info(traceback.format_exc())
                 data = []
-                packet_id = '-1'
+                packet_id = '-1' if packet_id != '0004' else packet_id
                 serialized = {}
 
             # Don't print correctly serialized unless it matches filter or the filter is empty.
             try:
-                if packet_id == '0004' and packet['dme_world_id'] not in self.games:
+                if packet_id == '0004' and packet['dme_world_id'] not in self.games and packet['dme_world_id'] not in self.gamesIdHistory:
                     self._logger.warning(f"Creating Live Game for DME ID = {packet['dme_world_id']}")
                     self.games[packet['dme_world_id']] = LiveGame(dme_id=packet['dme_world_id'], delay=self.delay, delayTime=self.delayTime)
+                    self.gamesIdHistory.add(packet['dme_world_id'])
                 if self._config['filter'] == packet_id or self._config['filter'] == '' :
                     if packet['dme_world_id'] in self.games and len(serialized) > 0:
                         running = self.games[packet['dme_world_id']].load(packet_id, serialized, packet)
                         if not running:
                             del self.games[packet['dme_world_id']]
             except Exception as e:
-                self._logger.info("Problem with live game")
+                self._logger.info(f"{packet['dme_world_id']}: Problem with live game")
                 self._logger.info(traceback.format_exc())
-
-
-                # if packet_id not in avoid:
-                #     if packet_id == '020C' and len(serialized) > 1:
-                #         # if serialized['subtype'] == '21000000':
-                #             self._logger.info(f"S | {packet_id} | {serialized}") 
-            # self._logger.info(f"S | {packet_id} | {serialized}") 
-                
 
 
     async def read_websocket(self):
@@ -127,19 +121,27 @@ class Blarg:
                         await asyncio.sleep(60)
 
     async def garbageCollect(self):
-        minutes = 25
+        minutes = 10
         self._logger.error("INITIALIZING GARBAGE COLLECTOR")
+
         while True:
+            self._logger.info("RUNNING GARBAGE COLLECTOR")
+            self._logger.info("Calling server games api")
+            res = requests.get(GAMES).json()
+            activeGames = {game['dme_world_id'] for game in res}
+           
             try:
-                self._logger.info("RUNNING GARBAGE COLLECTOR")
                 before = len(self.games)
                 self._logger.info(f"before cleanup {before}")
                 currentTime = datetime.datetime.now()
                 stale = []
-                for dme_id in self.games:
+                for dme_id in self.games:                        
                     game = self.games[dme_id]
                     totalTime = currentTime - game.createTime
-                    if game.state != 0: 
+                    if dme_id not in activeGames:
+                        game.endGame()
+                        stale.append(dme_id)
+                    elif game.state != 0: 
                         timeUp = currentTime - game.startTime
                         if (timeUp.total_seconds()//60) > 120:
                             game.endGame()
@@ -148,14 +150,17 @@ class Blarg:
                         game.endGame()
                         stale.append(dme_id)
                 for dme_id in stale:
-                    del self.games[dme_id]
+                    if dme_id in self.games:
+                        del self.games[dme_id]
                 after = len(self.games)
                 self._logger.info(f"after cleanup {after}")
                 self._logger.error(f"GARBAGE COLLECTOR REMOVED {before -after} GAMES")
                 await asyncio.sleep(60*minutes)
             except Exception as e:
                 self._logger.critical("Problem collection garbage")
-                self._logger.critical(e)
+                self._logger.critical(traceback.format_exc())
+                await asyncio.sleep(60*minutes)
+
             
 
             
@@ -166,9 +171,3 @@ class Blarg:
 def read_config(config_file='config.json'):
     with open(config_file, 'r') as f:
         return json.loads(f.read())
-
-# if __name__ == '__main__':
-#     config = read_config()
-
-#     blarg = Blarg(config)
-#     blarg.run()

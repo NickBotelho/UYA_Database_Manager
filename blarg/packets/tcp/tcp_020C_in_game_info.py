@@ -4,16 +4,99 @@ from blarg.constants.constants import WEAPON_MAP
 
 subtype_map = {
     '10401F00': '?_crate_destroyed',
-    '41401F00': 'weapon_pickup',
+    # '41401F00': 'weapon_pickup',
+    '41401F00': 'p0_item_pickup',
+    '41441F00': 'p1_item_pickup',
+    '41481F00': 'p2_item_pickup',
+    '414C1F00': 'p3_item_pickup',
+    '41501F00': 'p4_item_pickup',
+    '41541F00': 'p5_item_pickup',
+    '41581F00': 'p6_item_pickup',
+    '415C1F00': 'p7_item_pickup',
     '00401F00': 'crate_destroyed',
     '02401F00': 'crate_respawn',
-    '00000000': 'crate_destroyed_and_pickup', #
+    '02441F00': 'crate_respawn_p1?',
+    '00000000': 'crate_destroyed_and_pickup',
     '10000000': '?_crate_destroyed_and_pickup',
-    '40401F00': 'object_update',
-    '21000000': 'flag_update', #
-    '02411F00': 'flag_drop',
     '80421F00': 'pack_spawned',
-    'C2803E00':"damaging_base_turret"
+
+    '80421F00': 'p0_pack_spawned',
+    '80461F00': 'p1_pack_spawned',
+    '804A1F00': 'p2_pack_spawned',
+    '804E1F00': 'p3_pack_spawned',
+    '80521F00': 'p4_pack_spawned',
+    '80561F00': 'p5_pack_spawned',
+    '805A1F00': 'p6_pack_spawned',
+    '805E1F00': 'p7_pack_spawned',
+
+    #drops (5)
+    '02411F00': 'p0_flag_drop',
+    '02451F00': 'p1_flag_drop',
+    '02491F00': 'p2_flag_drop',
+    '024D1F00': 'p3_flag_drop',
+    '02511F00': 'p4_flag_drop',
+    '02551F00': 'p5_flag_drop',
+    '02591F00': 'p6_flag_drop',
+    '025D1F00': 'p7_flag_drop',
+
+    '61000000': 'p0_confirm',
+    '61040000': 'p1_confirm',
+    '61080000': 'p2_confirm',
+    '610C0000': 'p3_confirm',
+    '61100000': 'p4_confirm',
+    '61140000': 'p5_confirm',
+    '61180000': 'p6_confirm',
+    '611C0000': 'p7_confirm',
+
+    '73000000': 'p0_req_confirmation',
+    '73040000': 'p1_req_confirmation',
+    '73080000': 'p2_req_confirmation',
+    '730C0000': 'p3_req_confirmation',
+    '73100000': 'p4_req_confirmation',
+    '73140000': 'p5_req_confirmation',
+    '73180000': 'p6_req_confirmation',
+    '731C0000': 'p7_req_confirmation',
+
+    
+    '40401F00': 'p0_object_update',
+    '40441F00': 'p1_object_update',
+    '40481F00': 'p2_object_update',
+    '404C1F00': 'p3_object_update',
+    '40501F00': 'p4_object_update',
+    '40541F00': 'p5_object_update',
+    '40581F00': 'p6_object_update',
+    '405C1F00': 'p7_object_update',
+
+    #pickup (2)
+    '21000000': 'p0_flag_update',
+    '21040000': 'p1_flag_update',
+    '21080000': 'p2_flag_update',
+    '210C0000': 'p3_flag_update',
+    '21100000': 'p4_flag_update',
+    '21140000': 'p5_flag_update',
+    '21180000': 'p6_flag_update',
+    '211C0000': 'p7_flag_update',
+
+}
+#5
+flag_drop_map = {
+    '0100': 'p0_capture',
+    '0101': 'p1_capture',
+    '0102': 'p2_capture',
+    '0103': 'p3_capture',
+    '0104': 'p4_capture',
+    '0105': 'p5_capture',
+    '0106': 'p6_capture',
+    '0107': 'p7_capture',
+    '00FF': 'flag_return',
+    '0000': 'p0_save',
+    '0001': 'p1_save',
+    '0002': 'p2_save',
+    '0003': 'p3_save',
+    '0004': 'p4_save',
+    '0005': 'p5_save',
+    '0006': 'p6_save',
+    '0007': 'p7_save',
 }
 player_map = {
     '00' : 0,
@@ -40,7 +123,8 @@ class tcp_020C_in_game_info:
     def serialize(self, data: deque):
 
         subtype = ''.join([data.popleft() for i in range(4)])
-        # subtype = subtype_map[subtype]
+        if subtype not in subtype_map: return {}
+        subtype = subtype_map[subtype]
         timestamp = hex_to_int_little(''.join([data.popleft() for i in range(4)]))
         object_id = ''.join([data.popleft() for i in range(4)])
 
@@ -48,40 +132,52 @@ class tcp_020C_in_game_info:
             "subtype":subtype
         }
 
-        subtypeFocus = subtype[:2]
-        if subtypeFocus in player_focused:
-            focus = player_focused[subtypeFocus]
-            # print(subtype)
-            player_mapped = player_map[subtype[2:4]]
-            if focus == 'player_flag_interaction':
-                code = data.popleft()
-                player_idx = data.popleft()
-                updateType = 'cap' if code == '01' else 'save'
-                packet['player_idx'] = player_idx
-                packet['updateType'] = updateType
-                packet['event'] = 0 if updateType == 'cap' else 1
-            elif focus == 'player_crate_interaction':
-                pass
+        if subtype in ['?_crate_destroyed_and_pickup', '?_crate_destroyed']:
+            packet['object_id'] = object_id
+            # packet['event'] = 4
+            # packet['weapon_spawned'] = WEAPON_MAP[data.popleft()]
+        elif 'item_pickup' in subtype:
+            packet['weapon_pickup_unk'] =  ''.join([data.popleft() for i in range(4)])
+            packet['object_id'] = object_id
+            packet['event'] = 4
+        elif 'object_update' in subtype:
+            packet['object_taken_by'] =  ''.join([data.popleft() for i in range(4)]) #02000000 example
+            packet['object_id'] = object_id
+            packet['event'] = 2
+        elif 'flag_update' in subtype:
+            packet['object_id'] = object_id
+            flagDropKey = ''.join([data.popleft() for i in range(2)])
+            packet['flag_update_type'] =  flag_drop_map[flagDropKey] if flagDropKey in flag_drop_map else flagDropKey
+            if "save" in packet['flag_update_type']:
+                packet['event'] = 1
+            elif "capture" in packet['flag_update_type']:
+                packet['event'] = 0
+            else:
+                packet['event'] = -1
+        elif 'flag_drop' in subtype:
+            packet['object_id'] = object_id
+            packet['event'] = 5
+            packet['flag_drop_unk'] =  ''.join([data.popleft() for i in range(16)])
+        elif 'crate_destroyed_and_pickup' in subtype:
+            packet['object_id'] = object_id
+            packet['event'] = 4
+        elif 'crate_destroyed' in subtype:
+            packet['object_id'] = object_id
 
-        else:                
-            if subtype in subtype_map:
-                subtype = subtype_map[subtype]
-                if subtype in ['?_crate_destroyed_and_pickup', '?_crate_destroyed']:
-                    packet['weapon_spawned'] = WEAPON_MAP[data.popleft()]
-                elif subtype == 'weapon_pickup':
-                    packet['weapon_pickup_unk'] =  ''.join([data.popleft() for i in range(4)])
-                    packet['item_picked_up_id'] = object_id
-                    packet['event'] = 4
-                elif subtype == 'object_update':
-                    packet['object_update_unk'] =  ''.join([data.popleft() for i in range(4)])    
-                    packet['object_id'] = object_id
-                elif subtype == 'flag_drop':
-                    packet['event'] = 5 #flag dropped
-                    packet['flag_drop_unk'] =  ''.join([data.popleft() for i in range(16)])
-                elif subtype == 'pack_spawned':
-                    packet['object id'] = object_id
-                    packet['pack_id'] = "".join([data.popleft() for i in range(4)])
-                    packet['pack_info'] = "".join([data.popleft() for i in range(36)])
+        # elif subtype in ['p0_confirm', 'p1_confirm', 'p2_confirm', 'p3_confirm', 'p4_confirm', 'p5_confirm', 'p6_confirm', 'p7_confirm']:
+        #     packet['object_id'] = ''.join([data.popleft() for i in range(4)])
+        #     packet['unk'] = ''.join([data.popleft() for i in range(2)])
+        # elif subtype in ['p0_req_confirmation', 'p1_req_confirmation', 'p2_req_confirmation', 'p3_req_confirmation', 'p4_req_confirmation', 'p5_req_confirmation', 'p6_req_confirmation', 'p7_req_confirmation']:
+        #     packet['object_id'] = ''.join([data.popleft() for i in range(4)])
+        #     packet['buf'] = ''.join([data.popleft() for i in range(1)])
+        #     packet['unk'] = ''.join([data.popleft() for i in range(2)])
+        elif subtype == 'crate_respawn?':
+            packet['object_id'] = object_id
+        elif 'pack_spawned' in subtype:
+            packet['object_id'] = object_id
+            packet['pack_id'] =  ''.join([data.popleft() for i in range(4)])
+        # elif subtype == 'weapon_pickup_unk?_p1':
+        #     packet['unk'] =  ''.join([data.popleft() for i in range(4)])
         return packet
 
 

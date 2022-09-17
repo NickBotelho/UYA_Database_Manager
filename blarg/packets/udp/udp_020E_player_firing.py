@@ -36,6 +36,20 @@ WEAPON_MAP_SRC = {
     'morph': '0{}01',
     'hyper': '0{}02',
 }
+PLAYER_MAP = {
+    "00":0,
+    "10":1,
+    "20":2,
+    "30":3,
+    "40":4,
+    "50":5,
+    "60":6,
+    "70":7,
+}
+def hitPlayer(info):
+    meat = info[:6]
+    receiving = info[6:]
+    return meat == "010000" and receiving in PLAYER_MAP
 
 class udp_020E_player_firing:
     def __init__(self):
@@ -65,6 +79,8 @@ class udp_020E_player_firing:
         unk7 = (''.join([data.popleft() for i in range(4)]))
 
         packet['src'] = src_player
+        packet['isHit'] = hitPlayer(moby_id)
+        packet["player_hit"] = PLAYER_MAP[moby_id[6:]] if packet['isHit'] else "FF"
         packet['weapon'] = weapon
         packet['receiving_id'] = moby_id
         packet['object_id'] = object_id

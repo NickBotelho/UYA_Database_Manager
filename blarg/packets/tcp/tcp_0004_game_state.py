@@ -141,7 +141,7 @@ class tcp_0004_game_state:
         packet['p6_team'] = TEAM_MAP[data.popleft()]; data.popleft()
         packet['p7_team'] = TEAM_MAP[data.popleft()]; data.popleft()
 
-        packet['unk2'] = ''.join([data.popleft() for _ in range(112)])
+        packet['game_settings'] = ''.join([data.popleft() for _ in range(112)])
 
         packet['p0_bolt_modifier'] = ''.join([data.popleft() for _ in range(4)])
         packet['p1_bolt_modifier'] = ''.join([data.popleft() for _ in range(4)])
