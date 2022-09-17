@@ -23,7 +23,7 @@ async def update(logger):
     clans = Database("UYA", "Clans")
     elo=Database("UYA", 'Elo')
 
-    live = Database("UYA", "Logger")
+    live = Database("UYA", "Logger", Live = True)
     live.clear()
     live.client.close()
 
@@ -64,7 +64,7 @@ async def main(logger):
 
     # await asyncio.wait([stats])
     await asyncio.wait([stats, socket, garbageCollection])
-    # await asyncio.wait([socket, garbageCollection, threads])
+    # await asyncio.wait([socket, garbageCollection])
 
 
 

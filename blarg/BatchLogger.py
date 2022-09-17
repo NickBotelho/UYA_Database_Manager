@@ -179,7 +179,7 @@ class BatchLogger():
             liveHistory.client.close()
     def updatePlayersStore(self, active, quits, winningTeam):
         '''merge with stats in the store'''
-        stats = Database("UYA", "Player_Stats")
+        stats = Database("UYA", "Player_Stats_Backup")
         mergeSet(stats, active, winningTeam)
         mergeSet(stats, quits, winningTeam)
         stats.client.close()
