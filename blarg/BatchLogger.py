@@ -257,7 +257,6 @@ def updateStreaks(streaks, player, winningTeam):
     streaks['best_losingstreak'] = max(streaks['best_losingstreak'], streaks['current_losingstreak'])
     streaks['bestKillstreak'] = max(player.killTracker.bestKillStreak,streaks['bestKillstreak'] )
     streaks['bestDeathstreak'] = max(player.deathTracker.bestDeathStreak,streaks['bestDeathStreak'] )
-    streaks['medals'] = mergeDicts(streaks['medals'], player.medals.getState())
     return streaks
 
 

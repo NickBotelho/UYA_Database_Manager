@@ -1,3 +1,5 @@
+import datetime
+
 NUKE_KILLS = 35
 BRUTAL_KILLS = 25
 RELENTLESS_KILLS = 20
@@ -29,6 +31,7 @@ DESCRIPTIONS = {
     'lockon':"Hit 5 flux shots on players in a row without missing",
     'juggernaut':'Make a jug in a single life',
     'olympiad':"Travel 5 miles in a single life",
+    'dropper':"Drop the flag and kill someone within 10 seconds"
 }
 class Medal():
     def __init__(self, name, threshold = None) -> None:
@@ -112,6 +115,23 @@ class Olympiad(Medal):
     def __init__(self) -> None:
         super().__init__("olympiad", 5)
 
+class Dropper(Medal):
+    def __init__(self) -> None:
+        super().__init__("dropper", 1)
+        self.dropTime = None
+    def setDropTime(self):
+        self.dropTime = datetime.datetime.now()
+    def reset(self):
+        self.dropTime = None
+    def track(self):
+        if self.dropTime != None:
+            currentTime = datetime.datetime.now()
+            timeDiff = currentTime - self.dropTime
+            if timeDiff.seconds <= 10:
+                self.numAchieved+=1
+            else:
+                self.dropTime = None
+
 
 
 
@@ -140,6 +160,7 @@ class MedalTracker():
         self.lockon = LockOn()
         self.juggernaut = Juggernaut()
         self.olympiad = Olympiad()
+        self.dropper = Dropper()
 
 
     def kill(self, weapon = "Wrench"):
@@ -153,6 +174,7 @@ class MedalTracker():
         self.radioactive.track(streak)
 
         self.juggernaut.track(self.player.hasJug())
+        self.dropper.track()
 
     def death(self):
         streak = self.player.getDeathstreak()
@@ -166,22 +188,25 @@ class MedalTracker():
         self.hpStreak = 0
         self.juggernaut.madeJug = False
         self.distance=0
+        self.dropper.reset()
     def cap(self):
         self.shifty.track(self.onCapStreak)
         self.onCapStreak = True
 
     def fire(self, weapon, player_hit):
         if weapon == "Flux":
-            self.lockon(player_hit)
+            self.lockon.track(player_hit)
 
     def heal(self):
         self.hpStreak+=1
-        self.healthrunner(self.hpStreak)
+        self.healthrunner.track(self.hpStreak)
 
     def move(self, distance):
         self.distance+=distance
         self.olympiad.track(self.distance)
 
+    def dropFlag(self):
+        self.dropper.setDropTime()
 
     def getState(self):
         return {
