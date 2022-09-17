@@ -219,7 +219,7 @@ class LiveGame():
                         idx = int(serialized['object_taken_by'][0:2]) #06000000 is how it looks
                         # print(f"Flag id = {item} | picked up by? {username} with packet src = {int(packet['src'])} & subtype = {serialized['subtype']}\n \
                         #     Giving the flag to player: {str(self.players[int(packet['src'])])} \n Whole message = {serialized}")
-                        player = self.player[idx]
+                        player = self.players[idx]
                         update = f"{player.username} has picked up the flag"
                         player.pickupFlag()
                 elif event == 5:
