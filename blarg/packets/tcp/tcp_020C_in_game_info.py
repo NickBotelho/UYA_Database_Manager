@@ -20,6 +20,15 @@ subtype_map = {
     '10000000': '?_crate_destroyed_and_pickup',
     '80421F00': 'pack_spawned',
 
+    '80421F00': 'p0_pack_spawned',
+    '80461F00': 'p1_pack_spawned',
+    '804A1F00': 'p2_pack_spawned',
+    '804E1F00': 'p3_pack_spawned',
+    '80521F00': 'p4_pack_spawned',
+    '80561F00': 'p5_pack_spawned',
+    '805A1F00': 'p6_pack_spawned',
+    '805E1F00': 'p7_pack_spawned',
+
     #drops (5)
     '02411F00': 'p0_flag_drop',
     '02451F00': 'p1_flag_drop',
@@ -164,7 +173,9 @@ class tcp_020C_in_game_info:
         #     packet['unk'] = ''.join([data.popleft() for i in range(2)])
         elif subtype == 'crate_respawn?':
             packet['object_id'] = object_id
-            
+        elif 'pack_spawned' in subtype:
+            packet['object_id'] = object_id
+            packet['pack_id'] =  ''.join([data.popleft() for i in range(4)])
         # elif subtype == 'weapon_pickup_unk?_p1':
         #     packet['unk'] =  ''.join([data.popleft() for i in range(4)])
         return packet
