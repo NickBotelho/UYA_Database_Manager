@@ -223,6 +223,7 @@ class MedalTracker():
             self.shifty.name:self.shifty.numAchieved,
             self.juggernaut.name:self.juggernaut.numAchieved,
             self.olympiad.name:self.olympiad.numAchieved,
+            self.dropper.name:self.dropper.numAchieved,
         }
     
 
