@@ -134,7 +134,7 @@ class Player():
         self.hasFlag = False
         self.flagDrops+=1
     def fire(self, weapon, player_hit):
-        if weapon != 'Wrench': self.hasFlag = False
+        if weapon != 'Wrench' or weapon != "Hypershot": self.hasFlag = False
 
         self.weapons[weapon].fire(player_hit)
     def quit(self):
