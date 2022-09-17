@@ -223,6 +223,7 @@ def mergeDicts (existing, new):
                 mergeDicts(existing[key], new[key])
             elif type(existing[key]) == int or type(existing[key]) == float:
                 existing[key] += new[key]
+    return existing
 def mergeSet(stats, players, winningTeam):
     for player in players:
         playerStore = stats.collection.find_one({"username_lowercase":player.username.lower()})
