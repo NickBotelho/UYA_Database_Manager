@@ -141,11 +141,8 @@ STREAK_CONTRACT = {
     'current_losingstreak':0,
     'best_losingstreak':0,
     'bestKillstreak':0,
-    'nukes':0, #25 kill streaks
     'bestDeathStreak':0,
-    'distributors':0, #25death streaks
-    'undying':0,
-    'radioactives':0,
+    'streaks':{}
 }
 
 LIVE_CONTRACT =  {
