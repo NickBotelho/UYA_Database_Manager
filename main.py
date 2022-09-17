@@ -59,12 +59,12 @@ async def main(logger):
     blarg = Blarg(config)
 
     socket = loop.create_task(blarg.read_websocket())
-    stats = loop.create_task(update(logger))
+    # stats = loop.create_task(update(logger))
     garbageCollection = loop.create_task(blarg.garbageCollect())
 
     # await asyncio.wait([stats])
-    await asyncio.wait([stats, socket, garbageCollection])
-    # await asyncio.wait([socket, garbageCollection])
+    # await asyncio.wait([stats, socket, garbageCollection])
+    await asyncio.wait([socket, garbageCollection])
 
 
 
