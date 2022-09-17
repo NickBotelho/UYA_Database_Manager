@@ -200,4 +200,5 @@ class Player():
             'nicks_given':self.nicksGiven,
             'nicks_received':self.nicksReceived,
             'weapons':{w.weapon:w.getStore() for w in self.weapons.values()},
+            'medals':self.medals.getState(),
         }

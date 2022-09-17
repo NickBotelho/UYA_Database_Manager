@@ -198,7 +198,7 @@ class LiveGame():
                 username = self.itos[int(packet['src'])]
                 if event == 0:
                     idx = int(serialized['flag_update_type'][1]) #ex p0_capture
-                    player = self.players[self.players[idx]]
+                    player = self.players[idx]
                     player.cap()
                     team = player.teamColor
                     update = f"{player.username} capped the flag"
