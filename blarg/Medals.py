@@ -16,7 +16,7 @@ DESCRIPTIONS = {
     "brutal":f"{BRUTAL_KILLS} Kill streak",
     "relentless":f"{RELENTLESS_KILLS} Kill streak",
     "bloodthirsty":f"{BLOODTHIRSTY_KILLS} Kill streak",
-    "nuke":f"{MERCILESS_KILLS} Kill streak",
+    "merciless":f"{MERCILESS_KILLS} Kill streak",
     'undying': f"{UNDYING_KILLS} Kill streak",
 
     'distributor':f"{DISTRIBUTOR_KILLS} Death streak",
@@ -25,13 +25,14 @@ DESCRIPTIONS = {
     'brutalized':f"{BRUTALIZED_KILLS} Death streak",
 
     'radioactive':"A single kill after dropping a nuke on the same life",
-    'shifty':"Getting back to back caps without dying"
+    'shifty':"Getting back to back caps without dying",
+    'lockon':"Hit 5 flux shots on players in a row without missing"
 
 }
 class Medal():
     def __init__(self, name, threshold = None) -> None:
         self.name = name
-        self.description = DESCRIPTIONS[name]
+        self.description = DESCRIPTIONS[name] if name in DESCRIPTIONS else "Description not found"
         self.threshold = threshold
         self.numAchieved = 0
     def track(self, streak):
@@ -82,6 +83,21 @@ class Merciless(Medal):
 class Bloodthirsty(Medal):
     def __init__(self) -> None:
         super().__init__("bloodthirsty", 5)
+class LockOn(Medal):
+    def __init__(self) -> None:
+        super().__init__("lockon", 5)
+        self.shots = 0 #shots in a row
+    def track(self, player_hit):
+        self.hits = self.hits + 1 if player_hit != "FF" else 0
+        if self.hits == self.threshold:
+            self.numAchieved+=1
+
+class HealthRunner(Medal):
+    def __init__(self) -> None:
+        super().__init__("healthrunner", 5)
+        
+
+
 
 
 class MedalTracker():
@@ -127,6 +143,9 @@ class MedalTracker():
     def cap(self):
         self.shifty.track(self.onCapStreak)
         self.onCapStreak = True
+
+    def fire(self):
+        pass
 
     def getState(self):
         return {

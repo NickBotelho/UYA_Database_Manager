@@ -262,6 +262,6 @@ def generateBaseIDs(map = 'bakisi_isle', nodes = True, base = True):
     return [blue.upper(), red.upper()]
 
 # print(generateHealthIDs("hoven_gorge",nodes = False,  base = True))
-print(generateHealthIDs("blackwater_city",nodes = False,  base = True))
-print(generateFlagIDs("blackwater_city",nodes = False,  base = True))
+# print(generateHealthIDs("blackwater_city",nodes = False,  base = True))
+# print(generateFlagIDs("blackwater_city",nodes = False,  base = True))
 # print(generateHealthIDs("bakisi_isle"))
