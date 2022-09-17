@@ -23,7 +23,7 @@ async def update(logger):
     clans = Database("UYA", "Clans")
     elo=Database("UYA", 'Elo')
 
-    live = Database("UYA", "Logger", Live = True)
+    live = Database("UYA", "Logger", live = True)
     live.clear()
     live.client.close()
 
