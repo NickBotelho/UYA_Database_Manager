@@ -125,7 +125,7 @@ class tcp_020C_in_game_info:
 
         if subtype in ['?_crate_destroyed_and_pickup', '?_crate_destroyed']:
             packet['object_id'] = object_id
-            packet['event'] = 4
+            # packet['event'] = 4
             # packet['weapon_spawned'] = WEAPON_MAP[data.popleft()]
         elif 'item_pickup' in subtype:
             packet['weapon_pickup_unk'] =  ''.join([data.popleft() for i in range(4)])

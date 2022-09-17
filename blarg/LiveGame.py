@@ -172,10 +172,6 @@ class LiveGame():
             for enemies in self.colorToTeam.values():
                 if team.color != enemies.color:
                     team.addOpponentTeam(enemies)
-
-        print(self.hp_boxes, self.flags)
-        print(self.hasNodes,game['advanced_rules']['baseDefenses'], self.hp_boxes, self.flags)
-        print(self.itos)
         for idx in self.players:
             print(f"LiveGame's idx = {idx} | Players idx = {str(self.players[idx])}")
         self.logger.critical(f"LIMIT = {self.limit}")
@@ -217,8 +213,6 @@ class LiveGame():
                     item = serialized['object_id'][0:2]
                     if item in self.flags:
                         idx = int(serialized['object_taken_by'][0:2]) #06000000 is how it looks
-                        # print(f"Flag id = {item} | picked up by? {username} with packet src = {int(packet['src'])} & subtype = {serialized['subtype']}\n \
-                        #     Giving the flag to player: {str(self.players[int(packet['src'])])} \n Whole message = {serialized}")
                         player = self.players[idx]
                         update = f"{player.username} has picked up the flag"
                         player.pickupFlag()
@@ -230,7 +224,7 @@ class LiveGame():
                     if item in self.hp_boxes:
                         player = self.players[int(packet['src'])]
                         update = f"{player.username} grabbed health"
-                        print(f"hp box update: src = {player} | subtype = {serialized['subtype']}")
+                        # print(f"hp box update: src = {player} | subtype = {serialized['subtype']}")
                         player.heal()
                 if update != None:
                     self.logger.info(update)             

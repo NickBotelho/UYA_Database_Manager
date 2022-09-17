@@ -142,7 +142,7 @@ STREAK_CONTRACT = {
     'best_losingstreak':0,
     'bestKillstreak':0,
     'bestDeathStreak':0,
-    'streaks':{}
+    'medals':{}
 }
 
 LIVE_CONTRACT =  {
