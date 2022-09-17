@@ -142,24 +142,21 @@ STREAK_CONTRACT = {
     'best_losingstreak':0,
     'bestKillstreak':0,
     'bestDeathStreak':0,
-    'medals':{
+    'medals':
+    {
         "nuke":0,
         "brutal":0,
         "relentless":0,
         "bloodthirsty":0,
         "merciless":0,
         'undying': 0,
-
         'distributor':0,
         'thickskull': 0,
         'bloodfilled':0,
         'brutalized':0,
-
         'radioactive':0,
         'shifty':0,
-        'lockon':0
-
-        }
+        'lockon':0,
     }
 }
 
