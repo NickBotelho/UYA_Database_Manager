@@ -230,7 +230,7 @@ class LiveGame():
                     if item in self.hp_boxes:
                         player = self.players[int(packet['src'])]
                         update = f"{player.username} grabbed health"
-                        print(f"hp box update: src = {player} | subtype = {packet['subtype']}")
+                        print(f"hp box update: src = {player} | subtype = {serialized['subtype']}")
                         player.heal()
                 if update != None:
                     self.logger.info(update)             
