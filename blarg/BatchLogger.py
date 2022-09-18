@@ -142,7 +142,7 @@ class BatchLogger():
             except Exception as e:
                 print("Problem logging")
                 print(traceback.format_exc())
-    def close(self, uyaTrackerId, players, quits, scores, winningTeamColor, isBotGame):
+    def close(self, uyaTrackerId, players, quits, scores, winningTeamColor, isBotGame, gamemode):
         '''close the game and save the states'''
         self.status = 2 #not the same as LiveGame Status
         for quitter in quits:
@@ -173,15 +173,16 @@ class BatchLogger():
                     print("Problem peristing game into LiveGame_History")
                     print(e)
                 finally:
-                    self.updatePlayersStore(players.values(), quits, winningTeamColor)
+                    gamemode = gamemode.lower()
+                    self.updatePlayersStore(players.values(), quits, winningTeamColor, gamemode)
 
             self.mongo.client.close()
             liveHistory.client.close()
-    def updatePlayersStore(self, active, quits, winningTeam):
+    def updatePlayersStore(self, active, quits, winningTeam, gamemode):
         '''merge with stats in the store'''
         stats = Database("UYA", "Player_Stats_Backup")
-        mergeSet(stats, active, winningTeam)
-        mergeSet(stats, quits, winningTeam)
+        mergeSet(stats, active, winningTeam, gamemode)
+        mergeSet(stats, quits, winningTeam, gamemode)
         stats.client.close()
     # def log(self, running = True):
     #     # URL = 'http://127.0.0.1:5000/live/log'
@@ -224,7 +225,7 @@ def mergeDicts (existing, new):
             elif type(existing[key]) == int or type(existing[key]) == float:
                 existing[key] += new[key]
     return existing
-def mergeSet(stats, players, winningTeam):
+def mergeSet(stats, players, winningTeam, gamemode):
     for player in players:
         playerStore = stats.collection.find_one({"username_lowercase":player.username.lower()})
         if not playerStore: continue
@@ -232,8 +233,12 @@ def mergeSet(stats, players, winningTeam):
         if "live" not in advancedStats:
             advancedStats['live'] = {}
         if "streaks" not in advancedStats:
-            advancedStats['streaks'] = STREAK_CONTRACT
-        advancedStats['streaks'] = updateStreaks(advancedStats['streaks'], player, winningTeam)
+            advancedStats['streaks']['overall'] = STREAK_CONTRACT
+            advancedStats['streaks']['ctf'] = STREAK_CONTRACT
+            advancedStats['streaks']['siege'] = STREAK_CONTRACT
+            advancedStats['streaks']['deathmatch'] = STREAK_CONTRACT
+        advancedStats['streaks']['overall'] = updateStreaks(advancedStats['streaks']['overall'], player, winningTeam)
+        advancedStats['streaks'][gamemode] = updateStreaks(advancedStats['streaks'][gamemode], player, winningTeam)
         mergeDicts(advancedStats['live'], player.getStore())
         stats.collection.find_one_and_update(
         {

@@ -383,7 +383,7 @@ class LiveGame():
         if self.state < 3:
             winningTeamColor = self.getWinningTeam()
             self.logger.log(running = False)
-            self.logger.close(self.uyaTrackerId, self.players, self.quitPlayers, self.scores, winningTeamColor, self.isBotGame)
+            self.logger.close(self.uyaTrackerId, self.players, self.quitPlayers, self.scores, winningTeamColor, self.isBotGame, self.mode)
             self.state = 3
             print(f"Closing ID: {self.dme_id}")
             print(f"{self.dme_id} Results: {[str(self.players[p]) for p in self.players]} | DCs: {[str(p) for p in self.quitPlayers]}")
