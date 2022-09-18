@@ -233,5 +233,6 @@ LIVE_CONTRACT =  {
         'juggernaut':0,
         'olympiad':0,
         'dropper':0,
+        'ratfuck':0,
         }
 }    

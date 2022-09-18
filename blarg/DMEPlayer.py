@@ -218,5 +218,6 @@ class Player():
     def pickupPack(self, pack):
         pack.pickup(self)
         self.packsGrabbed+=1
+        self.medals.pack(pack)
 
 
