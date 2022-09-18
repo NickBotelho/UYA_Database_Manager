@@ -102,7 +102,8 @@ def generateFlagIDs(map = 'bakisi_isle', nodes = True, base = True):
     blue = red - 1
     red = hex(red)[2:] if len(hex(red)[2:]) > 1 else f"0{hex(red)[2:]}"
     blue = hex(blue)[2:] if len(hex(blue)[2:]) > 1 else f"0{hex(blue)[2:]}"
-    flags = [blue.upper(), red.upper()]
+    flags = [blue.upper() + "1000F7", red.upper() + "1000F7"]
+    
     return flags
 def generateHealthIDs(map = 'bakisi_isle', mode = "CTF", nodes = True, base = True):
     #TDM no troopers?
@@ -204,7 +205,8 @@ def generateHealthIDs(map = 'bakisi_isle', mode = "CTF", nodes = True, base = Tr
 
         
     res = [hex(node)[2:].upper() if len(hex(node)[2:]) > 1 else f"0{hex(node)[2:]}".upper() for node in res]
-    return res
+    ids = [box + "1000F7" for box in res]
+    return ids
 def generateBaseIDs(map = 'bakisi_isle', nodes = True, base = True):
     '''returns red flag, blue flag ids'''
     if base == False: return []

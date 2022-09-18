@@ -156,6 +156,7 @@ LIVE_CONTRACT =  {
     "flag_pickups": 0,
     "flag_drops": 0,
     "health_boxes": 0,
+    "packs_grabbed":0,
     "nicks_given": 0,
     "nicks_received": 0,
     "weapons": {
