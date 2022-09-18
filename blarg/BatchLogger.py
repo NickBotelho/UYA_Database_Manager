@@ -225,6 +225,14 @@ def mergeDicts (existing, new):
             elif type(existing[key]) == int or type(existing[key]) == float:
                 existing[key] += new[key]
     return existing
+def getAverageDict(existing, games):
+    new = {}
+    for key in existing:
+        if type(existing[key]) == dict:
+            new[key] = getAverageDict(existing[key], games)
+        elif type(existing[key]) == int or type(existing[key]) == float:
+            new[key] = round(existing[key] / games, 2)
+    return new
 def mergeSet(stats, players, winningTeam, gamemode):
     for player in players:
         playerStore = stats.collection.find_one({"username_lowercase":player.username.lower()})
@@ -240,6 +248,7 @@ def mergeSet(stats, players, winningTeam, gamemode):
         advancedStats['streaks']['overall'] = updateStreaks(advancedStats['streaks']['overall'], player, winningTeam)
         advancedStats['streaks'][gamemode] = updateStreaks(advancedStats['streaks'][gamemode], player, winningTeam)
         mergeDicts(advancedStats['live'], player.getStore())
+        advancedStats['live/gm'] = getAverageDict(advancedStats['live'], advancedStats['live']['live_games'])
         stats.collection.find_one_and_update(
         {
             "_id":playerStore["_id"]
@@ -261,5 +270,5 @@ def updateStreaks(streaks, player, winningTeam):
     streaks['best_winstreak'] = max(streaks['best_winstreak'], streaks['current_winstreak']) 
     streaks['best_losingstreak'] = max(streaks['best_losingstreak'], streaks['current_losingstreak'])
     streaks['bestKillstreak'] = max(player.killTracker.bestKillStreak,streaks['bestKillstreak'] )
-    streaks['bestDeathstreak'] = max(player.deathTracker.bestDeathStreak,streaks['bestDeathStreak'] )
+    streaks['bestDeathstreak'] = max(player.deathTracker.bestDeathStreak,streaks['bestDeathstreak'] )
     return streaks

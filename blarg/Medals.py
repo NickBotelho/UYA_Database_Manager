@@ -66,7 +66,7 @@ class Brutalized(Medal):
         super().__init__("brutalized", 25)
 class Thickskull(Medal):
     def __init__(self) -> None:
-        super().__init__("Thickskull", 15)
+        super().__init__("thickskull", 15)
 class Bloodfilled(Medal):
     def __init__(self) -> None:
         super().__init__("distributor", 5)
@@ -237,6 +237,8 @@ class MedalTracker():
             self.olympiad.name:self.olympiad.numAchieved,
             self.dropper.name:self.dropper.numAchieved,
             self.ratfuck.name:self.ratfuck.numAchieved,
+            self.lockon.name:self.lockon.numAchieved,
+            self.healthrunner.name:self.healthrunner.numAchieved,
         }
     
 

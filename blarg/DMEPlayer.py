@@ -26,7 +26,6 @@ class Player():
         self.x, self.y, self.rotation = -1, -1, -1
         self.isPlaced = False
         self.lastX, self.lastY = -1, -1
-        self.distanceTravelled = 0
         self.disconnected = False
         self.fluxShots,self.fluxHits, self.fluxAccuracy = 0,0,0
         self.hasFlag = False
