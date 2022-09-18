@@ -31,7 +31,8 @@ DESCRIPTIONS = {
     'lockon':"Hit 5 flux shots on players in a row without missing",
     'juggernaut':'Make a jug in a single life',
     'olympiad':"Travel 5 miles in a single life",
-    'dropper':"Drop the flag and kill someone within 10 seconds"
+    'dropper':"Drop the flag and kill someone within 10 seconds",
+    'ratfuck':'Consume 5 v2 contained packs in one life'
 }
 class Medal():
     def __init__(self, name, threshold = None) -> None:
@@ -132,7 +133,9 @@ class Dropper(Medal):
             else:
                 self.dropTime = None
 
-
+class RatFuck(Medal):
+    def __init__(self, name='ratfuck', threshold=5) -> None:
+        super().__init__(name, threshold)
 
 
 class MedalTracker():
@@ -141,6 +144,8 @@ class MedalTracker():
         self.onCapStreak = False
         self.hpStreak = 0
         self.distance = 0
+        self.packsConsumed = 0
+
         self.nuke = Nuke()
         self.brutal = Brutal()
         self.relentless = Relentless()
@@ -161,6 +166,7 @@ class MedalTracker():
         self.juggernaut = Juggernaut()
         self.olympiad = Olympiad()
         self.dropper = Dropper()
+        self.ratfuck = RatFuck()
 
 
     def kill(self, weapon = "Wrench"):
@@ -189,6 +195,7 @@ class MedalTracker():
         self.juggernaut.madeJug = False
         self.distance=0
         self.dropper.reset()
+        self.packsConsumed=0
     def cap(self):
         self.shifty.track(self.onCapStreak)
         self.onCapStreak = True
@@ -208,6 +215,11 @@ class MedalTracker():
     def dropFlag(self):
         self.dropper.setDropTime()
 
+    def pack(self, pack):
+        if pack.containsV2:
+            self.packsConsumed+=1
+            self.ratfuck.track(self.packsConsumed)
+
     def getState(self):
         return {
             self.nuke.name:self.nuke.numAchieved,
@@ -224,6 +236,7 @@ class MedalTracker():
             self.juggernaut.name:self.juggernaut.numAchieved,
             self.olympiad.name:self.olympiad.numAchieved,
             self.dropper.name:self.dropper.numAchieved,
+            self.ratfuck.name:self.ratfuck.numAchieved,
         }
     
 
