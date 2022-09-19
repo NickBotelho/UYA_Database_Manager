@@ -287,6 +287,9 @@ class LiveGame():
                 self.removeQuitPlayer()
             self.clogger +=1
             
+            if 'button' in serialized:
+                self.players[player_idx].pressButton(serialized['button'])
+
             display = True if self.numPlaced >= len(self.players) else False
             if display:
                 colors = [self.players[i].teamColor for i in self.players]

@@ -3,6 +3,7 @@ from blarg.DeathTracker import DeathTracker
 from blarg.KillTracker import KillTracker
 from blarg.Pedometer import Pedometer
 from blarg.Medals import MedalTracker
+from blarg.DMEController import Controller
 class Player():
     def __init__(self, username, lobby_idx, team, lobbyItos):
         self.username = username
@@ -22,6 +23,7 @@ class Player():
             'Hypershot':DMEWeapon("Hypershot"),
             'Holo Shield':DMEWeapon("Holo Shield"),
         }
+        self.controller = Controller(self)
         self.pedometer = Pedometer(self)
         self.x, self.y, self.rotation = -1, -1, -1
         self.isPlaced = False
@@ -117,6 +119,7 @@ class Player():
             'bestKillstreak':self.killTracker.bestKillStreak,
             'death_info':self.deathTracker.getState(),
             'kill_info':self.killTracker.getState(),
+            'controller':self.controller.getState(),
 
         }
         return state
@@ -187,6 +190,7 @@ class Player():
             'bestKillstreak':self.killTracker.bestKillStreak,
             'death_info':self.deathTracker.getState(),
             'kill_info':self.killTracker.getState(),
+            'controller':self.controller.getState(),
             'medals':self.medals.getState(),
         }
     def getStore(self):
@@ -207,6 +211,7 @@ class Player():
             'nicks_given':self.nicksGiven,
             'nicks_received':self.nicksReceived,
             'weapons':{w.weapon:w.getStore() for w in self.weapons.values()},
+            'controller':self.controller.getState(),
             'medals':self.medals.getState(),
         }
     def hasJug(self):
@@ -218,5 +223,7 @@ class Player():
         pack.pickup(self)
         self.packsGrabbed+=1
         self.medals.pack(pack)
-
+    def pressButton(self, event):
+        '''event is 0209['button'] which is a 2 or 4 digit string'''
+        self.controller.track(event)
 

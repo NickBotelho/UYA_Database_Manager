@@ -135,6 +135,25 @@ TIMES = {
     '35_minutes':35,
 }
 
+BUTTONS = {
+    '0':"Select",
+    '1':"???",
+    "2":"???",
+    "3":'Start',
+    '4':"D-Pad Up",
+    '5':"D-Pad Right",
+    '6':"D-Pad Down",
+    '7':"D-Pad Left",
+    '8':'L2',
+    '9':'R2',
+    'A':'L1',
+    'B':'R1',
+    'C':'Triangle',
+    'D':'Circle',
+    'E':'X',
+    'F':'Square',
+}
+
 STREAK_CONTRACT = {
     'current_winstreak':0,
     'best_winstreak':0,

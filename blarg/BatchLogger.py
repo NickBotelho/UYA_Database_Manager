@@ -132,7 +132,8 @@ class BatchLogger():
                             'player_states': self.players,
                             'scores':self.scores,
                             'batch_num':self.currentMessage,
-                            'duration': "{}:{}".format(duration.seconds//60, seconds),
+                            'duration_minutes': duration.seconds//60,
+                            'duration_seconds': duration.seconds % 60,
                         }
                     })
                 if len(self.cache) != len(self.batch):
@@ -166,7 +167,8 @@ class BatchLogger():
                         'winning_team':winningTeamColor,
                         'scores':scores, 
                         'results':self.players,
-                        'duration': "{}:{}".format(duration.seconds//60, duration.seconds%60),
+                        'duration_minutes': duration.seconds//60,
+                        'duration_seconds': duration.seconds % 60,
                         'number_of_batches':self.currentMessage,
                     })
                 except Exception as e:
@@ -174,15 +176,15 @@ class BatchLogger():
                     print(e)
                 finally:
                     gamemode = gamemode.lower()
-                    self.updatePlayersStore(players.values(), quits, winningTeamColor, gamemode)
+                    self.updatePlayersStore(players.values(), quits, winningTeamColor, gamemode, duration)
 
             self.mongo.client.close()
             liveHistory.client.close()
-    def updatePlayersStore(self, active, quits, winningTeam, gamemode):
+    def updatePlayersStore(self, active, quits, winningTeam, gamemode, duration):
         '''merge with stats in the store'''
         stats = Database("UYA", "Player_Stats_Backup")
-        mergeSet(stats, active, winningTeam, gamemode)
-        mergeSet(stats, quits, winningTeam, gamemode)
+        mergeSet(stats, active, winningTeam, gamemode, duration)
+        mergeSet(stats, quits, winningTeam, gamemode, duration)
         stats.client.close()
     # def log(self, running = True):
     #     # URL = 'http://127.0.0.1:5000/live/log'
@@ -233,7 +235,16 @@ def getAverageDict(existing, games):
         elif type(existing[key]) == int or type(existing[key]) == float:
             new[key] = round(existing[key] / games, 2)
     return new
-def mergeSet(stats, players, winningTeam, gamemode):
+def getPerMinDict(existing, totalMins):
+    totalMins = 1 if totalMins == 0 else totalMins
+    new = {}
+    for key in existing:
+        if type(existing[key]) == dict:
+            new[key] = getPerMinDict(existing[key], totalMins)
+        elif type(existing[key]) == int or type(existing[key]) == float:
+            new[key] = round(existing[key] / totalMins, 2)
+    return new
+def mergeSet(stats, players, winningTeam, gamemode, duration):
     for player in players:
         playerStore = stats.collection.find_one({"username_lowercase":player.username.lower()})
         if not playerStore: continue
@@ -249,6 +260,7 @@ def mergeSet(stats, players, winningTeam, gamemode):
         advancedStats['streaks'][gamemode] = updateStreaks(advancedStats['streaks'][gamemode], player, winningTeam)
         mergeDicts(advancedStats['live'], player.getStore())
         advancedStats['live/gm'] = getAverageDict(advancedStats['live'], advancedStats['live']['live_games'])
+        advancedStats['live/min'] = getPerMinDict(advancedStats['live'], advancedStats['live']['live_seconds'] + duration.seconds//60)
         stats.collection.find_one_and_update(
         {
             "_id":playerStore["_id"]
