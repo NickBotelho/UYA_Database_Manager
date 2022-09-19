@@ -115,6 +115,13 @@ class Juggernaut(Medal):
 class Olympiad(Medal):
     def __init__(self) -> None:
         super().__init__("olympiad", 5)
+        self.eligible = True
+    def track(self, distance):
+        if self.eligible and int(distance) == self.threshold:
+            self.eligible = False
+            self.numAchieved+=1
+    def reset(self):
+        self.eligible = True
 
 class Dropper(Medal):
     def __init__(self) -> None:
@@ -195,6 +202,7 @@ class MedalTracker():
         self.juggernaut.madeJug = False
         self.distance=0
         self.dropper.reset()
+        self.olympiad.reset()
         self.packsConsumed=0
     def cap(self):
         self.shifty.track(self.onCapStreak)

@@ -22,6 +22,8 @@ class Pack(DMEObject):
             self.weaponToIsV2[weapon.weapon] = weapon.isV2
             if weapon.isV2:
                 self.containsV2=True
+    def __str__(self) -> str:
+        return f"Pack {self.object_id} | Has v2 = {self.containsV2}"
     def pickup(self, player):
         for weapon in self.weaponToIsV2:
             if self.weaponToIsV2[weapon] == True:

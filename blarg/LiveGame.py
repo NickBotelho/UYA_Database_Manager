@@ -231,6 +231,7 @@ class LiveGame():
                     elif item in self.packs:
                         player = self.players[int(packet['src'])]
                         player.pickupPack(self.packs[item])
+                        print(f"{player.username} picked up pack {self.packs[item]}")
                         del self.packs[item]
                 if update != None:
                     self.logger.info(update)             
@@ -433,6 +434,7 @@ class LiveGame():
         if 'pack_info' in serialized:
             packId = serialized['pack_info']['pack_id']
             self.packs[packId] = Pack(packId, player.lastX, player.lastY, player)
+            print(self.packs[packId])
 
 
 
