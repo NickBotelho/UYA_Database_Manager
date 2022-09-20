@@ -119,7 +119,7 @@ class Player():
             'bestKillstreak':self.killTracker.bestKillStreak,
             'death_info':self.deathTracker.getState(),
             'kill_info':self.killTracker.getState(),
-            'controller':self.controller.getState(),
+            # 'controller':self.controller.getState(),
 
         }
         return state
@@ -190,7 +190,7 @@ class Player():
             'bestKillstreak':self.killTracker.bestKillStreak,
             'death_info':self.deathTracker.getState(),
             'kill_info':self.killTracker.getState(),
-            'controller':self.controller.getState(),
+            # 'controller':self.controller.getState(),
             'medals':self.medals.getState(),
         }
     def getStore(self):
