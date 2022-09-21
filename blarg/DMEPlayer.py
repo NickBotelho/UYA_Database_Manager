@@ -50,6 +50,7 @@ class Player():
         self.team = team
     def adjustHP(self, hp):
         self.damageTaken += abs(self.hp - hp)
+        self.medals.damage(abs(self.hp - hp))
         self.hp = hp
     def kill(self, enemy = None, weapon = "Wrench"):
         self.killTracker.kill(enemy)
@@ -136,6 +137,7 @@ class Player():
     def pickupFlag(self):
         self.hasFlag = True
         self.flagPickups+=1
+        self.medals.pickupFlag()
     def dropFlag(self):
         self.hasFlag = False
         self.flagDrops+=1
