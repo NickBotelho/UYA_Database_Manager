@@ -158,7 +158,7 @@ class Untouchable(Medal):
         self.damageTaken = 0
         self.distance = 0
     def damage(self, dmg):
-        self.damage+=dmg
+        self.damageTaken+=dmg
     def move(self, dist):
         if self.hasFlag:
             self.distance+=dist
