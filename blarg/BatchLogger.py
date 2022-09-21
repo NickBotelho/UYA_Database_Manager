@@ -236,7 +236,7 @@ def getAverageDict(existing, games):
             new[key] = round(existing[key] / games, 2)
     return new
 def getPerMinDict(existing, totalMins):
-    totalMins = 1 if totalMins == 0 else totalMins//60
+    totalMins = 1 if totalMins//60 == 0 else totalMins//60
     new = {}
     for key in existing:
         if type(existing[key]) == dict:
