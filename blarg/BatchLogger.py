@@ -236,7 +236,7 @@ def getAverageDict(existing, games):
             new[key] = round(existing[key] / games, 2)
     return new
 def getPerMinDict(existing, totalMins):
-    totalMins = 1 if totalMins == 0 else totalMins
+    totalMins = 1 if totalMins == 0 else totalMins//60
     new = {}
     for key in existing:
         if type(existing[key]) == dict:
@@ -260,7 +260,8 @@ def mergeSet(stats, players, winningTeam, gamemode, duration):
         advancedStats['streaks'][gamemode] = updateStreaks(advancedStats['streaks'][gamemode], player, winningTeam)
         mergeDicts(advancedStats['live'], player.getStore())
         advancedStats['live/gm'] = getAverageDict(advancedStats['live'], advancedStats['live']['live_games'])
-        advancedStats['live/min'] = getPerMinDict(advancedStats['live'], advancedStats['live']['live_seconds'] + duration.seconds//60)
+        advancedStats['live/min'] = getPerMinDict(advancedStats['live'], advancedStats['live']['live_seconds'] + duration.seconds)
+        advancedStats['live/min']['live_seconds'] += duration.seconds
         stats.collection.find_one_and_update(
         {
             "_id":playerStore["_id"]

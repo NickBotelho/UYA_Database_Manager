@@ -224,12 +224,12 @@ class LiveGame():
                 elif event == 4:
                     item = serialized['object_id']
                     if item in self.hp_boxes:
-                        player = self.players[int(packet['src'])]
+                        player = self.players[int(serialized['subtype'][1])]
                         update = f"{player.username} grabbed health"
                         # print(f"hp box update: src = {player} | subtype = {serialized['subtype']}")
                         player.heal()
                     elif item in self.packs:
-                        player = self.players[int(packet['src'])]
+                        player = self.players[int(serialized['subtype'][1])]
                         player.pickupPack(self.packs[item])
                         print(f"{player.username} picked up pack {self.packs[item]}")
                         del self.packs[item]
@@ -384,7 +384,7 @@ class LiveGame():
         for idx in self.players:
             self.logger.info(str(self.players[idx]))
     def endGame(self):
-        if self.state < 3:
+        if self.state > 0 and self.state < 3:
             winningTeamColor = self.getWinningTeam()
             self.logger.log(running = False)
             self.logger.close(self.uyaTrackerId, self.players, self.quitPlayers, self.scores, winningTeamColor, self.isBotGame, self.mode)
