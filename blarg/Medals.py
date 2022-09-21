@@ -310,6 +310,7 @@ class MedalTracker():
             self.healthrunner.name:self.healthrunner.numAchieved,
             self.heatingup.name:self.heatingup.numAchieved,
             self.machinegun.name:self.machinegun.numAchieved,
+            self.untouchable.name:self.untouchable.numAchieved,
         }
     
 
