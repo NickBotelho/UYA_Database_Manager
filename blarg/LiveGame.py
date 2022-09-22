@@ -230,7 +230,10 @@ class LiveGame():
                         player.heal()
                     elif item in self.packs:
                         player = self.players[int(serialized['subtype'][1])]
-                        player.pickupPack(self.packs[item])
+                        pack = self.packs[item]
+                        player.pickupPack(pack)
+                        if pack.containsV2:
+                            update = f"{player.username} picked up a pack with v2s"    
                         print(f"{player.username} picked up pack {self.packs[item]}")
                         del self.packs[item]
                 if update != None:
