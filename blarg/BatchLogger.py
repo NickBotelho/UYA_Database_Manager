@@ -143,15 +143,13 @@ class BatchLogger():
             except Exception as e:
                 print("Problem logging")
                 print(traceback.format_exc())
-    def close(self, uyaTrackerId, players, quits, scores, winningTeamColor, isBotGame, gamemode):
+    def close(self, uyaTrackerId, players, quits, scores, winningTeamColor, isBotGame, gamemode, duration):
         '''close the game and save the states'''
         self.status = 2 #not the same as LiveGame Status
         for quitter in quits:
             players[quitter.username] = quitter
         self.setResults(players)
-        now = datetime.datetime.now()
         liveHistory = Database("UYA", "LiveGame_History")
-        duration = now - self.startTime if self.startTime != None else now - now
         try:           
             self.mongo.collection.find_one_and_delete({
                     'dme_id':self.id

@@ -385,9 +385,11 @@ class LiveGame():
             self.logger.info(str(self.players[idx]))
     def endGame(self):
         if self.state > 0 and self.state < 3:
-            winningTeamColor = self.getWinningTeam()
+            winningTeamColor = self.getWinningTeam() if self.mode != "Siege" else "N/A"
+            gameLength = self.mostRecentMessage - self.startTime
             self.logger.log(running = False)
-            self.logger.close(self.uyaTrackerId, self.players, self.quitPlayers, self.scores, winningTeamColor, self.isBotGame, self.mode)
+            self.logger.close(self.uyaTrackerId, self.players, self.quitPlayers, self.scores, \
+                winningTeamColor, self.isBotGame, self.mode, gameLength)
             self.state = 3
             print(f"Closing ID: {self.dme_id}")
             print(f"{self.dme_id} Results: {[str(self.players[p]) for p in self.players]} | DCs: {[str(p) for p in self.quitPlayers]}")
