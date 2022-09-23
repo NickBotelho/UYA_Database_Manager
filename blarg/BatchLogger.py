@@ -234,7 +234,6 @@ def getAverageDict(existing, games):
             new[key] = round(existing[key] / games, 2)
     return new
 def getPerMinDict(existing, totalMins):
-    totalMins = 1 if totalMins//60 == 0 else totalMins//60
     new = {}
     for key in existing:
         if type(existing[key]) == dict:
@@ -258,8 +257,11 @@ def mergeSet(stats, players, winningTeam, gamemode, duration):
         advancedStats['streaks'][gamemode] = updateStreaks(advancedStats['streaks'][gamemode], player, winningTeam)
         mergeDicts(advancedStats['live'], player.getStore())
         advancedStats['live/gm'] = getAverageDict(advancedStats['live'], advancedStats['live']['live_games'])
-        advancedStats['live/min'] = getPerMinDict(advancedStats['live'], advancedStats['live']['live_seconds'] + duration.seconds)
+        totalMins = (advancedStats['live/min']['live_seconds'] + duration.seconds)/60
+        advancedStats['live/min'] = getPerMinDict(advancedStats['live'], totalMins)
         advancedStats['live/min']['live_seconds'] += duration.seconds
+        advancedStats['live']['live_seconds'] = advancedStats['live/min']['live_seconds']
+        advancedStats['live/gm']['live_seconds'] = advancedStats['live/min']['live_seconds']
         stats.collection.find_one_and_update(
         {
             "_id":playerStore["_id"]
@@ -283,3 +285,8 @@ def updateStreaks(streaks, player, winningTeam):
     streaks['bestKillstreak'] = max(player.killTracker.bestKillStreak,streaks['bestKillstreak'] )
     streaks['bestDeathstreak'] = max(player.deathTracker.bestDeathStreak,streaks['bestDeathstreak'] )
     return streaks
+
+
+stats = Database("UYA", "Player_Stats_Backup")
+advancedStats = stats.collection.find_one({"username":"Nick#1"})['advanced_stats']
+advancedStats['live/min'] = getPerMinDict(advancedStats['live'], (advancedStats['live/min']['live_seconds'] + 600)//60)
