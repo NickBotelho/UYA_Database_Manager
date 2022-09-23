@@ -189,10 +189,10 @@ class LiveGame():
         '''process and logs a game event
         Acceptable packets include 020C, 020A (respawn), udp 0200 (death) 
         '''
+        update = None
         if packet_id == '020C' and packet['type'] == 'tcp':
             if 'event' in serialized:
                 event = serialized['event']
-                update = None
                 username = self.itos[int(packet['src'])]
                 if event == 0:
                     idx = int(serialized['flag_update_type'][1]) #ex p0_capture
@@ -200,7 +200,6 @@ class LiveGame():
                     player.cap()
                     team = player.teamColor
                     update = f"{player.username} capped the flag"
-                    self.logger.info(update)
                     self.scores[team] += 1
                     self.logger.setScores(self.scores)
                 elif event == 1:
@@ -234,12 +233,11 @@ class LiveGame():
                         player.pickupPack(pack)
                         if pack.containsV2:
                             update = f"{player.username} picked up a pack with v2s"    
-                        print(f"{player.username} picked up pack {self.packs[item]}")
+                        # print(f"{player.username} picked up pack {self.packs[item]}")
                         del self.packs[item]
-                if update != None:
-                    self.logger.info(update)             
+             
         elif packet_id == '020A' and packet['type'] == 'tcp':
-            self.logger.info(f"{self.itos[int(serialized['player'])]} {EVENTS[serialized['event']]}")
+            update = f"{self.itos[int(serialized['player'])]} {EVENTS[serialized['event']]}"
             player = self.players[int(serialized['player'])]
             self.createPack(player, serialized)
             player.respawn()
@@ -253,14 +251,14 @@ class LiveGame():
             killed = int(serialized['killed_id'])
             killer = int(serialized['killer_id'])
             if serialized['killer_id'] > 7:
-                self.logger.info(f"{self.itos[killed]} Died")
+                update = f"{self.itos[killed]} Died"
                 self.players[killed].death(AI = AI[killer])
                 if self.mode == 'Deathmatch':
                     username = self.itos[killed]
                     team = self.ntt[username]
                     self.scores[team] -=1
             else:
-                self.logger.info(f"{self.itos[killer]} {EVENTS[serialized['event']]} {self.itos[killed]} with {serialized['weapon']}")
+                update = f"{self.itos[killer]} {EVENTS[serialized['event']]} {self.itos[killed]} with {serialized['weapon']}"
                 self.players[killer].kill(enemy = self.players[killed], weapon = serialized['weapon']) #enemy death tallied in .kill()
                 if self.mode == 'Deathmatch':
                     username = self.itos[killer]
@@ -272,7 +270,10 @@ class LiveGame():
                 if message['type'] == 'health':
                     self.players[packet['src']].checkNick(message['health'])
                     self.players[packet['src']].adjustHP(message['health'])
-         
+
+        if update != None:
+            self.logger.info(update)
+
         return self.isComplete()
     def placeOnMap(self, serialized, packet):
         serialized['coord'].pop()
