@@ -254,5 +254,8 @@ LIVE_CONTRACT =  {
         'dropper':0,
         'ratfuck':0,
         'healthrunner':0,
+        'machinegun':0,
+        'heatingup':0,
+        'untouchable':0,
         }
 }    

@@ -60,12 +60,16 @@ class Database():
                     "advanced_stats":{
                         'per_gm':blankRatios.blank_per_game,
                         'per_min':blankRatios.blank_per_minute,
-                        'elo':blankRatios.blank_elo
+                        'elo':blankRatios.blank_elo,
+                        'live':blankRatios.blank_live_contract,
+                        'live/gm':blankRatios.blank_live_contract,
+                        'live/min':blankRatios.blank_live_contract,
+                        'streaks':blankRatios.blank_streaks,
                     },
                     'clan_id' : player_info.clan_id,
                     'clan_tag': player_info.clan_tag,
                     'clan_name':player_info.clan_name,       
-                    'elo_id':self.getEloId(elo, name)
+                    'elo_id':self.getEloId(elo, name),
                 }
             )
         else:         

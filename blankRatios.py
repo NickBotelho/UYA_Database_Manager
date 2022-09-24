@@ -69,3 +69,135 @@ blank_elo = {
     'Siege':1200,
     'Deathmatch':1200,
 }
+
+blank_streaks= {
+    "overall": {
+        "current_winstreak": 1,
+        "best_winstreak": 1,
+        "current_losingstreak": 0,
+        "best_losingstreak": 0,
+        "bestKillstreak": 0,
+        "bestDeathstreak": 0
+    },
+    "ctf": {
+        "current_winstreak": 1,
+        "best_winstreak": 1,
+        "current_losingstreak": 0,
+        "best_losingstreak": 0,
+        "bestKillstreak": 0,
+        "bestDeathstreak": 0
+    },
+    "siege": {
+        "current_winstreak": 0,
+        "best_winstreak": 0,
+        "current_losingstreak": 0,
+        "best_losingstreak": 0,
+        "bestKillstreak": 0,
+        "bestDeathstreak": 0
+    },
+    "deathmatch": {
+        "current_winstreak": 0,
+        "best_winstreak": 0,
+        "current_losingstreak": 0,
+        "best_losingstreak": 0,
+        "bestKillstreak": 0,
+        "bestDeathstreak": 0
+    }
+}
+
+blank_live_contract =  {
+    "live_games":0,
+    "kills": 0,
+    "deaths": 0,
+    "saves": 0,
+    "caps": 0,
+    "distance_travelled": 0,
+    "flag_distance": 0,
+    "noFlag_distance": 0,
+    "flag_pickups": 0,
+    "flag_drops": 0,
+    "health_boxes": 0,
+    "packs_grabbed":0,
+    "nicks_given": 0,
+    "nicks_received": 0,
+    "weapons": {
+        "Wrench": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Hypershot": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Holo Shield": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Flux": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Blitz": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Gravity Bomb": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Lava Gun": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Rockets": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Morph O' Ray": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "Mines": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        },
+        "N60": {
+            "kills": 0,
+            "shots": 0,
+            "hits": 0
+        }
+    },
+    'medals':{
+        "nuke":0,
+        "brutal":0,
+        "relentless":0,
+        "bloodthirsty":0,
+        "merciless":0,
+        'undying': 0,
+        'distributor':0,
+        'thickskull': 0,
+        'bloodfilled':0,
+        'brutalized':0,
+        'radioactive':0,
+        'shifty':0,
+        'lockon':0,
+        'juggernaut':0,
+        'olympiad':0,
+        'dropper':0,
+        'ratfuck':0,
+        'healthrunner':0,
+        'machinegun':0,
+        'heatingup':0,
+        'untouchable':0,
+    }
+} 
