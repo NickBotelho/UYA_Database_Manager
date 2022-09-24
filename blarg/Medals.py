@@ -159,6 +159,10 @@ class Untouchable(Medal):
         self.distance = 0
     def damage(self, dmg):
         self.damageTaken+=dmg
+    def reset(self):
+        self.damageTaken=0
+        self.hasFlag=False
+        self.distance=0
     def move(self, dist):
         if self.hasFlag:
             self.distance+=dist
@@ -166,7 +170,7 @@ class Untouchable(Medal):
         self.hasFlag = False
         self.distance = 0
     def track(self):
-        if self.damageTaken == 0 and self.distance > 0.25:
+        if self.damageTaken == 0 and self.distance > 0.35:
             self.numAchieved+=1
 
 class MachineGun(Medal):
@@ -180,7 +184,7 @@ class MachineGun(Medal):
         if timeDiff.seconds <= 15:
             self.streak+=1
         else:
-            self.dropTime = datetime.datetime.now()
+            self.startTime = datetime.datetime.now()
             self.streak = 1
 
         if self.streak == self.threshold:
@@ -256,6 +260,7 @@ class MedalTracker():
         self.dropper.reset()
         self.olympiad.reset()
         self.packsConsumed=0
+        self.untouchable.reset()
     def cap(self):
         self.shifty.track(self.onCapStreak)
         self.onCapStreak = True
@@ -264,6 +269,7 @@ class MedalTracker():
     def fire(self, weapon, player_hit):
         if weapon == "Flux":
             self.lockon.track(player_hit)
+            self.heatingup.track(player_hit)
 
     def heal(self):
         self.hpStreak+=1
