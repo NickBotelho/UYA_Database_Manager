@@ -3,6 +3,7 @@ from blarg.DeathTracker import DeathTracker
 from blarg.KillTracker import KillTracker
 from blarg.Pedometer import Pedometer
 from blarg.Medals import MedalTracker
+from blarg.DMEController import Controller
 class Player():
     def __init__(self, username, lobby_idx, team, lobbyItos):
         self.username = username
@@ -22,16 +23,17 @@ class Player():
             'Hypershot':DMEWeapon("Hypershot"),
             'Holo Shield':DMEWeapon("Holo Shield"),
         }
+        self.controller = Controller(self)
         self.pedometer = Pedometer(self)
         self.x, self.y, self.rotation = -1, -1, -1
         self.isPlaced = False
         self.lastX, self.lastY = -1, -1
-        self.distanceTravelled = 0
         self.disconnected = False
         self.fluxShots,self.fluxHits, self.fluxAccuracy = 0,0,0
         self.hasFlag = False
         self.flagPickups, self.flagDrops = 0, 0
         self.healthBoxesGrabbed = 0
+        self.packsGrabbed = 0
 
         self.stagedNick = False
         self.nicker = None
@@ -48,6 +50,7 @@ class Player():
         self.team = team
     def adjustHP(self, hp):
         self.damageTaken += abs(self.hp - hp)
+        self.medals.damage(abs(self.hp - hp))
         self.hp = hp
     def kill(self, enemy = None, weapon = "Wrench"):
         self.killTracker.kill(enemy)
@@ -63,8 +66,6 @@ class Player():
         self.hasFlag = False
         self.hp = 0
         self.medals.death()
-        for weapon in self.weapons.values():
-            weapon.die()
     def cap(self):
         self.caps+=1
         self.hasFlag=False
@@ -76,6 +77,8 @@ class Player():
     def respawn(self):
         self.hp = 100
         self.hasFlag = False
+        for weapon in self.weapons.values():
+            weapon.die()
     def getKillstreak(self):
         return self.killTracker.killStreak
     def getDeathstreak(self):
@@ -104,6 +107,7 @@ class Player():
             'hasFlag':self.hasFlag,
             'flag_pickups':self.flagPickups,
             'flag_drops':self.flagDrops,
+            'packs_grabbed':self.packsGrabbed,
             'health_boxes':self.healthBoxesGrabbed,
             'nicks_given':self.nicksGiven,
             'nicks_received':self.nicksReceived,
@@ -116,6 +120,7 @@ class Player():
             'bestKillstreak':self.killTracker.bestKillStreak,
             'death_info':self.deathTracker.getState(),
             'kill_info':self.killTracker.getState(),
+            # 'controller':self.controller.getState(),
 
         }
         return state
@@ -132,6 +137,7 @@ class Player():
     def pickupFlag(self):
         self.hasFlag = True
         self.flagPickups+=1
+        self.medals.pickupFlag()
     def dropFlag(self):
         self.hasFlag = False
         self.flagDrops+=1
@@ -174,6 +180,7 @@ class Player():
             'noFlag_distance':self.pedometer.getNoFlagDistance(),
             'flag_pickups':self.flagPickups,
             'flag_drops':self.flagDrops,
+            'packs_grabbed':self.packsGrabbed,
             'health_boxes':self.healthBoxesGrabbed,
             'nicks_given':self.nicksGiven,
             'nicks_received':self.nicksReceived,
@@ -185,6 +192,7 @@ class Player():
             'bestKillstreak':self.killTracker.bestKillStreak,
             'death_info':self.deathTracker.getState(),
             'kill_info':self.killTracker.getState(),
+            # 'controller':self.controller.getState(),
             'medals':self.medals.getState(),
         }
     def getStore(self):
@@ -201,14 +209,23 @@ class Player():
             'flag_pickups':self.flagPickups,
             'flag_drops':self.flagDrops,
             'health_boxes':self.healthBoxesGrabbed,
+            'packs_grabbed':self.packsGrabbed,
             'nicks_given':self.nicksGiven,
             'nicks_received':self.nicksReceived,
             'weapons':{w.weapon:w.getStore() for w in self.weapons.values()},
+            'controller':self.controller.getState(),
             'medals':self.medals.getState(),
         }
     def hasJug(self):
         if "Flux" in self.weapons \
             and "Blitz" in self.weapons \
                 and "Gravity Bomb" in self.weapons:
-                return self.weapons['Flux'].isV2 == True and self.weapons['Blitz'].isV2 == True and self.weapons['Gravity Bomb'] == True
+                return self.weapons['Flux'].createdV2 == True and self.weapons['Blitz'].createdV2 == True and self.weapons['Gravity Bomb'].createdV2 == True
+    def pickupPack(self, pack):
+        pack.pickup(self)
+        self.packsGrabbed+=1
+        self.medals.pack(pack)
+    def pressButton(self, event):
+        '''event is 0209['button'] which is a 2 or 4 digit string'''
+        self.controller.track(event)
 

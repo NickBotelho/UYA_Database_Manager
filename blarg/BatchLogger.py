@@ -132,7 +132,8 @@ class BatchLogger():
                             'player_states': self.players,
                             'scores':self.scores,
                             'batch_num':self.currentMessage,
-                            'duration': "{}:{}".format(duration.seconds//60, seconds),
+                            'duration_minutes': duration.seconds//60,
+                            'duration_seconds': duration.seconds % 60,
                         }
                     })
                 if len(self.cache) != len(self.batch):
@@ -142,15 +143,13 @@ class BatchLogger():
             except Exception as e:
                 print("Problem logging")
                 print(traceback.format_exc())
-    def close(self, uyaTrackerId, players, quits, scores, winningTeamColor, isBotGame):
+    def close(self, uyaTrackerId, players, quits, scores, winningTeamColor, isBotGame, gamemode, duration):
         '''close the game and save the states'''
         self.status = 2 #not the same as LiveGame Status
         for quitter in quits:
             players[quitter.username] = quitter
         self.setResults(players)
-        now = datetime.datetime.now()
         liveHistory = Database("UYA", "LiveGame_History")
-        duration = now - self.startTime if self.startTime != None else now - now
         try:           
             self.mongo.collection.find_one_and_delete({
                     'dme_id':self.id
@@ -166,22 +165,24 @@ class BatchLogger():
                         'winning_team':winningTeamColor,
                         'scores':scores, 
                         'results':self.players,
-                        'duration': "{}:{}".format(duration.seconds//60, duration.seconds%60),
+                        'duration_minutes': duration.seconds//60,
+                        'duration_seconds': duration.seconds % 60,
                         'number_of_batches':self.currentMessage,
                     })
                 except Exception as e:
                     print("Problem peristing game into LiveGame_History")
                     print(e)
                 finally:
-                    self.updatePlayersStore(players.values(), quits, winningTeamColor)
+                    gamemode = gamemode.lower()
+                    self.updatePlayersStore(players.values(), quits, winningTeamColor, gamemode, duration)
 
             self.mongo.client.close()
             liveHistory.client.close()
-    def updatePlayersStore(self, active, quits, winningTeam):
+    def updatePlayersStore(self, active, quits, winningTeam, gamemode, duration):
         '''merge with stats in the store'''
-        stats = Database("UYA", "Player_Stats_Backup")
-        mergeSet(stats, active, winningTeam)
-        mergeSet(stats, quits, winningTeam)
+        stats = Database("UYA", "Player_Stats")
+        mergeSet(stats, active, winningTeam, gamemode, duration)
+        mergeSet(stats, quits, winningTeam, gamemode, duration)
         stats.client.close()
     # def log(self, running = True):
     #     # URL = 'http://127.0.0.1:5000/live/log'
@@ -224,7 +225,23 @@ def mergeDicts (existing, new):
             elif type(existing[key]) == int or type(existing[key]) == float:
                 existing[key] += new[key]
     return existing
-def mergeSet(stats, players, winningTeam):
+def getAverageDict(existing, games):
+    new = {}
+    for key in existing:
+        if type(existing[key]) == dict:
+            new[key] = getAverageDict(existing[key], games)
+        elif type(existing[key]) == int or type(existing[key]) == float:
+            new[key] = round(existing[key] / games, 2)
+    return new
+def getPerMinDict(existing, totalMins):
+    new = {}
+    for key in existing:
+        if type(existing[key]) == dict:
+            new[key] = getPerMinDict(existing[key], totalMins)
+        elif type(existing[key]) == int or type(existing[key]) == float:
+            new[key] = round(existing[key] / totalMins, 2)
+    return new
+def mergeSet(stats, players, winningTeam, gamemode, duration):
     for player in players:
         playerStore = stats.collection.find_one({"username_lowercase":player.username.lower()})
         if not playerStore: continue
@@ -232,9 +249,20 @@ def mergeSet(stats, players, winningTeam):
         if "live" not in advancedStats:
             advancedStats['live'] = {}
         if "streaks" not in advancedStats:
-            advancedStats['streaks'] = STREAK_CONTRACT
-        advancedStats['streaks'] = updateStreaks(advancedStats['streaks'], player, winningTeam)
+            advancedStats['streaks']['overall'] = STREAK_CONTRACT
+            advancedStats['streaks']['ctf'] = STREAK_CONTRACT
+            advancedStats['streaks']['siege'] = STREAK_CONTRACT
+            advancedStats['streaks']['deathmatch'] = STREAK_CONTRACT
+        advancedStats['streaks']['overall'] = updateStreaks(advancedStats['streaks']['overall'], player, winningTeam)
+        advancedStats['streaks'][gamemode] = updateStreaks(advancedStats['streaks'][gamemode], player, winningTeam)
         mergeDicts(advancedStats['live'], player.getStore())
+        advancedStats['live/gm'] = getAverageDict(advancedStats['live'], advancedStats['live']['live_games'])
+        totalSecs = advancedStats['live/min']['live_seconds'] + duration.seconds
+        totalMins = totalSecs/60
+        advancedStats['live/min'] = getPerMinDict(advancedStats['live'], totalMins)
+        advancedStats['live/min']['live_seconds'] = totalSecs
+        advancedStats['live']['live_seconds'] = advancedStats['live/min']['live_seconds']
+        advancedStats['live/gm']['live_seconds'] = advancedStats['live/min']['live_seconds']
         stats.collection.find_one_and_update(
         {
             "_id":playerStore["_id"]
@@ -246,7 +274,7 @@ def mergeSet(stats, players, winningTeam):
         }
     )
 def updateStreaks(streaks, player, winningTeam):
-    if player.team == winningTeam:
+    if player.teamColor == winningTeam:
         streaks['current_winstreak'] += 1
         streaks['current_losingstreak'] = 0
     else:
@@ -256,5 +284,5 @@ def updateStreaks(streaks, player, winningTeam):
     streaks['best_winstreak'] = max(streaks['best_winstreak'], streaks['current_winstreak']) 
     streaks['best_losingstreak'] = max(streaks['best_losingstreak'], streaks['current_losingstreak'])
     streaks['bestKillstreak'] = max(player.killTracker.bestKillStreak,streaks['bestKillstreak'] )
-    streaks['bestDeathstreak'] = max(player.deathTracker.bestDeathStreak,streaks['bestDeathStreak'] )
+    streaks['bestDeathstreak'] = max(player.deathTracker.bestDeathStreak,streaks['bestDeathstreak'] )
     return streaks

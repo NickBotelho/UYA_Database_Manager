@@ -13,6 +13,7 @@ import datetime
 from blarg.constants.constants import TIMES
 from blarg.utils.utils import generateFlagIDs, generateHealthIDs
 from blarg.DMETeam import Team
+from blarg.DMEObject import Pack
 from Parsers.GamestateGameSettingsParser import hasNodes
 from HashId import hash_id
 from sys import maxsize
@@ -91,6 +92,7 @@ class LiveGame():
         self.clogger, self.clog_limit = 0, 1000
         self.isBotGame = False
         self.weapons = []
+        self.packs = {}
         if delay:
             self.delayTime = delayTime #in seconds
             self.pipe = []
@@ -187,10 +189,10 @@ class LiveGame():
         '''process and logs a game event
         Acceptable packets include 020C, 020A (respawn), udp 0200 (death) 
         '''
+        update = None
         if packet_id == '020C' and packet['type'] == 'tcp':
             if 'event' in serialized:
                 event = serialized['event']
-                update = None
                 username = self.itos[int(packet['src'])]
                 if event == 0:
                     idx = int(serialized['flag_update_type'][1]) #ex p0_capture
@@ -198,7 +200,6 @@ class LiveGame():
                     player.cap()
                     team = player.teamColor
                     update = f"{player.username} capped the flag"
-                    self.logger.info(update)
                     self.scores[team] += 1
                     self.logger.setScores(self.scores)
                 elif event == 1:
@@ -210,7 +211,7 @@ class LiveGame():
                     else:
                         update = f"Flag returned to base due to inactivity"
                 elif event == 2:
-                    item = serialized['object_id'][0:2]
+                    item = serialized['object_id']
                     if item in self.flags:
                         idx = int(serialized['object_taken_by'][0:2]) #06000000 is how it looks
                         player = self.players[idx]
@@ -220,17 +221,26 @@ class LiveGame():
                     update = f"{username} has dropped the flag"
                     self.players[int(packet['src'])].dropFlag()
                 elif event == 4:
-                    item = serialized['object_id'][0:2]
+                    item = serialized['object_id']
                     if item in self.hp_boxes:
-                        player = self.players[int(packet['src'])]
+                        player = self.players[int(serialized['subtype'][1])]
                         update = f"{player.username} grabbed health"
                         # print(f"hp box update: src = {player} | subtype = {serialized['subtype']}")
                         player.heal()
-                if update != None:
-                    self.logger.info(update)             
+                    elif item in self.packs:
+                        player = self.players[int(serialized['subtype'][1])]
+                        pack = self.packs[item]
+                        player.pickupPack(pack)
+                        if pack.containsV2:
+                            update = f"{player.username} picked up a pack with v2s"    
+                        # print(f"{player.username} picked up pack {self.packs[item]}")
+                        del self.packs[item]
+             
         elif packet_id == '020A' and packet['type'] == 'tcp':
-            self.logger.info(f"{self.itos[int(serialized['player'])]} {EVENTS[serialized['event']]}")
-            self.players[int(serialized['player'])].respawn()
+            update = f"{self.itos[int(serialized['player'])]} {EVENTS[serialized['event']]}"
+            player = self.players[int(serialized['player'])]
+            self.createPack(player, serialized)
+            player.respawn()
 
         elif packet_id == '020E' and packet['type'] == 'udp': #FIRING
             self.players[int(packet['src'])].fire(serialized['weapon'], serialized['player_hit'])
@@ -241,14 +251,14 @@ class LiveGame():
             killed = int(serialized['killed_id'])
             killer = int(serialized['killer_id'])
             if serialized['killer_id'] > 7:
-                self.logger.info(f"{self.itos[killed]} Died")
+                update = f"{self.itos[killed]} Died"
                 self.players[killed].death(AI = AI[killer])
                 if self.mode == 'Deathmatch':
                     username = self.itos[killed]
                     team = self.ntt[username]
                     self.scores[team] -=1
             else:
-                self.logger.info(f"{self.itos[killer]} {EVENTS[serialized['event']]} {self.itos[killed]} with {serialized['weapon']}")
+                update = f"{self.itos[killer]} {EVENTS[serialized['event']]} {self.itos[killed]} with {serialized['weapon']}"
                 self.players[killer].kill(enemy = self.players[killed], weapon = serialized['weapon']) #enemy death tallied in .kill()
                 if self.mode == 'Deathmatch':
                     username = self.itos[killer]
@@ -260,7 +270,10 @@ class LiveGame():
                 if message['type'] == 'health':
                     self.players[packet['src']].checkNick(message['health'])
                     self.players[packet['src']].adjustHP(message['health'])
-         
+
+        if update != None:
+            self.logger.info(update)
+
         return self.isComplete()
     def placeOnMap(self, serialized, packet):
         serialized['coord'].pop()
@@ -278,6 +291,9 @@ class LiveGame():
                 self.removeQuitPlayer()
             self.clogger +=1
             
+            if 'button' in serialized:
+                self.players[player_idx].pressButton(serialized['button'])
+
             display = True if self.numPlaced >= len(self.players) else False
             if display:
                 colors = [self.players[i].teamColor for i in self.players]
@@ -372,10 +388,12 @@ class LiveGame():
         for idx in self.players:
             self.logger.info(str(self.players[idx]))
     def endGame(self):
-        if self.state < 3:
-            winningTeamColor = self.getWinningTeam()
+        if self.state > 0 and self.state < 3:
+            winningTeamColor = self.getWinningTeam() if self.mode != "Siege" else "N/A"
+            gameLength = self.mostRecentMessage - self.startTime
             self.logger.log(running = False)
-            self.logger.close(self.uyaTrackerId, self.players, self.quitPlayers, self.scores, winningTeamColor, self.isBotGame)
+            self.logger.close(self.uyaTrackerId, self.players, self.quitPlayers, self.scores, \
+                winningTeamColor, self.isBotGame, self.mode, gameLength)
             self.state = 3
             print(f"Closing ID: {self.dme_id}")
             print(f"{self.dme_id} Results: {[str(self.players[p]) for p in self.players]} | DCs: {[str(p) for p in self.quitPlayers]}")
@@ -421,6 +439,14 @@ class LiveGame():
         else:
             diff = self.mostRecentMessage - currentTime
             return diff.total_seconds() > 10
+    def createPack(self, player, serialized):
+        if 'pack_info' in serialized:
+            packId = serialized['pack_info']['pack_id']
+            self.packs[packId] = Pack(packId, player.lastX, player.lastY, player)
+            # print(self.packs[packId])
+
+
+
 
 
 #So when a player G's up it sends a 0211 packet with their name, color, skin

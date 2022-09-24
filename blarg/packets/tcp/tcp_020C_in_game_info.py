@@ -160,7 +160,11 @@ class tcp_020C_in_game_info:
             packet['flag_drop_unk'] =  ''.join([data.popleft() for i in range(16)])
         elif 'crate_destroyed_and_pickup' in subtype:
             packet['object_id'] = object_id
+<<<<<<< HEAD
             packet['event'] = 4
+=======
+            # packet['event'] = 4
+>>>>>>> missing-packets-bug
         elif 'crate_destroyed' in subtype:
             packet['object_id'] = object_id
 

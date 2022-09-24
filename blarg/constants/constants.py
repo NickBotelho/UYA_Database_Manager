@@ -135,13 +135,32 @@ TIMES = {
     '35_minutes':35,
 }
 
+BUTTONS = {
+    '0':"Select",
+    '1':"???",
+    "2":"???",
+    "3":'Start',
+    '4':"Up",
+    '5':"Right",
+    '6':"Down",
+    '7':"Left",
+    '8':'L2',
+    '9':'R2',
+    'A':'L1',
+    'B':'R1',
+    'C':'Triangle',
+    'D':'Circle',
+    'E':'X',
+    'F':'Square',
+}
+
 STREAK_CONTRACT = {
     'current_winstreak':0,
     'best_winstreak':0,
     'current_losingstreak':0,
     'best_losingstreak':0,
     'bestKillstreak':0,
-    'bestDeathStreak':0,
+    'bestDeathstreak':0,
 }
 
 LIVE_CONTRACT =  {
@@ -156,6 +175,7 @@ LIVE_CONTRACT =  {
     "flag_pickups": 0,
     "flag_drops": 0,
     "health_boxes": 0,
+    "packs_grabbed":0,
     "nicks_given": 0,
     "nicks_received": 0,
     "weapons": {
@@ -232,5 +252,10 @@ LIVE_CONTRACT =  {
         'juggernaut':0,
         'olympiad':0,
         'dropper':0,
+        'ratfuck':0,
+        'healthrunner':0,
+        'machinegun':0,
+        'heatingup':0,
+        'untouchable':0,
         }
 }    
