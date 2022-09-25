@@ -121,6 +121,7 @@ class Player():
             'death_info':self.deathTracker.getState(),
             'kill_info':self.killTracker.getState(),
             # 'controller':self.controller.getState(),
+            'medals':self.medals.getState(),
 
         }
         return state
