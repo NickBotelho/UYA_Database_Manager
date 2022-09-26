@@ -198,7 +198,8 @@ class BatchLogger():
                     'dme_id':self.id,
                     'map':self.map,
                     # 'start_time':str(self.startTime),
-                    'logger':self.batch,
+                    'logger':self.batch[self.currentMessage:] if len(self.cache) != len(self.batch) \
+                        else self.cache[self.cacheMessage:],
                     'graph': self.coords,
                     'player_states': self.players,
                     'scores':self.scores,
