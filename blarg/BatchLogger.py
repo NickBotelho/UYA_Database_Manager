@@ -99,51 +99,51 @@ class BatchLogger():
         self.batch = batch
     def setScores(self, scores):
         self.scores = scores
-    def log(self, running = True):
-        if self.status == 1:
-            try:
-                now = datetime.datetime.now()
-                duration = now - self.startTime if self.startTime != None else now - now
-                seconds = str(duration.seconds%60)
-                seconds = seconds if len(seconds) > 1 else f"0{seconds}"
-                if not self.exists:
-                    existing = self.mongo.collection.find_one({'dme_id':self.id})
-                    if existing != None:
-                        self.mongo.collection.find_one_and_delete({'dme_id':self.id})
-                    self.mongo.collection.insert_one({
-                        'dme_id':self.id,
-                        'map':self.map,
-                        'start_time':self.startTime,
-                        'logger':self.batch,
-                        'graph': self.coords,
-                        'player_states': self.players,
-                        'scores':self.scores,
-                        'batch_num':self.currentMessage,
-                        'isRunning': running,
-                    })
-                    self.exists = True
-                else:
-                    self.mongo.collection.find_one_and_update({
-                        'dme_id':self.id
-                    },
-                    {
-                        '$set':{
-                            'logger':self.batch[self.currentMessage:] if len(self.cache) != len(self.batch) else self.cache[self.cacheMessage:],
-                            'graph': self.coords,
-                            'player_states': self.players,
-                            'scores':self.scores,
-                            'batch_num':self.currentMessage,
-                            'duration_minutes': duration.seconds//60,
-                            'duration_seconds': duration.seconds % 60,
-                        }
-                    })
-                if len(self.cache) != len(self.batch):
-                    self.cacheMessage = self.currentMessage
-                    self.cache = list(self.batch)
-                    self.currentMessage = len(self.batch)
-            except Exception as e:
-                print("Problem logging")
-                print(traceback.format_exc())
+    # def log(self, running = True):
+    #     if self.status == 1:
+    #         try:
+    #             now = datetime.datetime.now()
+    #             duration = now - self.startTime if self.startTime != None else now - now
+    #             seconds = str(duration.seconds%60)
+    #             seconds = seconds if len(seconds) > 1 else f"0{seconds}"
+    #             if not self.exists:
+    #                 existing = self.mongo.collection.find_one({'dme_id':self.id})
+    #                 if existing != None:
+    #                     self.mongo.collection.find_one_and_delete({'dme_id':self.id})
+    #                 self.mongo.collection.insert_one({
+    #                     'dme_id':self.id,
+    #                     'map':self.map,
+    #                     'start_time':self.startTime,
+    #                     'logger':self.batch,
+    #                     'graph': self.coords,
+    #                     'player_states': self.players,
+    #                     'scores':self.scores,
+    #                     'batch_num':self.currentMessage,
+    #                     'isRunning': running,
+    #                 })
+    #                 self.exists = True
+    #             else:
+    #                 self.mongo.collection.find_one_and_update({
+    #                     'dme_id':self.id
+    #                 },
+    #                 {
+    #                     '$set':{
+    #                         'logger':self.batch[self.currentMessage:] if len(self.cache) != len(self.batch) else self.cache[self.cacheMessage:],
+    #                         'graph': self.coords,
+    #                         'player_states': self.players,
+    #                         'scores':self.scores,
+    #                         'batch_num':self.currentMessage,
+    #                         'duration_minutes': duration.seconds//60,
+    #                         'duration_seconds': duration.seconds % 60,
+    #                     }
+    #                 })
+    #             if len(self.cache) != len(self.batch):
+    #                 self.cacheMessage = self.currentMessage
+    #                 self.cache = list(self.batch)
+    #                 self.currentMessage = len(self.batch)
+    #         except Exception as e:
+    #             print("Problem logging")
+    #             print(traceback.format_exc())
     def close(self, uyaTrackerId, players, quits, scores, winningTeamColor, isBotGame, gamemode, duration):
         '''close the game and save the states'''
         self.status = 2 #not the same as LiveGame Status
@@ -185,37 +185,37 @@ class BatchLogger():
         mergeSet(stats, active, winningTeam, gamemode, duration)
         mergeSet(stats, quits, winningTeam, gamemode, duration)
         stats.client.close()
-    # def log(self, running = True):
-    #     # URL = 'http://127.0.0.1:5000/live/log'
-    #     URL = 'http://uyatracker.herokuapp.com/live/log'
-    #     if self.status == 1:
-    #         try:
-    #             now = datetime.datetime.now()
-    #             duration = now - self.startTime if self.startTime != None else now - now
-    #             seconds = str(duration.seconds%60)
-    #             seconds = seconds if len(seconds) > 1 else f"0{seconds}"
-    #             update = { 
-    #                 'dme_id':self.id,
-    #                 'map':self.map,
-    #                 # 'start_time':str(self.startTime),
-    #                 'logger':self.batch,
-    #                 'graph': self.coords,
-    #                 'player_states': self.players,
-    #                 'scores':self.scores,
-    #                 'batch_num':self.currentMessage,
-    #                 'isRunning': running,
-    #                 'duration': "{}:{}".format(duration.seconds//60, seconds),
-    #                 'updateId':self.updateId
-    #             }
-    #             res = requests.post(URL, json = update)
-    #             if len(self.cache) != len(self.batch):
-    #                 self.cacheMessage = self.currentMessage
-    #                 self.cache = list(self.batch)
-    #                 self.currentMessage = len(self.batch)
-    #         except Exception as e:
-    #             print("Problem logging HTTP")
-    #             print(traceback.format_exc())
-    #         self.updateId+=1
+    def log(self, running = True):
+        # URL = 'http://127.0.0.1:5000/live/log'
+        URL = 'http://uyatracker.herokuapp.com/live/log'
+        if self.status == 1:
+            try:
+                now = datetime.datetime.now()
+                duration = now - self.startTime if self.startTime != None else now - now
+                seconds = str(duration.seconds%60)
+                seconds = seconds if len(seconds) > 1 else f"0{seconds}"
+                update = { 
+                    'dme_id':self.id,
+                    'map':self.map,
+                    # 'start_time':str(self.startTime),
+                    'logger':self.batch,
+                    'graph': self.coords,
+                    'player_states': self.players,
+                    'scores':self.scores,
+                    'batch_num':self.currentMessage,
+                    'isRunning': running,
+                    'duration': "{}:{}".format(duration.seconds//60, seconds),
+                    'updateId':self.updateId
+                }
+                res = requests.post(URL, json = update)
+                if len(self.cache) != len(self.batch):
+                    self.cacheMessage = self.currentMessage
+                    self.cache = list(self.batch)
+                    self.currentMessage = len(self.batch)
+            except Exception as e:
+                print("Problem logging HTTP")
+                print(traceback.format_exc())
+            self.updateId+=1
 
 def mergeDicts (existing, new):
     '''merge a new dict onto the existing dict, summing matching keys and merging non existing ones from new'''
