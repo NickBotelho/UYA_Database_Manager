@@ -186,8 +186,8 @@ class BatchLogger():
         mergeSet(stats, quits, winningTeam, gamemode, duration)
         stats.client.close()
     def log(self, running = True):
-        # URL = 'http://127.0.0.1:5000/live/log'
-        URL = 'http://uyatracker.herokuapp.com/live/log'
+        URL = 'http://127.0.0.1:5000/live/log'
+        # URL = 'http://uyatracker.herokuapp.com/live/log'
         if self.status == 1:
             try:
                 now = datetime.datetime.now()
@@ -260,13 +260,19 @@ def mergeSet(stats, players, winningTeam, gamemode, duration):
         advancedStats['streaks']['overall'] = updateStreaks(advancedStats['streaks']['overall'], player, winningTeam)
         advancedStats['streaks'][gamemode] = updateStreaks(advancedStats['streaks'][gamemode], player, winningTeam)
         mergeDicts(advancedStats['live'], player.getStore())
-        advancedStats['live/gm'] = getAverageDict(advancedStats['live'], advancedStats['live']['live_games'])
-        totalSecs = advancedStats['live/min']['live_seconds'] + duration.seconds
-        totalMins = totalSecs/60
-        advancedStats['live/min'] = getPerMinDict(advancedStats['live'], totalMins)
-        advancedStats['live/min']['live_seconds'] = totalSecs
-        advancedStats['live']['live_seconds'] = advancedStats['live/min']['live_seconds']
-        advancedStats['live/gm']['live_seconds'] = advancedStats['live/min']['live_seconds']
+        try:
+            advancedStats['live/gm'] = getAverageDict(advancedStats['live'], advancedStats['live']['live_games'])
+            totalSecs = advancedStats['live/min']['live_seconds'] + duration.seconds
+            totalMins = totalSecs/60
+            advancedStats['live/min'] = getPerMinDict(advancedStats['live'], totalMins)
+            advancedStats['live/min']['live_seconds'] = totalSecs
+            advancedStats['live']['live_seconds'] = advancedStats['live/min']['live_seconds']
+            advancedStats['live/gm']['live_seconds'] = advancedStats['live/min']['live_seconds']
+        except Exception as e:
+            print(f"Problem with live seconds in {player.username}'s game")
+            print(f"the advanced stats look like {advancedStats}")
+            print(traceback.format_exc())
+
         stats.collection.find_one_and_update(
         {
             "_id":playerStore["_id"]
