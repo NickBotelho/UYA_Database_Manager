@@ -3,6 +3,7 @@ from cProfile import run
 import matplotlib.pyplot as plt
 import numpy as np
 import requests
+import traceback
 import logging
 import datetime
 from blarg.DMEPlayer import Player
@@ -309,9 +310,9 @@ class LiveGame():
                 self.logger.flush(self.players)
                 self.mostRecentMessage = datetime.datetime.now()
                 self.numPlaced, self.clogger = 0, 0
-        except:
-            print(f"{self.dme_id} Problem in placeOnMap with {player_idx} not being in self.players possibly.\n \
-                self.players: {self.players}")
+        except Exception as e:
+                print("Problem placing on map")
+                print(traceback.format_exc())
 
 
     def isImplemented(self):
