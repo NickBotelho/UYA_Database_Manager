@@ -186,8 +186,8 @@ class BatchLogger():
         mergeSet(stats, quits, winningTeam, gamemode, duration)
         stats.client.close()
     def log(self, running = True):
-        URL = 'http://127.0.0.1:5000/live/log'
-        # URL = 'http://uyatracker.herokuapp.com/live/log'
+        # URL = 'http://127.0.0.1:5000/live/log'
+        URL = 'http://uyatracker.herokuapp.com/live/log'
         if self.status == 1:
             try:
                 now = datetime.datetime.now()
