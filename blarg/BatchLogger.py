@@ -284,10 +284,10 @@ def mergeSet(stats, players, winningTeam, gamemode, duration):
         }
     )
 def updateStreaks(streaks, player, winningTeam):
-    if player.teamColor == winningTeam:
+    if winningTeam != "N/A" and player.teamColor == winningTeam:
         streaks['current_winstreak'] += 1
         streaks['current_losingstreak'] = 0
-    else:
+    elif winningTeam != "N/A" and player.teamColor != winningTeam:
         streaks['current_winstreak'] = 0 
         streaks['current_losingstreak'] +=1 
 

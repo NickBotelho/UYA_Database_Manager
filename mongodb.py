@@ -391,6 +391,7 @@ class Database():
             match_history = player['match_history']
             player_elo = elo.collection.find_one({"elo_id":player['elo_id']})
             username = player['username']
+            streaks = player['advanced_stats']['streaks']
 
             match_history[str(game_id)] = player['stats']['overall']['games_played']
 
@@ -401,7 +402,24 @@ class Database():
                 player_elo = updateElo(username, player_elo,teams, overall_e, K=64, type = 'overall')
                 player_elo = updateElo(username, player_elo,teams, gamemode_e, K=64, type = game['gamemode'])
 
-
+                if game['gamemode'] == "Siege":
+                    siegeStreak = streaks['siege']
+                    overallStreak = streaks['overall']
+                    isWin = username in teams[0]
+                    if isWin:
+                        siegeStreak['current_winstreak']+=1
+                        siegeStreak['current_losingstreak']=0
+                        overallStreak['current_winstreak']+=1
+                        overallStreak['current_losingstreak']=0
+                    else:
+                        siegeStreak['current_winstreak']=0
+                        siegeStreak['current_losingstreak']+=1
+                        overallStreak['current_winstreak']=0
+                        overallStreak['current_losingstreak']+=1
+                    streaks['siege']['best_winstreak'] = max(streaks['siege']['best_winstreak'], siegeStreak['current_winstreak'])
+                    streaks['siege']['best_losingstreak'] = max(streaks['siege']['best_losingstreak'], siegeStreak['best_losingstreak'])
+                    streaks['overall']['best_winstreak'] = max(streaks['overall']['best_winstreak'], overallStreak['current_winstreak'])
+                    streaks['overall']['best_losingstreak'] = max(streaks['overall']['best_losingstreak'], overallStreak['best_losingstreak'])
             
                 elo.collection.find_one_and_update(
                     {'elo_id':player['elo_id']},
@@ -427,7 +445,8 @@ class Database():
                                 'CTF': player_elo['CTF'],
                                 'Siege': player_elo['Siege'],
                                 'Deathmatch' :player_elo['Deathmatch'],
-                            }
+                            },
+                            'advanced_stats.streaks':streaks
 
                             
                         }
