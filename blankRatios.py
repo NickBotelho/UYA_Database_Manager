@@ -107,6 +107,7 @@ blank_streaks= {
 
 blank_live_contract =  {
     "live_games":0,
+    "live_seconds":0,
     "kills": 0,
     "deaths": 0,
     "saves": 0,

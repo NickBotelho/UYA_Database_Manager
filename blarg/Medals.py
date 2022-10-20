@@ -192,7 +192,7 @@ class MachineGun(Medal):
 
 
 class RatFuck(Medal):
-    def __init__(self, name='ratfuck', threshold=5) -> None:
+    def __init__(self, name='ratfuck', threshold=2) -> None:
         super().__init__(name, threshold)
 
 

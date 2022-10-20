@@ -38,7 +38,7 @@ def run():
     nameToBitstringSiege={}
     nameToBitstringTdm={}
     games = Database("UYA", "Game_History")
-    stats = Database("UYA", "Player_Stats_Backup")
+    stats = Database("UYA", "Player_Stats")
     i=0
     print("Backcalculating streaks...")
     for game in games.collection.find():
