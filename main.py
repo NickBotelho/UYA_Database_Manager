@@ -33,7 +33,7 @@ async def update(logger):
     games_active.clear()
 
     while True:
-        logger.debug("Getting Players...")
+        # logger.debug("Getting Players...")
         players, offline_players = Server.getOnlinePlayers(players, clans, player_stats) #dict of {player id --> Player obj}
         player_stats.updateOnlinePlayersStats(players, offline_players, elo)
         players_online.addOnlinePlayers(players)
@@ -43,9 +43,9 @@ async def update(logger):
         Game.cacheStats(games, player_stats)
 
         games_active.addGames(games)
-        games_active.cancelGames(ended_games, player_stats, game_history, elo, logger)
+        games_active.cancelGames(ended_games, player_stats, game_history, elo, clans, logger)
         
-        logger.debug("Waiting...")
+        # logger.debug("Waiting...")
         await asyncio.sleep(60*.5)
 
 async def threadCheck():
@@ -74,8 +74,8 @@ def read_config(config_file='config.json'):
         return json.loads(f.read())
 
 
-# DEBUG = True
-DEBUG = False
+DEBUG = True
+# DEBUG = False
 if __name__ == "__main__":
     #init logger###
     level = 'DEBUG' if DEBUG else "INFO"

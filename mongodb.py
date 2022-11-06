@@ -452,7 +452,7 @@ class Database():
                         }
                     }
                 )
-    def cancelGames(self, ended_games, player_stats, game_history, elo, logger):
+    def cancelGames(self, ended_games, player_stats, game_history, elo, clans, logger):
         '''Ended Games is a dict of id --> ended Game object and player stats is the DB object holding new stats'''
         '''removes ended games from the active games collection'''
         '''before we dump the game, we'll add it to the history collection'''
@@ -462,6 +462,9 @@ class Database():
             game_results = None
             try:
                 game_results = self.calculateGameStats(ended_games[id], player_stats, logger)
+                ####Check for clan war with gamee results
+                self.calculateClanStats(clans, player_stats, game_results, isWinner = True, logger = logger)
+                self.calculateClanStats(clans, player_stats, game_results, isWinner = False, logger = logger)
             except:
                 logger.error("Game was not logged. either bot game or stat cheater")
             finally:
@@ -542,10 +545,38 @@ class Database():
 
         if 'total_score' in teams:
             teams['winner_score'], teams['loser_score'] = teams['total_score']//2, teams['total_score']//2
-
-
-
         return teams if total_kills > 0 and not isCheating else None
+
+    def calculateClanStats(self, clans, player_stats, game_result, isWinner, logger):
+        def getClan(playerStats, username):
+            player = playerStats.collection.find_one({"username_lowercase":username.lower()})
+            if not player: return None
+
+            return player['clan_name']
+            
+
+        team = [player['username'] for player in game_result['winners' if isWinner else 'losers']]
+        if len(team) == 0: return None
+
+        clan = None
+        i=0
+        for username in team:
+            playerClan = getClan(player_stats, username)
+
+            if playerClan == None or playerClan == '':
+                logger.debug(f"Team {team} is not a clan")
+                return False
+            
+            if i == 0:
+                clan = playerClan
+            else:
+                if clan != playerClan:
+                    logger.debug(f"Team {team} is not a clan")
+                    return False
+            i+=1
+        logger.debug(f"Team {team} is a clan")
+        return True
+
     def calculateGameElo(self, elo, game, logger, type = 'overall'):
         results = game['game_results']
         winner_names = [player['username'] for player in results['winners']]
