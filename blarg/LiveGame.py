@@ -171,6 +171,7 @@ class LiveGame():
         self.hasNodes = self.hasNodes if self.hasNodes != None else False
         self.hp_boxes = generateHealthIDs(self.map.lower(), nodes = self.hasNodes, base = game['advanced_rules']['baseDefenses'], mode = self.mode)
         self.flags = generateFlagIDs(self.map, nodes = self.hasNodes, base=game['advanced_rules']['baseDefenses']) if self.mode == "CTF" else []
+        self.sendTeamsToActiveGames()
         for team in self.colorToTeam.values():
             for enemies in self.colorToTeam.values():
                 if team.color != enemies.color:
@@ -445,6 +446,20 @@ class LiveGame():
             packId = serialized['pack_info']['pack_id']
             self.packs[packId] = Pack(packId, player.lastX, player.lastY, player)
             # print(self.packs[packId])
+
+    def sendTeamsToActiveGames(self):
+        res = {}
+        for color in self.colorToTeam:
+            res[color] = self.colorToTeam[color].getPlayerNames()
+        connection = Database("UYA", "Games_Active")
+        connection.collection.find_one_and_update(
+            {"dme_id":self.dme_id},
+            {
+                "$set":{
+                    "teams":res
+                }
+            }
+        )
 
 
 

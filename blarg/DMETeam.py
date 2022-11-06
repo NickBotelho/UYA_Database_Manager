@@ -20,4 +20,6 @@ class Team():
         pass
         # for team in self.opponentTeams:
         #     team.dropFlags()
+    def getPlayerNames(self):
+        return [player.username for player in self.players]
 

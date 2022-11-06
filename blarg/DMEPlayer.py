@@ -194,7 +194,7 @@ class Player():
             'death_info':self.deathTracker.getState(),
             'kill_info':self.killTracker.getState(),
             # 'controller':self.controller.getState(),
-            'medals':self.medals.getState(),
+            # 'medals':self.medals.getState(),
         }
     def getStore(self):
         '''goes into the player stats document for a player'''
