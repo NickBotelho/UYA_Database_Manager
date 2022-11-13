@@ -10,6 +10,7 @@ import requests
 from Parsers.ClanStatsParser import getClanTag
 from Parsers.ClanStatswideParser import HexToClanstatswide
 import urllib.parse
+from collections import Counter
 
 os.environ['TZ'] = 'EST+05EDT,M4.1.0,M10.5.0'
 time.tzset()
@@ -463,8 +464,8 @@ class Database():
             try:
                 game_results = self.calculateGameStats(ended_games[id], player_stats, logger)
                 ####Check for clan war with gamee results
-                self.calculateClanStats(clans, player_stats, game_results, isWinner = True, logger = logger)
-                self.calculateClanStats(clans, player_stats, game_results, isWinner = False, logger = logger)
+                winnerIsClan = self.calculateClanStats(clans, player_stats, game_results, isWinner = True, game = ended_games[id], logger = logger)
+                loserIsClan = self.calculateClanStats(clans, player_stats, game_results, isWinner = False, game = ended_games[id], logger = logger)
             except:
                 logger.error("Game was not logged. either bot game or stat cheater")
             finally:
@@ -547,15 +548,52 @@ class Database():
             teams['winner_score'], teams['loser_score'] = teams['total_score']//2, teams['total_score']//2
         return teams if total_kills > 0 and not isCheating else None
 
-    def calculateClanStats(self, clans, player_stats, game_result, isWinner, logger):
+    def calculateClanStats(self, clans, player_stats, game_result, isWinner, game, logger):
         def getClan(playerStats, username):
             player = playerStats.collection.find_one({"username_lowercase":username.lower()})
             if not player: return None
 
             return player['clan_name']
-            
+        def getTeamStats(game_result, isWinner):
+            teamPlayerObjects = game_result['winners' if isWinner else 'losers']
+            kills = sum([player['kills'] for player in teamPlayerObjects])
+            deaths = sum([player['deaths'] for player in teamPlayerObjects])
+            return{
+                "kills":kills,
+                'deaths':deaths,
+                'wins': 1 if isWinner else 0,
+                'losses': 0 if isWinner else 1
+            }
 
-        team = [player['username'] for player in game_result['winners' if isWinner else 'losers']]
+        def updateClanStats(clans, gameResults, clanName, gameId, mode):
+            modeMapper={
+                "CTF":"ctf",
+                "Siege":"siege",
+                "Deathmatch":"tdm"
+            }
+            clanDoc= clans.collection.find_one({"clan_name":clanName})
+            if not clanDoc: return False
+
+            overall = dict(Counter(clanDoc['advanced_stats']['overall']) + Counter(gameResults))
+            gamemode = dict(Counter(clanDoc['advanced_stats'][modeMapper[mode]]) + Counter(gameResults))
+            history = clanDoc['game_history']
+            history.append(gameId)
+
+            clans.collection.find_one_and_update(
+                {"clan_name":clanName},
+                {
+                    "$set":{
+                        f"advanced_stats.{modeMapper[mode]}":gamemode,
+                        'advanced_stats.overall':overall,
+                        'game_history':history,
+                    }
+                }
+            )
+            return True
+
+        if 'disconnect' in game_result or 'tie' in game_result: return None
+
+        team = [player['username'].lower() for player in game_result['winners' if isWinner else 'losers']]
         if len(team) == 0: return None
 
         clan = None
@@ -574,7 +612,22 @@ class Database():
                     logger.debug(f"Team {team} is not a clan")
                     return False
             i+=1
-        logger.debug(f"Team {team} is a clan")
+        
+        #check for leader
+        clanDocument = clans.collection.find({"clan_name":clan})
+        if not clan:
+            logger.debug(f"Clan {clan} not found in uyatracker")
+            return False
+
+        clanLeader = clanDocument['leader_account_name'].lower()
+        if clanLeader not in team:
+            logger.debug(f"Clan {clan}'s leader {clanLeader} was not present in team {team}")
+            return False
+
+
+        gameStats = getTeamStats(game_result, isWinner)
+        updated = updateClanStats(clans, gameStats, clan, gameId = game.id, mode = game.game_mode)
+        logger.debug(f"Team {team} is a clan, able to update stats = {updated}")
         return True
 
     def calculateGameElo(self, elo, game, logger, type = 'overall'):
