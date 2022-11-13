@@ -614,7 +614,7 @@ class Database():
             i+=1
         
         #check for leader
-        clanDocument = clans.collection.find({"clan_name":clan})
+        clanDocument = clans.collection.find_one({"clan_name":clan})
         if not clan:
             logger.debug(f"Clan {clan} not found in uyatracker")
             return False
