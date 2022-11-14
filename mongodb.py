@@ -9,6 +9,7 @@ import blankRatios
 import requests
 from Parsers.ClanStatsParser import getClanTag
 from Parsers.ClanStatswideParser import HexToClanstatswide
+from Parsers.ToLadderstatswide import HextoLadderstatswide
 import urllib.parse
 from collections import Counter
 
@@ -492,12 +493,19 @@ class Database():
             return False
         for id in game.player_ids:
             cache= None
-            updated_player_entry = player_stats.collection.find_one({'account_id':id})
+            # updated_player_entry = player_stats.collection.find_one({'account_id':id})
+            updatedPlayer = requests.get(f"http://107.155.81.113:8281/robo/accounts/id/{id}").json()
+            playerStats = {}
+            playerStats['stats'] = HextoLadderstatswide(updatedPlayer['ladderstatswide'])
             if len(game.cached_stats) == 0:
                 return None
             else:
                 cache = game.cached_stats[id]
-            stat_line = calculateStatLine(updated_player_entry, cache, game)
+            try:
+                stat_line = calculateStatLine(playerStats, cache, game)
+            except:
+                logger.error(f"Problem calculating stat line for player id {id} in game id {game.id}")
+
             isCheating = True if stat_line['kills'] > 300 else False 
             total_kills+=stat_line['kills']
             #check to see if tie ################################
@@ -591,6 +599,7 @@ class Database():
             )
             return True
 
+        if not game_result: return None
         if 'disconnect' in game_result or 'tie' in game_result: return None
 
         team = [player['username'].lower() for player in game_result['winners' if isWinner else 'losers']]
