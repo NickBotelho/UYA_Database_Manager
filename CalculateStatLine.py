@@ -11,8 +11,9 @@ WEAPONS_CONVERT = {
     "Flux":'flux'
 
 }        
-def calculateStatLine(updated, cache, game):
-    '''upddated is an entire mongo entry for the player'''
+def calculateStatLine(playerStore, updated, cache, game):
+    '''player store is an entire mongo entry for the player'''
+    '''updated is the stats from server'''
     '''cached is just a dict of the old stats'''
     '''Game is a mongo document of the game'''
 
@@ -27,7 +28,7 @@ def calculateStatLine(updated, cache, game):
     deaths = updated['stats']['overall']['deaths'] - cache['overall']['deaths']
     suicicdes = updated['stats']['overall']['suicides'] - cache['overall']['suicides']
     res = {
-        'username':updated['username'],
+        'username':playerStore['username'],
         'game_result':game_result,
         'kills':kills,
         'deaths':deaths,

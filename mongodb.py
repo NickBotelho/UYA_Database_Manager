@@ -493,16 +493,16 @@ class Database():
             return False
         for id in game.player_ids:
             cache= None
-            # updated_player_entry = player_stats.collection.find_one({'account_id':id})
-            updatedPlayer = requests.get(f"http://107.155.81.113:8281/robo/accounts/id/{id}").json()
+            updated_player_entry = player_stats.collection.find_one({'account_id':id})
+            updatedStats = requests.get(f"http://107.155.81.113:8281/robo/accounts/id/{id}").json()
             playerStats = {}
-            playerStats['stats'] = HextoLadderstatswide(updatedPlayer['ladderstatswide'])
+            playerStats['stats'] = HextoLadderstatswide(updatedStats['ladderstatswide'])
             if len(game.cached_stats) == 0:
                 return None
             else:
                 cache = game.cached_stats[id]
             try:
-                stat_line = calculateStatLine(playerStats, cache, game)
+                stat_line = calculateStatLine(updated_player_entry, playerStats, cache, game)
             except:
                 logger.error(f"Problem calculating stat line for player id {id} in game id {game.id}")
 
