@@ -88,7 +88,7 @@ class Database():
                 }
             )
     def getEloId(self, elo, player):
-        url = 'http://107.155.81.113:8281/robo/alts/{}'
+        url = 'http://103.214.110.220:8281/robo/alts/{}'
         try:
             encoded_name = urllib.parse.quote(player)
             accounts = requests.get(url.format(encoded_name))
@@ -494,7 +494,7 @@ class Database():
         for id in game.player_ids:
             cache= None
             updated_player_entry = player_stats.collection.find_one({'account_id':id})
-            updatedStats = requests.get(f"http://107.155.81.113:8281/robo/accounts/id/{id}").json()
+            updatedStats = requests.get(f"http://103.214.110.220:8281/robo/accounts/id/{id}").json()
             playerStats = {}
             playerStats['stats'] = HextoLadderstatswide(updatedStats['ladderstatswide'])
             if len(game.cached_stats) == 0:
@@ -603,7 +603,7 @@ class Database():
         if 'disconnect' in game_result or 'tie' in game_result: return None
 
         team = [player['username'].lower() for player in game_result['winners' if isWinner else 'losers']]
-        if len(team) == 0: return None
+        if len(team) <2 : return None
 
         clan = None
         i=0
@@ -624,14 +624,14 @@ class Database():
         
         #check for leader
         clanDocument = clans.collection.find_one({"clan_name":clan})
-        if not clan:
+        if not clanDocument:
             logger.debug(f"Clan {clan} not found in uyatracker")
             return False
 
-        clanLeader = clanDocument['leader_account_name'].lower()
-        if clanLeader not in team:
-            logger.debug(f"Clan {clan}'s leader {clanLeader} was not present in team {team}")
-            return False
+        # clanLeader = clanDocument['leader_account_name'].lower()
+        # if clanLeader not in team:
+        #     logger.debug(f"Clan {clan}'s leader {clanLeader} was not present in team {team}")
+        #     return False
 
 
         gameStats = getTeamStats(game_result, isWinner)
@@ -678,7 +678,7 @@ class Database():
         return (winner_names, loser_names), (winner_e, loser_e)
     def addNewClan(self, clan_id):
         '''add new clan to DB given clan id'''
-        CLANS_API = 'http://107.155.81.113:8281/robo/clans/id' #/id
+        CLANS_API = 'http://103.214.110.220:8281/robo/clans/id' #/id
         existing_clan = self.collection.find_one({'clan_id':clan_id})
         if existing_clan != None:
             #This executes if a new clan has the same ID as a deleted clan
@@ -819,7 +819,7 @@ class Database():
         '''get a clan object from id'''
         return self.collection.find_one({"clan_id":id})
     def checkForAlts(self, player, elo):
-        url = 'http://107.155.81.113:8281/robo/alts/{}'
+        url = 'http://103.214.110.220:8281/robo/alts/{}'
         encoded_name = urllib.parse.quote(player)
         accounts = requests.get(url.format(encoded_name))
 

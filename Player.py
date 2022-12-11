@@ -2,7 +2,7 @@ from Parsers.PlayerClanParser import getClanId
 from Parsers.ClanStatsParser import getClanTag
 import urllib.parse
 import requests
-CLANS_API = 'http://107.155.81.113:8281/robo/clans/name' #/clanName
+CLANS_API = 'http://103.214.110.220:8281/robo/clans/name' #/clanName
 CACHE_LIMIT = 20
 class Player():
     def __init__(self, packet) -> None:

@@ -10,6 +10,9 @@ games_active = Database("UYA","Games_Active")
 players_stats_backup = Database("UYA","Player_Stats_Backup")
 game_history_backup = Database("UYA", "Game_History_Backup")
 
+clans= Database("UYA", "Clans")
+clansBackup= Database("UYA", "Clans_Backup")
+
 
 date = strftime("%b-%d-%Y_", gmtime())
 
@@ -44,11 +47,14 @@ def backupToCollection (main, backup):
 
 
 
-backupToJSON("player_stats_back.json", player_stats)
-backupToJSON("game_history_backup.json", game_history)
+# backupToJSON("player_stats_back.json", player_stats)
+# backupToJSON("game_history_backup.json", game_history)
+backupToJSON("clans_backup.json", clans)
 #BACKUP
-backupToCollection(player_stats, players_stats_backup)
-backupToCollection(game_history, game_history_backup)
+# backupToCollection(player_stats, players_stats_backup)
+# backupToCollection(game_history, game_history_backup)
+backupToCollection(clans, clansBackup)
+# backupToCollection(clansBackup, clans)
 
 #RESTORE
 # backupToCollection(players_stats_backup, player_stats )
