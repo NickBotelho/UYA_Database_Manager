@@ -12,6 +12,7 @@ from Parsers.ClanStatswideParser import HexToClanstatswide
 from Parsers.ToLadderstatswide import HextoLadderstatswide
 import urllib.parse
 from collections import Counter
+from Webhooks.GameEndedWebook import BroadcastGame
 
 os.environ['TZ'] = 'EST+05EDT,M4.1.0,M10.5.0'
 time.tzset()
@@ -357,6 +358,7 @@ class Database():
         '''Adds a finished game to the history collection wite game as game object and results and res from calculate stat line function'''
         date = time.strftime("%a, %d %b %Y", time.localtime())
         entries = self.collection.count_documents({})
+        game.game_results = game_results
         self.collection.insert_one(
             {
                 'game_id':game.id,
@@ -372,6 +374,7 @@ class Database():
                 'entry_number' : entries+1
             }
         )
+        BroadcastGame(game)
     def addGameToPlayerHistory(self, game_id, player_ids, game_history, elo, logger):
         '''add a recent game to players stats'''
         game = game_history.collection.find_one( #grab the game

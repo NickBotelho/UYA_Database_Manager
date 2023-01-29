@@ -18,12 +18,14 @@ def getOnlinePlayers(players, clans, player_stats):
     for player in res:
         online_players.add(player['account_id'])
         update = True
+        fromCache = False
         if player['account_id'] in players: 
             #if the player is already online
             players[player['account_id']].softUpdate(player)
             update = players[player['account_id']].updateCache()
+            fromCache = True
         if update:
-            plyr = Player(player)
+            plyr = Player(player, fromCache)
             if not plyr.isBot: #make sure player is not a bot
                 players[player['account_id']] = plyr
                 clans.updateClans(players[player['account_id']],  player_stats)

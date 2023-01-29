@@ -2,13 +2,16 @@ from Parsers.PlayerClanParser import getClanId
 from Parsers.ClanStatsParser import getClanTag
 import urllib.parse
 import requests
+from Webhooks.PlayerLoginWebhook import PlayerLoginWebhook
 CLANS_API = 'http://103.214.110.220:8281/robo/clans/name' #/clanName
 CACHE_LIMIT = 20
 class Player():
-    def __init__(self, packet) -> None:
+    def __init__(self, packet, fromCache = False) -> None:
         self.packet = packet
         self.cached_ticks = 0 #one tick = 30 seconds.
         self.parse()
+        if not fromCache:
+            self.broadcast()
     def parse(self):
         self.id = self.packet['account_id']
         self.username = self.packet['username']
@@ -40,6 +43,10 @@ class Player():
         self.username = packet['username']
         self.status = packet['status']
         self.ladderstatswide = packet['ladderstatswide']
+    def broadcast(self):
+        clan = f"{self.clan_name} [{self.clan_tag}]"
+        hook = PlayerLoginWebhook(self.username, clan)
+        hook.broadcast()
 def isBot(username):
     '''bot names have prefixes of cpu so return false if the prefix is not cpu'''
     if len(username) <3: return False
