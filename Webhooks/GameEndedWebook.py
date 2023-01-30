@@ -1,4 +1,4 @@
-from Webhooks.BaseWebhook import BaseWebook, Field
+from BaseWebhook import BaseWebook, Field
 class GameEndedWebhook(BaseWebook):
     def __init__(self, description, fields, color=None):
         title = "Game Results"
@@ -13,7 +13,7 @@ def BroadcastGame(game):
                 fields.append(getField(result, team))
         fields.append(Field("View on UYATracker", uyaTrackerLink(game.id)))
         hook = GameEndedWebhook(description=description, fields=fields)
-        hook.send()
+        hook.broadcast()
     except:
         print("Error broadcasting game to GameEndedWebhook")
     
