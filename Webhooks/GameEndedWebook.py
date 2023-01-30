@@ -10,6 +10,7 @@ def BroadcastGame(game):
         fields = []
         for result, team in game.game_results:
             fields.append(getField(result, team))
+        fields.append(Field("View on UYATracker", uyaTrackerLink(game.id)))
         hook = GameEndedWebhook(description=description, fields=fields)
         hook.send()
     except:
@@ -20,3 +21,6 @@ def getField(key, team):
     for player in team:
         value+= f"{player['username']}: {player['kills']} / {player['deaths']}\n"
     return Field(key, value)
+
+def uyaTrackerLink(id):
+    return f"https://uyatracker.net/detailedgame?id={id}"

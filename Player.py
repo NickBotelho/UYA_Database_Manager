@@ -44,9 +44,10 @@ class Player():
         self.status = packet['status']
         self.ladderstatswide = packet['ladderstatswide']
     def broadcast(self):
-        clan = f"{self.clan_name} [{self.clan_tag}]"
-        hook = PlayerLoginWebhook(self.username, clan)
-        hook.broadcast()
+        if not self.isBot:
+            clan = f"{self.clan_name} [{self.clan_tag}]"
+            hook = PlayerLoginWebhook(self.username, clan)
+            hook.broadcast()
 def isBot(username):
     '''bot names have prefixes of cpu so return false if the prefix is not cpu'''
     if len(username) <3: return False
