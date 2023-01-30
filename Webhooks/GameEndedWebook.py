@@ -23,4 +23,4 @@ def getField(key, team):
     return Field(key, value)
 
 def uyaTrackerLink(id):
-    return f"https://uyatracker.net/detailedgame?id={id}"
+    return f"https://www.uyatracker.net/detailedgame?id={id}"

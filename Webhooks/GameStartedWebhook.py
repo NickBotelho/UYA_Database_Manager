@@ -18,4 +18,4 @@ def BroadcastGameStart(uyatrackerId, colorToTeam, map, mode):
 
 
 def uyaTrackerLink(id):
-    return f"https://uyatracker.net/game?id={id}"
+    return f"https://www.uyatracker.net/game?id={id}"
