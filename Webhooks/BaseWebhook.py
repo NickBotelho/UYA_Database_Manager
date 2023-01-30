@@ -30,7 +30,7 @@ class BaseWebook():
             "embeds":[{
                 
                 "title": self.title,
-                "descrption": self.description,
+                "description": self.description,
                 "color": self.color,
                 "fields": [f.formatContent() for f in self.fields]
             

@@ -8,9 +8,10 @@ class GameStartedWebhook(BaseWebook):
 
 def BroadcastGameStart(uyatrackerId, colorToTeam, map, mode):
     fields = []
+    map = map.replace("_", " ")
     desc = f"{mode} on {map}"
     for color, team in colorToTeam.items():
-        fields.append(Field(f"{team.color} Team", team.getPlayerNames))
+        fields.append(Field(f"{team.color} Team", "  ".join(team.getPlayerNames())))
     fields.append(Field("Watch live", uyaTrackerLink(uyatrackerId)))
     hook = GameStartedWebhook(desc, fields)
     hook.broadcast()
