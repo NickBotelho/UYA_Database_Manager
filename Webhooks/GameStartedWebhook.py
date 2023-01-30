@@ -11,7 +11,7 @@ def BroadcastGameStart(uyatrackerId, colorToTeam, map, mode):
     desc = f"{mode} on {map}"
     for color, team in colorToTeam.items():
         fields.append(Field(f"{team.color} Team", team.getPlayerNames))
-    fields.append("Watch live", uyaTrackerLink(uyatrackerId))
+    fields.append(Field("Watch live", uyaTrackerLink(uyatrackerId)))
     hook = GameStartedWebhook(desc, fields)
     hook.broadcast()
 
