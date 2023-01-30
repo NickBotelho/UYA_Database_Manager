@@ -8,7 +8,7 @@ def BroadcastGame(game):
     try:
         description = f"{game.game_mode} on {game.map}"
         fields = []
-        for result, team in game.game_results:
+        for result, team in game.game_results.items():
             fields.append(getField(result, team))
         fields.append(Field("View on UYATracker", uyaTrackerLink(game.id)))
         hook = GameEndedWebhook(description=description, fields=fields)
