@@ -1,4 +1,4 @@
-from BaseWebhook import BaseWebook, Field
+from Webhooks.BaseWebhook import BaseWebook, Field
 global BASES
 BASES = False
 class GameEndedWebhook(BaseWebook):
