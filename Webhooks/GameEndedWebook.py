@@ -8,6 +8,7 @@ class GameEndedWebhook(BaseWebook):
 
 def BroadcastGame(game):
     global BASES
+    BASES = False
     try:
         game.map = game.map.replace("_", " ")
         description = f"{game.game_mode} on {game.map}\n"
