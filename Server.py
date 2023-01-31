@@ -28,6 +28,8 @@ def getOnlinePlayers(players, clans, player_stats):
             plyr = Player(player, fromCache)
             if not plyr.isBot: #make sure player is not a bot
                 players[player['account_id']] = plyr
+                if (len(players) > 3):
+                    plyr.broadcast(len(players))
                 clans.updateClans(players[player['account_id']],  player_stats)
 
 
