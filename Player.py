@@ -10,8 +10,7 @@ class Player():
         self.packet = packet
         self.cached_ticks = 0 #one tick = 30 seconds.
         self.parse()
-        if not fromCache:
-            self.broadcast()
+        self.fromCache = fromCache
     def parse(self):
         self.id = self.packet['account_id']
         self.username = self.packet['username']
@@ -43,10 +42,10 @@ class Player():
         self.username = packet['username']
         self.status = packet['status']
         self.ladderstatswide = packet['ladderstatswide']
-    def broadcast(self):
-        if not self.isBot:
-            clan = f"{self.clan_name} [{self.clan_tag}]"
-            hook = PlayerLoginWebhook(self.username, clan)
+    def broadcast(self, numPlayers):
+        if not self.isBot and not self.fromCache:
+            clan = f"{self.clan_name} [{self.clan_tag}]" if self.clan_name != "" else ""
+            hook = PlayerLoginWebhook(self.username, clan, numPlayers)
             hook.broadcast()
 def isBot(username):
     '''bot names have prefixes of cpu so return false if the prefix is not cpu'''
