@@ -43,6 +43,7 @@ class Game():
         self.game_length = timeParser(self.rules)
         self.game_mode, self.game_submode = gamerulesParser(self.rules)
         self.advanced_rules = advancedRulesParser(self.rules)
+        self.game_results = None
 
     def __str__(self) -> str:
         return "{} | {} ({} Players) MAP: {} GAMEMODE: {} ({}) WEAPONS: {} TIME: {}  ADVANCED:{}".format(self.creation_time, self.status, len(self.player_ids),self.map, 
@@ -70,6 +71,8 @@ class Game():
         '''updates the players in the staging'''
         self.player_ids = [player['account_id'] for player in lobby]
         self.player_names = [player['username'] for player in lobby]
+    def setResults(self,results):
+        self.game_results = results
 
 
 def cacheStats(games, player_stats):

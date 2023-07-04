@@ -12,6 +12,7 @@ from Parsers.ClanStatswideParser import HexToClanstatswide
 from Parsers.ToLadderstatswide import HextoLadderstatswide
 import urllib.parse
 from collections import Counter
+from Webhooks.GameEndedWebook import BroadcastGame
 
 os.environ['TZ'] = 'EST+05EDT,M4.1.0,M10.5.0'
 time.tzset()
@@ -88,7 +89,7 @@ class Database():
                 }
             )
     def getEloId(self, elo, player):
-        url = 'http://103.214.110.220:8281/robo/alts/{}'
+        url = 'http://216.146.25.121:8281/robo/alts/{}'
         try:
             encoded_name = urllib.parse.quote(player)
             accounts = requests.get(url.format(encoded_name))
@@ -357,6 +358,7 @@ class Database():
         '''Adds a finished game to the history collection wite game as game object and results and res from calculate stat line function'''
         date = time.strftime("%a, %d %b %Y", time.localtime())
         entries = self.collection.count_documents({})
+        game.game_results = game_results
         self.collection.insert_one(
             {
                 'game_id':game.id,
@@ -372,6 +374,7 @@ class Database():
                 'entry_number' : entries+1
             }
         )
+        BroadcastGame(game)
     def addGameToPlayerHistory(self, game_id, player_ids, game_history, elo, logger):
         '''add a recent game to players stats'''
         game = game_history.collection.find_one( #grab the game
@@ -494,7 +497,7 @@ class Database():
         for id in game.player_ids:
             cache= None
             updated_player_entry = player_stats.collection.find_one({'account_id':id})
-            updatedStats = requests.get(f"http://103.214.110.220:8281/robo/accounts/id/{id}").json()
+            updatedStats = requests.get(f"http://216.146.25.121:8281/robo/accounts/id/{id}").json()
             playerStats = {}
             playerStats['stats'] = HextoLadderstatswide(updatedStats['ladderstatswide'])
             if len(game.cached_stats) == 0:
@@ -678,7 +681,7 @@ class Database():
         return (winner_names, loser_names), (winner_e, loser_e)
     def addNewClan(self, clan_id):
         '''add new clan to DB given clan id'''
-        CLANS_API = 'http://103.214.110.220:8281/robo/clans/id' #/id
+        CLANS_API = 'http://216.146.25.121:8281/robo/clans/id' #/id
         existing_clan = self.collection.find_one({'clan_id':clan_id})
         if existing_clan != None:
             #This executes if a new clan has the same ID as a deleted clan
@@ -819,7 +822,7 @@ class Database():
         '''get a clan object from id'''
         return self.collection.find_one({"clan_id":id})
     def checkForAlts(self, player, elo):
-        url = 'http://103.214.110.220:8281/robo/alts/{}'
+        url = 'http://216.146.25.121:8281/robo/alts/{}'
         encoded_name = urllib.parse.quote(player)
         accounts = requests.get(url.format(encoded_name))
 

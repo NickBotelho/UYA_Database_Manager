@@ -18,7 +18,8 @@ from blarg.DMEObject import Pack
 from Parsers.GamestateGameSettingsParser import hasNodes
 from HashId import hash_id
 from sys import maxsize
-GAMES = 'http://103.214.110.220:8281/robo/games'
+from Webhooks.GameStartedWebhook import BroadcastGameStart
+GAMES = 'http://216.146.25.121:8281/robo/games'
 GAME_EVENTS = {'020C', '020A', '0200', '020E', '0204', '0003'}
 EVENTS = {
     0:"Flag Captured",
@@ -185,7 +186,7 @@ class LiveGame():
             self.liveMap = False
             # self.game = None
             
-
+        BroadcastGameStart(self.uyaTrackerId, self.colorToTeam, self.map, self.mode)
         self.state = 1  
     def processEvent(self, packet_id, serialized, packet):
         '''process and logs a game event
