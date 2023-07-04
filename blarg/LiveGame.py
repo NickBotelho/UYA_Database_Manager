@@ -19,7 +19,7 @@ from Parsers.GamestateGameSettingsParser import hasNodes
 from HashId import hash_id
 from sys import maxsize
 from Webhooks.GameStartedWebhook import BroadcastGameStart
-GAMES = 'http://103.214.110.220:8281/robo/games'
+GAMES = 'http://216.146.25.121:8281/robo/games'
 GAME_EVENTS = {'020C', '020A', '0200', '020E', '0204', '0003'}
 EVENTS = {
     0:"Flag Captured",

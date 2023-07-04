@@ -7,7 +7,7 @@ import requests
 clans = Database("UYA","Clans")
 players = Database("UYA","Player_Stats")
 
-CLANS_API = 'http://103.214.110.220:8281/robo/clans/id/{}' #/id
+CLANS_API = 'http://216.146.25.121:8281/robo/clans/id/{}' #/id
 
 def updateAllClans():
     for clan in clans.collection.find():

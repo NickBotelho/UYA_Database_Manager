@@ -10,7 +10,7 @@ from blarg.packets.udp_map import udp_map
 
 from blarg.LiveGame import LiveGame
 import datetime
-GAMES = 'http://103.214.110.220:8281/robo/games'
+GAMES = 'http://216.146.25.121:8281/robo/games'
 
 class Blarg:
     def __init__(self, config: dict):

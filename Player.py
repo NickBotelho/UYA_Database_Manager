@@ -3,7 +3,7 @@ from Parsers.ClanStatsParser import getClanTag
 import urllib.parse
 import requests
 from Webhooks.PlayerLoginWebhook import PlayerLoginWebhook
-CLANS_API = 'http://103.214.110.220:8281/robo/clans/name' #/clanName
+CLANS_API = 'http://216.146.25.121:8281/robo/clans/name' #/clanName
 CACHE_LIMIT = 20
 class Player():
     def __init__(self, packet, fromCache = False) -> None:
