@@ -16,10 +16,10 @@ os.environ['TZ'] = 'EST+05EDT,M4.1.0,M10.5.0'
 time.tzset()
 
 async def update(logger):
-    player_stats = Database("UYA","Player_Stats_Backup")
-    players_online = Database("UYA","Players_Online2")
-    game_history = Database("UYA", "Game_History_Backup")
-    games_active = Database("UYA","Games_Active2")
+    player_stats = Database("UYA","Player_Stats")
+    players_online = Database("UYA","Players_Online")
+    game_history = Database("UYA", "Game_History")
+    games_active = Database("UYA","Games_Active")
     clans = Database("UYA", "Clans")
     elo=Database("UYA", 'Elo')
 
@@ -56,15 +56,13 @@ async def threadCheck():
         
 async def main(logger):
     config = read_config("blarg/config.json")
-    # blarg = Blarg(config)
+    blarg = Blarg(config)
 
-    # socket = loop.create_task(blarg.read_websocket())
+    socket = loop.create_task(blarg.read_websocket())
     stats = loop.create_task(update(logger))
-    # garbageCollection = loop.create_task(blarg.garbageCollect())
+    garbageCollection = loop.create_task(blarg.garbageCollect())
 
-    await asyncio.wait([stats])
-    # await asyncio.wait([stats, socket, garbageCollection])
-    # await asyncio.wait([socket, garbageCollection])
+    await asyncio.wait([stats, socket, garbageCollection])
 
 
 
